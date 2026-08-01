@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "0.1",
+  "id": "plaindeck-example",
+  "title": "PlainDeck example",
+  "canvas": { "width": 1600, "height": 900 },
+  "theme": "./theme.json",
+  "slides": ["./slides/001-title.json", "./slides/002-principles.json"]
+}

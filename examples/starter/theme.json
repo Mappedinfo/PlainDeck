@@ -1,0 +1,6 @@
+{
+  "fonts": { "title": "Georgia", "body": "Avenir Next", "mono": "IBM Plex Mono" },
+  "fontSizes": { "title": 68, "heading": 42, "body": 28, "caption": 20 },
+  "colors": { "background": "#FFF8E9", "text": "#20211D", "muted": "#706F67", "accent": "#E85538" },
+  "spacing": { "page": 80, "small": 16, "medium": 32, "large": 56 }
+}

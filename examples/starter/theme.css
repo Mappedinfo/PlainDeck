@@ -1,0 +1,16 @@
+:root {
+  --font-title: "Georgia";
+  --font-body: "Avenir Next";
+  --size-title: 68px;
+  --size-body: 28px;
+  --color-background: #fff8e9;
+  --color-text: #20211d;
+  --color-accent: #e85538;
+}
+
+.slide-title {
+  font-family: var(--font-title);
+  font-size: var(--size-title);
+  font-weight: 700;
+  line-height: 1.08;
+}
