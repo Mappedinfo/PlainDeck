@@ -1,3 +1,4 @@
+import { Image as ImageIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { Frame, Slide, SlideElement } from '../core/schema'
 import { resizeFrame, snap } from '../core/geometry'
@@ -34,13 +35,17 @@ function ElementView({ element, interactive, zoom }: { element: SlideElement; in
   }
 
   const style: React.CSSProperties = { left: frame.x, top: frame.y, width: frame.w, height: frame.h, opacity: element.opacity ?? 1, transform: `rotate(${element.rotation ?? 0}deg)`, zIndex: element.zIndex }
+  const finishTextEditing = (event: React.FocusEvent<HTMLElement>, text: string) => {
+    setEditing(false)
+    if (event.currentTarget.innerText !== text) updateElement(element.id, { text: event.currentTarget.innerText } as Partial<SlideElement>, element.type === 'shape' ? '编辑形状文字' : '编辑文字')
+  }
   const content = element.type === 'text'
-    ? <div className={`text-content ${element.styleRef ?? ''}`} style={{ fontSize: element.fontSize, fontWeight: element.fontWeight, color: element.color, textAlign: element.align, justifyContent: element.align === 'center' ? 'center' : element.align === 'right' ? 'flex-end' : 'flex-start', alignItems: element.verticalAlign === 'middle' ? 'center' : element.verticalAlign === 'bottom' ? 'flex-end' : 'flex-start' }} contentEditable={interactive && editing} suppressContentEditableWarning onBlur={e => { setEditing(false); if (e.currentTarget.innerText !== element.text) updateElement(element.id, { text: e.currentTarget.innerText } as Partial<SlideElement>, '编辑文字') }}><span>{element.text}</span></div>
-    : element.type === 'image' ? <img src={element.src} alt={element.alt ?? ''} draggable={false} style={{ objectFit: element.fit === 'stretch' ? 'fill' : element.fit }} onError={event => event.currentTarget.classList.add('broken-image')} />
-    : element.type === 'shape' ? <div className="shape-content" style={{ background: element.fill, borderColor: element.stroke, borderWidth: element.strokeWidth, borderRadius: element.shape === 'ellipse' ? '50%' : element.radius }} />
+    ? <div className={`text-content editable-content ${element.styleRef ?? ''}`} style={{ fontSize: element.fontSize, fontWeight: element.fontWeight, color: element.color, textAlign: element.align, justifyContent: element.align === 'center' ? 'center' : element.align === 'right' ? 'flex-end' : 'flex-start', alignItems: element.verticalAlign === 'middle' ? 'center' : element.verticalAlign === 'bottom' ? 'flex-end' : 'flex-start' }} contentEditable={interactive && editing} suppressContentEditableWarning onBlur={e => finishTextEditing(e, element.text)}><span>{element.text}</span></div>
+    : element.type === 'image' ? element.src === 'placeholder:image' ? <div className="image-placeholder"><ImageIcon /><strong>IMAGE</strong><span>在右侧属性中设置图片路径</span></div> : <img src={element.src} alt={element.alt ?? ''} draggable={false} style={{ objectFit: element.fit === 'stretch' ? 'fill' : element.fit }} onError={event => event.currentTarget.classList.add('broken-image')} />
+    : element.type === 'shape' ? <div className="shape-content" style={{ background: element.fill, borderColor: element.stroke, borderWidth: element.strokeWidth, borderRadius: element.shape === 'ellipse' ? '50%' : element.radius }}><div className="shape-label editable-content" style={{ fontSize: element.fontSize, fontWeight: element.fontWeight, color: element.textColor, textAlign: element.align, justifyContent: element.align === 'center' ? 'center' : element.align === 'right' ? 'flex-end' : 'flex-start', alignItems: element.verticalAlign === 'top' ? 'flex-start' : element.verticalAlign === 'bottom' ? 'flex-end' : 'center' }} contentEditable={interactive && editing} suppressContentEditableWarning onBlur={e => finishTextEditing(e, element.text ?? '')}><span>{element.text ?? ''}</span></div></div>
     : <div className={`line-content ${element.dash ? 'dashed' : ''} ${element.arrowEnd ? 'arrow' : ''}`} style={{ borderColor: element.color, borderTopWidth: element.strokeWidth }} />
 
-  return <div className={`slide-element ${selected && interactive ? 'selected' : ''}`} style={style} data-element-id={element.id} onPointerDown={e => begin(e, 'move')} onPointerMove={move} onPointerUp={end} onDoubleClick={e => { if (interactive && element.type === 'text') { e.stopPropagation(); setEditing(true); requestAnimationFrame(() => (e.currentTarget.querySelector('.text-content') as HTMLElement)?.focus()) } }}>
+  return <div className={`slide-element ${selected && interactive ? 'selected' : ''}`} style={style} data-element-id={element.id} onPointerDown={e => begin(e, 'move')} onPointerMove={move} onPointerUp={end} onDoubleClick={e => { if (interactive && (element.type === 'text' || element.type === 'shape')) { e.stopPropagation(); setEditing(true); requestAnimationFrame(() => (e.currentTarget.querySelector('.editable-content') as HTMLElement)?.focus()) } }}>
     {content}
     {selected && interactive && !editing && <button className="resize-handle" aria-label="缩放元素" onPointerDown={e => begin(e, 'resize')} onPointerMove={move} onPointerUp={end} />}
   </div>

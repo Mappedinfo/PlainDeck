@@ -13,6 +13,10 @@ exports/
 
 所有 frame 坐标都是固定逻辑画布上的整数。保存采用两个空格缩进、LF 结尾和固定属性顺序。元素 ID 与页面路径稳定；拖动只在 pointer up 产生一个历史命令并触发页面写入。
 
+`layoutRef` 只记录新建页面时采用的布局名称，布局中的占位内容会立即展开为普通 `elements`，之后可以自由编辑，不依赖隐藏模板。图片占位使用可读的 `"src": "placeholder:image"`，设置真实路径或 URL 后即变为普通图片元素。
+
+形状可以直接包含 `text`，并通过可选的 `textColor`、`fontSize`、`fontWeight`、`align` 与 `verticalAlign` 控制文字。旧项目中的形状没有这些字段时仍按纯形状渲染。
+
 ## Schema version 与迁移
 
 `deck.json` 必须包含 `"schemaVersion": "0.1"`。迁移接口位于 `src/core/migration.ts`；未知版本会明确失败，不会静默改写源项目。未来迁移必须新增纯函数映射，并保留恢复快照后再落盘。

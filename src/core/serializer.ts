@@ -1,7 +1,7 @@
 const KEY_ORDER = [
   'schemaVersion', 'id', 'title', 'canvas', 'width', 'height', 'theme', 'slides',
   'name', 'layoutRef', 'background', 'token', 'color', 'elements', 'type', 'styleRef',
-  'frame', 'x', 'y', 'w', 'h', 'text', 'align', 'verticalAlign', 'fit', 'fontSize',
+  'frame', 'x', 'y', 'w', 'h', 'text', 'textColor', 'align', 'verticalAlign', 'fit', 'fontSize',
   'fontWeight', 'src', 'alt', 'shape', 'fill', 'stroke', 'strokeWidth', 'radius',
   'dash', 'arrowEnd', 'opacity', 'rotation', 'zIndex', 'fonts', 'fontSizes', 'colors',
   'spacing', 'body', 'mono', 'heading', 'caption', 'muted', 'accent', 'page', 'small',

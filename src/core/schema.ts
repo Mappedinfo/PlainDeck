@@ -38,6 +38,12 @@ export const ShapeElementSchema = ElementBase.extend({
   stroke: z.string().optional(),
   strokeWidth: z.number().nonnegative().optional(),
   radius: z.number().nonnegative().optional(),
+  text: z.string().optional(),
+  textColor: z.string().optional(),
+  fontSize: z.number().positive().optional(),
+  fontWeight: z.number().int().min(100).max(900).optional(),
+  align: z.enum(['left', 'center', 'right']).optional(),
+  verticalAlign: z.enum(['top', 'middle', 'bottom']).optional(),
 })
 
 export const LineElementSchema = ElementBase.extend({

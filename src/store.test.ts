@@ -21,4 +21,19 @@ describe('editor command history', () => {
     const store = useEditor.getState(); store.updateElement('title', { text: 'Changed' })
     expect([...useEditor.getState().dirtyPaths]).toEqual(['./slides/001-intro.json'])
   })
+  it('creates a new page from a readable layout preset', () => {
+    useEditor.getState().addSlide('image-right')
+    const state = useEditor.getState(); const slide = state.document.slides[state.activeSlidePath]
+    expect(slide.layoutRef).toBe('image-right')
+    expect(slide.elements).toEqual(expect.arrayContaining([
+      expect.objectContaining({ type: 'text', text: '让图片承担一半表达' }),
+      expect.objectContaining({ type: 'image', src: 'placeholder:image' }),
+    ]))
+    expect([...state.dirtyPaths]).toEqual(['deck.json', state.activeSlidePath])
+  })
+  it('adds a shape with editable text defaults', () => {
+    useEditor.getState().addElement('shape')
+    const state = useEditor.getState(); const shape = state.document.slides[state.activeSlidePath].elements.at(-1)
+    expect(shape).toMatchObject({ type: 'shape', text: '双击添加文字', align: 'center', verticalAlign: 'middle' })
+  })
 })

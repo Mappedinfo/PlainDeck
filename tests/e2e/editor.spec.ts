@@ -44,6 +44,29 @@ test('activates a waiting service worker before refreshing', async ({ page }) =>
   await expect(updateNotice).toBeHidden()
 })
 
+test('creates a layout page, changes its color style, and edits shape text', async ({ page }) => {
+  await page.goto('./')
+  await page.getByRole('button', { name: '页面布局' }).click()
+  const layoutPicker = page.getByRole('dialog', { name: '选择页面布局' })
+  await expect(layoutPicker).toBeVisible()
+  await page.screenshot({ path: '/tmp/plaindeck-layout-picker.png', fullPage: true })
+  await layoutPicker.getByRole('button', { name: /图文并排/ }).click()
+
+  await expect(page.locator('.slide-thumb')).toHaveCount(6)
+  await expect(page.locator('.canvas-workspace .slide-surface')).toContainText('让图片承担一半表达')
+  await expect(page.locator('.canvas-workspace .image-placeholder')).toBeVisible()
+
+  await page.getByRole('button', { name: /深夜蓝图/ }).click()
+  await expect(page.locator('.canvas-workspace .slide-surface')).toHaveCSS('background-color', 'rgb(17, 24, 32)')
+
+  await page.getByRole('button', { name: '添加矩形' }).click()
+  const selectedShape = page.locator('.canvas-workspace .slide-element.selected')
+  await expect(selectedShape.locator('.shape-label')).toContainText('双击添加文字')
+  await page.locator('.inspector textarea').fill('形状也可以直接承载观点')
+  await expect(selectedShape.locator('.shape-label')).toContainText('形状也可以直接承载观点')
+  await page.screenshot({ path: '/tmp/plaindeck-layout-theme-shape.png', fullPage: true })
+})
+
 test('presents the five-page onboarding story in order', async ({ page }) => {
   await page.goto('./')
   const expected = ['像 PPT 一样编辑', '给人、AI 和 Git', '第一次使用，只要四步', '为什么不直接用 PPTX', 'PlainDeck 适合你吗']

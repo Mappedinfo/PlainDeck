@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { DeckDocument, SlideElement, Theme } from './core/schema'
 import { createSampleDocument } from './core/sample'
+import { createLayoutElements, layoutPresets, type LayoutPresetId } from './core/presets'
 import type { DirectoryHandle } from './storage/browserStorage'
 
 type SaveState = 'demo' | 'dirty' | 'saving' | 'saved' | 'error'
@@ -26,7 +27,7 @@ interface EditorState {
   addElement(type: SlideElement['type']): void
   removeSelected(): void
   duplicateSelected(): void
-  addSlide(): void
+  addSlide(layoutId?: LayoutPresetId): void
   duplicateSlide(): void
   deleteSlide(): void
   moveSlide(direction: -1 | 1): void
@@ -66,7 +67,7 @@ export const useEditor = create<EditorState>((set, get) => ({
     let element: SlideElement
     if (type === 'text') element = { id: uid('text'), type, frame: { x: 160, y: 160, w: 600, h: 120 }, text: '双击编辑文字', fontSize: 36 }
     else if (type === 'image') element = { id: uid('image'), type, frame: { x: 200, y: 200, w: 560, h: 360 }, src: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200', fit: 'cover', alt: 'placeholder' }
-    else if (type === 'shape') element = { id: uid('shape'), type, frame: { x: 240, y: 220, w: 420, h: 240 }, shape: 'rounded-rectangle', fill: state.document.theme.colors.accent, radius: 24 }
+    else if (type === 'shape') element = { id: uid('shape'), type, frame: { x: 240, y: 220, w: 420, h: 240 }, shape: 'rounded-rectangle', fill: state.document.theme.colors.accent, radius: 24, text: '双击添加文字', textColor: state.document.theme.colors.background, fontSize: 30, fontWeight: 700, align: 'center', verticalAlign: 'middle' }
     else element = { id: uid('line'), type, frame: { x: 240, y: 360, w: 560, h: 8 }, color: state.document.theme.colors.text, strokeWidth: 4 }
     slide.elements.push(element); state.commitDocument(document, `添加${type}`, [state.activeSlidePath]); set({ selectedIds: [element.id] })
   },
@@ -80,10 +81,11 @@ export const useEditor = create<EditorState>((set, get) => ({
     slide.elements.filter(e => state.selectedIds.includes(e.id)).forEach(e => { const copy = clone(e); copy.id = uid(e.type); copy.frame.x += 32; copy.frame.y += 32; slide.elements.push(copy); ids.push(copy.id) })
     if (!ids.length) return; state.commitDocument(document, '复制元素', [state.activeSlidePath]); set({ selectedIds: ids })
   },
-  addSlide: () => {
+  addSlide: (layoutId = 'blank') => {
     const state = get(); const document = clone(state.document); const id = uid('slide'); const path = `./slides/${String(document.deck.slides.length + 1).padStart(3, '0')}-${id}.json`
-    document.deck.slides.push(path); document.slides[path] = { id, name: 'Untitled', elements: [] }
-    state.commitDocument(document, '新建页面', ['deck.json', path]); set({ activeSlidePath: path, selectedIds: [] })
+    const presetName = layoutPresets.find(preset => preset.id === layoutId)?.name ?? '空白页'
+    document.deck.slides.push(path); document.slides[path] = { id, name: presetName, layoutRef: layoutId, elements: createLayoutElements(layoutId, document.theme) }
+    state.commitDocument(document, `新建页面 · ${presetName}`, ['deck.json', path]); set({ activeSlidePath: path, selectedIds: [] })
   },
   duplicateSlide: () => {
     const state = get(); const document = clone(state.document); const source = document.slides[state.activeSlidePath]; const id = uid(source.id); const path = `./slides/${String(document.deck.slides.length + 1).padStart(3, '0')}-${id}.json`; const copy = clone(source); copy.id = id; copy.name = `${source.name ?? source.id} copy`; copy.elements.forEach(e => e.id = uid(e.type))
