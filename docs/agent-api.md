@@ -56,14 +56,17 @@ printf '[{"op":"rename-slide","slide":"./slides/001-intro.json","name":"Introduc
     }
   },
   { "op": "remove-element", "slide": "./slides/001-intro.json", "element": "old-note" },
+  { "op": "move-element", "slide": "./slides/001-intro.json", "element": "agent-note", "before": "title" },
   { "op": "add-slide", "layout": "image-right", "name": "Results", "after": "./slides/001-intro.json" },
+  { "op": "duplicate-slide", "slide": "./slides/001-intro.json", "id": "intro-copy" },
   { "op": "rename-slide", "slide": "./slides/002-results.json", "name": "Key results" },
+  { "op": "move-slide", "slide": "./slides/002-results.json", "after": "./slides/001-intro.json" },
   { "op": "remove-slide", "slide": "./slides/003-appendix.json" },
   { "op": "set-theme", "patch": { "accent": "#2563eb", "background": "#ffffff" } }
 ]
 ```
 
-`set-element` 不能修改元素的 `id` 或 `type`。不存在的页面或元素、重复元素 ID、非法 patch、删除最后一页等都会使整批操作失败；操作在内存中全部完成并通过全量 schema 校验后，CLI 才会写盘。
+`set-element` 不能修改元素的 `id` 或 `type`。`move-element` 与 `move-slide` 使用稳定 ID/路径及 `before` 或 `after`，不暴露数组索引。不存在的页面或元素、重复元素 ID、非法 patch、删除最后一页等都会使整批操作失败；操作在内存中全部完成并通过全量 schema 校验后，CLI 才会写盘。Web 编辑器也把交互动作转换为同一组 operations 后再更新历史与保存。
 
 可用布局：`blank`、`title-body`、`section`、`statement`、`metric`、`two-column`、`image-right`、`three-cards`。
 

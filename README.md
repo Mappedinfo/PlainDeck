@@ -107,7 +107,7 @@ npx plaindeck apply ./my-deck --ops changes.json
 npx plaindeck render ./my-deck --format html --output deck.html
 ```
 
-`init` 默认创建一套可直接播放的五页编辑型模板，也可选择 `pitch`、`blank` 和 8 套内置配色。推荐闭环是 `init → inspect → operations → validate → dry-run → apply → render`。HTML 默认嵌入本地图片并生成带方向键、进度和全屏控制的 Web 演示；外部图片默认不联网。PNG/PDF 渲染需要 Playwright Chromium：
+`init` 默认创建一套可直接播放的五页编辑型模板，也可选择 `pitch`、`blank` 和 8 套内置配色。推荐闭环是 `init → inspect → operations → validate → dry-run → apply → render`。网页编辑器的元素、页面、图层与主题修改也会转换为同一组 operations，因此 CLI 和画布共享同一个文档变更内核。HTML 默认嵌入本地图片并生成带方向键、进度和全屏控制的 Web 演示；外部图片默认不联网。PNG/PDF 渲染需要 Playwright Chromium：
 
 ```bash
 npm install playwright

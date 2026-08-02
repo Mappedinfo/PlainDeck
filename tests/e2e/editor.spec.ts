@@ -43,6 +43,23 @@ test('renames the active artboard and updates the page list', async ({ page }) =
   await expect(page.locator('.slide-thumb.active .slide-name')).toHaveText('Cover')
 })
 
+test('duplicates and reorders pages and layers through the shared operation kernel', async ({ page }) => {
+  await page.goto('./')
+  await page.getByTitle('复制页面').click()
+  await expect(page.locator('.slide-thumb')).toHaveCount(6)
+  await expect(page.locator('.slide-thumb').nth(1)).toHaveClass(/active/)
+  await page.getByTitle('下移页面').click()
+  await expect(page.locator('.slide-thumb').nth(2)).toHaveClass(/active/)
+
+  await page.getByRole('button', { name: '添加矩形' }).click()
+  const elements = page.locator('.canvas-workspace .slide-element')
+  const selectedId = await page.locator('.canvas-workspace .slide-element.selected').getAttribute('data-element-id')
+  await page.getByRole('button', { name: '后移图层' }).click()
+  await expect(elements.nth((await elements.count()) - 2)).toHaveAttribute('data-element-id', selectedId!)
+  await page.getByRole('button', { name: '前移图层' }).click()
+  await expect(elements.last()).toHaveAttribute('data-element-id', selectedId!)
+})
+
 test('activates a waiting service worker before refreshing', async ({ page }) => {
   await page.goto('./')
   await page.evaluate(() => {

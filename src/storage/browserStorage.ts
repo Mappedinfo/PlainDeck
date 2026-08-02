@@ -1,5 +1,5 @@
 import type { DeckDocument, Slide, Theme } from 'plaindeck/core'
-import { DeckSchema, SlideSchema, ThemeSchema, migrateDeck, canonicalJson } from 'plaindeck/core'
+import { DeckSchema, SlideSchema, ThemeSchema, assertDocument, migrateDeck, canonicalJson } from 'plaindeck/core'
 
 export type DirectoryHandle = FileSystemDirectoryHandle
 const baselines = new WeakMap<DirectoryHandle, Map<string, string>>()
@@ -32,12 +32,12 @@ export async function readProject(root: DirectoryHandle): Promise<DeckDocument> 
   const baseline = new Map<string, string>()
   const deckText = await readText(root, 'deck.json'); baseline.set('deck.json', deckText)
   const deck = migrateDeck(JSON.parse(deckText))
-  const themeText = await readText(root, deck.theme); baseline.set('theme.json', themeText)
+  const themeText = await readText(root, deck.theme); baseline.set(deck.theme, themeText)
   const theme = ThemeSchema.parse(JSON.parse(themeText))
   const slides: Record<string, Slide> = {}
   for (const path of deck.slides) { const text = await readText(root, path); baseline.set(path, text); slides[path] = SlideSchema.parse(JSON.parse(text)) }
   baselines.set(root, baseline)
-  return { deck: DeckSchema.parse(deck), slides, theme }
+  return assertDocument({ deck: DeckSchema.parse(deck), slides, theme })
 }
 
 export async function writeText(root: DirectoryHandle, path: string, content: string): Promise<void> {
@@ -60,9 +60,9 @@ async function writeChecked(root: DirectoryHandle, path: string, content: string
 }
 
 export async function writeProject(root: DirectoryHandle, document: DeckDocument, paths?: Set<string>): Promise<void> {
-  const targets = paths ?? new Set(['deck.json', 'theme.json', ...document.deck.slides])
+  const targets = paths ?? new Set(['deck.json', document.deck.theme, ...document.deck.slides])
   if (targets.has('deck.json')) await writeChecked(root, 'deck.json', canonicalJson(document.deck))
-  if (targets.has('theme.json')) await writeChecked(root, 'theme.json', canonicalJson(document.theme))
+  if (targets.has(document.deck.theme)) await writeChecked(root, document.deck.theme, canonicalJson(document.theme))
   for (const path of document.deck.slides) if (targets.has(path)) await writeChecked(root, path, canonicalJson(document.slides[path]))
   if (!paths) {
     await root.getDirectoryHandle('assets', { create: true })

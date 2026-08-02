@@ -45,12 +45,30 @@ describe('PlainDeck public API', () => {
     expect(result.changedPaths).toEqual(['./theme.json', ...result.document.deck.slides])
   })
 
+  it('duplicates and reorders slides and elements by stable IDs', async () => {
+    const original = await loadDeck(starter)
+    const slidePath = original.deck.slides[0]
+    const [first, second] = original.slides[slidePath].elements
+    const result = applyOperations(original, [
+      { op: 'move-element', slide: slidePath, element: second.id, before: first.id },
+      { op: 'move-slide', slide: original.deck.slides[4], before: original.deck.slides[0] },
+      { op: 'duplicate-slide', slide: slidePath, id: 'intro-copy', name: 'Intro copy' },
+    ])
+    expect(result.document.slides[slidePath].elements.slice(0, 2).map(element => element.id)).toEqual([second.id, first.id])
+    expect(result.document.deck.slides[0]).toBe(original.deck.slides[4])
+    expect(result.document.deck.slides[2]).toBe('./slides/006-intro-copy.json')
+    expect(result.document.slides['./slides/006-intro-copy.json']).toMatchObject({ id: 'intro-copy', name: 'Intro copy' })
+    expect(result.changedPaths).toEqual([slidePath, 'deck.json', './slides/006-intro-copy.json'])
+  })
+
   it('rejects invalid operations before any file write', async () => {
     const document = await loadDeck(starter)
     expect(() => applyOperations(document, [{ op: 'set-element', slide: './slides/001-intro.json', element: 'missing', patch: { text: 'x' } }])).toThrow('元素不存在')
     expect(() => applyOperations(document, [{ op: 'set-element', slide: './slides/001-intro.json', element: 'title', patch: { id: 'changed' } }])).toThrow('不允许修改')
     const oneSlide = structuredClone(document); oneSlide.deck.slides = [oneSlide.deck.slides[0]]; oneSlide.slides = { [oneSlide.deck.slides[0]]: oneSlide.slides[oneSlide.deck.slides[0]] }
     expect(() => applyOperations(oneSlide, [{ op: 'remove-slide', slide: oneSlide.deck.slides[0] }])).toThrow('最后一页')
+    expect(() => applyOperations(document, [{ op: 'move-slide', slide: document.deck.slides[0], before: document.deck.slides[1], after: document.deck.slides[2] }])).toThrow('必须且只能')
+    expect(() => applyOperations(document, [{ op: 'move-element', slide: document.deck.slides[0], element: 'title', before: 'missing' }])).toThrow('移动目标不存在')
   })
 
   it('saves only changed paths', async () => {
