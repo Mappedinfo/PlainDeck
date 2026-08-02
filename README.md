@@ -118,6 +118,8 @@ npx playwright install chromium
 
 公共 API 与操作格式见 [`docs/agent-api.md`](./docs/agent-api.md)，npm 包说明见 [`packages/plaindeck/README.md`](./packages/plaindeck/README.md)。v0.2 不包含 HTTP API、MCP、serve/watch 或 PPTX 导入导出；项目 schema 仍保持 `0.1` 兼容。
 
+Web 工具栏显示的版本号直接读取 `packages/plaindeck/package.json`。发布时只需更新 npm 包版本，Web 构建会自动同步，无需再修改界面源码。
+
 ## 已实现的 MVP 能力
 
 - Zod schema、`0.1` schema version、迁移入口和 canonical JSON serializer；

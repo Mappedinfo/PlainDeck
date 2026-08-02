@@ -1,10 +1,14 @@
 import { expect, test } from '@playwright/test'
+import { readFileSync } from 'node:fs'
+
+const packageVersion = JSON.parse(readFileSync(new URL('../../packages/plaindeck/package.json', import.meta.url), 'utf8')).version as string
 
 test('edits the sample deck and uses history', async ({ page }) => {
   const errors: string[] = []
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()) })
   await page.goto('./')
   await expect(page.getByRole('banner').getByText('PlainDeck', { exact: true })).toBeVisible()
+  await expect(page.getByTitle('PlainDeck core version')).toHaveText(`v${packageVersion}`)
   await expect(page.locator('.slide-thumb')).toHaveCount(5)
   await expect(page.locator('.canvas-label strong')).toHaveText('Cover')
   await expect(page.getByRole('link', { name: '在 GitHub 查看 PlainDeck 源码' })).toHaveAttribute('href', 'https://github.com/Mappedinfo/PlainDeck')

@@ -1,5 +1,6 @@
 import { AlignCenter, AlignHorizontalDistributeCenter, AlignLeft, AlignRight, Box, Download, FilePlus2, FolderOpen, Image, Minus, MousePointer2, Play, Redo2, Save, Square, Type, Undo2 } from 'lucide-react'
 import { useEditor } from '../store'
+import { version as plainDeckVersion } from '../../packages/plaindeck/package.json'
 
 interface Props { onOpen: () => void; onNew: () => void; onImportZip: () => void; onAddImage: () => void; onExport: () => void; onPresent: () => void; onSave: () => void }
 const ToolButton = ({ label, children, onClick, disabled, accent = false }: { label: string; children: React.ReactNode; onClick?: () => void; disabled?: boolean; accent?: boolean }) => <button className={`tool-button ${accent ? 'accent' : ''}`} title={label} aria-label={label} onClick={onClick} disabled={disabled}>{children}</button>
@@ -7,7 +8,7 @@ const ToolButton = ({ label, children, onClick, disabled, accent = false }: { la
 export function Toolbar({ onOpen, onNew, onImportZip, onAddImage, onExport, onPresent, onSave }: Props) {
   const { addElement, undo, redo, past, future, selectedIds, reorderLayer } = useEditor()
   return <header className="toolbar">
-    <div className="brand"><span className="brand-mark">P/D</span><span>PlainDeck</span><small>0.1</small></div>
+    <div className="brand"><span className="brand-mark">P/D</span><span>PlainDeck</span><small title="PlainDeck core version">v{plainDeckVersion}</small></div>
     <div className="tool-group project-tools">
       <ToolButton label="新建项目" onClick={onNew}><FilePlus2 /></ToolButton>
       <ToolButton label="打开本地目录" onClick={onOpen}><FolderOpen /></ToolButton>
