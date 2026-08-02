@@ -1,10 +1,29 @@
-# PlainDeck
+<p align="center">
+  <img src="./public/plaindeck-mark.svg" alt="PlainDeck logo" width="88" height="88">
+</p>
 
-> **像 PPT 一样编辑，像代码一样保存。**
+<h1 align="center">PlainDeck</h1>
+
+<p align="center"><strong>像 PPT 一样编辑，像代码一样保存。</strong></p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/plaindeck"><img alt="npm version" src="https://img.shields.io/npm/v/plaindeck?logo=npm&label=npm&color=cb3837"></a>
+  <a href="https://www.npmjs.com/package/plaindeck"><img alt="npm downloads" src="https://img.shields.io/npm/dm/plaindeck?logo=npm&label=downloads&color=cb3837"></a>
+  <a href="https://github.com/Mappedinfo/PlainDeck/tags"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/Mappedinfo/PlainDeck?sort=semver&label=release&logo=github"></a>
+  <a href="https://github.com/Mappedinfo/PlainDeck/actions/workflows/deploy-pages.yml"><img alt="GitHub Pages" src="https://github.com/Mappedinfo/PlainDeck/actions/workflows/deploy-pages.yml/badge.svg?branch=main"></a>
+  <a href="https://github.com/Mappedinfo/PlainDeck/actions/workflows/publish-npm.yml"><img alt="npm publish" src="https://github.com/Mappedinfo/PlainDeck/actions/workflows/publish-npm.yml/badge.svg"></a>
+  <a href="./LICENSE"><img alt="MIT License" src="https://img.shields.io/github/license/Mappedinfo/PlainDeck?color=2f6f68"></a>
+</p>
 
 PlainDeck 是一个以用户操作为先的幻灯片编辑器：你在浏览器里拖拽排版，底层文件则保持为 AI 能读写、Git 能管理的 JSON。
 
-[在线试用](https://mappedinfo.github.io/PlainDeck/) · [查看源码](https://github.com/Mappedinfo/PlainDeck)
+<p align="center">
+  <a href="https://mappedinfo.github.io/PlainDeck/"><strong>在线试用</strong></a>
+  ·
+  <a href="https://www.npmjs.com/package/plaindeck">npm 包</a>
+  ·
+  <a href="https://github.com/Mappedinfo/PlainDeck">查看源码</a>
+</p>
 
 ## 用 CLI 生成的真实演示
 
