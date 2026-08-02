@@ -28,6 +28,22 @@ test('opens presentation and export surfaces', async ({ page }) => {
   await expect(page.getByText('Take the deck with you.')).toBeVisible()
 })
 
+test('activates a waiting service worker before refreshing', async ({ page }) => {
+  await page.goto('./')
+  await page.evaluate(() => {
+    const applyUpdate = async (reloadPage?: boolean) => {
+      document.documentElement.dataset.updateApplied = String(reloadPage)
+    }
+    window.dispatchEvent(new CustomEvent('plaindeck-update', { detail: applyUpdate }))
+  })
+
+  const updateNotice = page.locator('.update-toast')
+  await expect(updateNotice).toBeVisible()
+  await updateNotice.getByRole('button', { name: '刷新' }).click()
+  await expect(page.locator('html')).toHaveAttribute('data-update-applied', 'true')
+  await expect(updateNotice).toBeHidden()
+})
+
 test('presents the five-page onboarding story in order', async ({ page }) => {
   await page.goto('./')
   const expected = ['像 PPT 一样编辑', '给人、AI 和 Git', '第一次使用，只要四步', '为什么不直接用 PPTX', 'PlainDeck 适合你吗']

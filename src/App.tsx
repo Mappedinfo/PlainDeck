@@ -11,6 +11,8 @@ import { exportHtml } from './export/html'
 import { exportZip, importZip } from './storage/zipStorage'
 import { pickDirectory, readProject, restoreFromOpfs, snapshotToOpfs, verifyPermission, writeProject } from './storage/browserStorage'
 
+type ApplyUpdate = (reloadPage?: boolean) => Promise<void>
+
 function Presentation({ onClose }: { onClose: () => void }) {
   const { document, activeSlidePath } = useEditor(); const initial = Math.max(0, document.deck.slides.indexOf(activeSlidePath)); const [index, setIndex] = useState(initial)
   useEffect(() => { const key = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); if (['ArrowRight', 'ArrowDown', ' '].includes(event.key)) setIndex(i => Math.min(document.deck.slides.length - 1, i + 1)); if (['ArrowLeft', 'ArrowUp'].includes(event.key)) setIndex(i => Math.max(0, i - 1)) }; addEventListener('keydown', key); return () => removeEventListener('keydown', key) }, [document.deck.slides.length, onClose])
@@ -25,7 +27,7 @@ function ExportDialog({ onClose }: { onClose: () => void }) {
 }
 
 export default function App() {
-  const state = useEditor(); const [present, setPresent] = useState(false); const [exporting, setExporting] = useState(false); const [updateReady, setUpdateReady] = useState(false); const [recovery, setRecovery] = useState<Awaited<ReturnType<typeof restoreFromOpfs>>>(null); const fileRef = useRef<HTMLInputElement>(null); const canvasRef = useRef<HTMLElement>(null)
+  const state = useEditor(); const [present, setPresent] = useState(false); const [exporting, setExporting] = useState(false); const [updateReady, setUpdateReady] = useState(false); const [recovery, setRecovery] = useState<Awaited<ReturnType<typeof restoreFromOpfs>>>(null); const fileRef = useRef<HTMLInputElement>(null); const canvasRef = useRef<HTMLElement>(null); const applyUpdateRef = useRef<ApplyUpdate>(null)
   const fitCanvas = useCallback(() => {
     const workspace = canvasRef.current
     if (!workspace) return
@@ -44,7 +46,7 @@ export default function App() {
   }, [])
 
   useEffect(() => { if (state.saveState !== 'dirty') return; const timer = setTimeout(save, 700); return () => clearTimeout(timer) }, [state.document, state.saveState, save])
-  useEffect(() => { const update = () => setUpdateReady(true); addEventListener('plaindeck-update', update); return () => removeEventListener('plaindeck-update', update) }, [])
+  useEffect(() => { const update = (event: Event) => { const applyUpdate = (event as CustomEvent<ApplyUpdate>).detail; if (typeof applyUpdate !== 'function') return; applyUpdateRef.current = applyUpdate; setUpdateReady(true) }; addEventListener('plaindeck-update', update); return () => removeEventListener('plaindeck-update', update) }, [])
   useEffect(() => { restoreFromOpfs().then(setRecovery).catch(() => undefined) }, [])
   useEffect(() => { const observer = new ResizeObserver(fitCanvas); if (canvasRef.current) observer.observe(canvasRef.current); fitCanvas(); return () => observer.disconnect() }, [fitCanvas, state.document.deck.canvas.width, state.document.deck.canvas.height])
   useEffect(() => {
@@ -79,6 +81,6 @@ export default function App() {
     <div className="print-deck">{state.document.deck.slides.map(path => <div className="print-page" key={path}><SlideSurface slide={state.document.slides[path]} interactive={false} zoom={1} /></div>)}</div>
     {present && <Presentation onClose={() => setPresent(false)} />}{exporting && <ExportDialog onClose={() => setExporting(false)} />}
     {recovery && <div className="recovery-toast"><strong>发现恢复快照</strong><span>{new Date(recovery.savedAt).toLocaleString()}</span><div><button onClick={() => setRecovery(null)}>忽略</button><button onClick={() => { state.setDocument(recovery.document); setRecovery(null) }}>恢复</button></div></div>}
-    {updateReady && <div className="update-toast">新版本已就绪。保存后刷新以更新。<button onClick={() => location.reload()}>刷新</button></div>}
+    {updateReady && <div className="update-toast">新版本已就绪。保存后刷新以更新。<button onClick={() => { const applyUpdate = applyUpdateRef.current; if (!applyUpdate) return; setUpdateReady(false); void applyUpdate(true).catch(() => setUpdateReady(true)) }}>刷新</button></div>}
   </div>
 }
