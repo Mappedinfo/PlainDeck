@@ -1,8 +1,9 @@
 import { z } from 'zod'
 import { createLayoutElements, layoutPresets } from './presets.js'
 import { ElementSchema, assertDocument, type DeckDocument, type SlideElement } from './schema.js'
+import { applyDocumentTheme } from './theme.js'
 
-const LayoutIdSchema = z.enum(['blank', 'title-body', 'section', 'two-column', 'image-right', 'three-cards'])
+const LayoutIdSchema = z.enum(['blank', 'title-body', 'section', 'statement', 'metric', 'two-column', 'image-right', 'three-cards'])
 const SlidePathSchema = z.string().startsWith('./slides/').endsWith('.json')
 const ColorPatchSchema = z.object({
   background: z.string().optional(), text: z.string().optional(), muted: z.string().optional(), accent: z.string().optional(),
@@ -40,7 +41,7 @@ function uniqueSlidePath(document: DeckDocument, id: string) {
 
 export function applyOperations(input: DeckDocument, rawOperations: unknown): ApplyOperationsResult {
   const operations = DeckOperationsSchema.parse(rawOperations)
-  const document = structuredClone(input)
+  let document = structuredClone(input)
   const changed = new Set<string>()
 
   for (const operation of operations) {
@@ -89,8 +90,9 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
       delete document.slides[operation.slide]
       changed.add('deck.json'); changed.add(operation.slide)
     } else {
-      document.theme.colors = { ...document.theme.colors, ...operation.patch }
+      document = applyDocumentTheme(document, { ...document.theme, colors: { ...document.theme.colors, ...operation.patch } })
       changed.add(document.deck.theme)
+      document.deck.slides.forEach(path => changed.add(path))
     }
   }
 

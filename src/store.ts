@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { DeckDocument, SlideElement, Theme } from 'plaindeck/core'
+import { applyDocumentTheme, type DeckDocument, type SlideElement, type Theme } from 'plaindeck/core'
 import { createSampleDocument } from './core/sample'
 import { createLayoutElements, layoutPresets, type LayoutPresetId } from 'plaindeck/core'
 import type { DirectoryHandle } from './storage/browserStorage'
@@ -34,6 +34,7 @@ interface EditorState {
   moveSlide(direction: -1 | 1): void
   reorderLayer(direction: -1 | 1): void
   updateTheme(patch: Partial<Theme['colors']>): void
+  applyTheme(theme: Theme): void
   commitDocument(document: DeckDocument, label: string, dirtyPaths: string[]): void
   undo(): void
   redo(): void
@@ -111,7 +112,8 @@ export const useEditor = create<EditorState>((set, get) => ({
     const state = get(); if (state.selectedIds.length !== 1) return; const document = clone(state.document); const elements = document.slides[state.activeSlidePath].elements; const index = elements.findIndex(e => e.id === state.selectedIds[0]); const next = Math.max(0, Math.min(elements.length - 1, index + direction)); if (index < 0 || next === index) return
     ;[elements[index], elements[next]] = [elements[next], elements[index]]; state.commitDocument(document, direction > 0 ? '前移图层' : '后移图层', [state.activeSlidePath])
   },
-  updateTheme: patch => { const state = get(); const document = clone(state.document); document.theme.colors = { ...document.theme.colors, ...patch }; state.commitDocument(document, '修改主题', ['theme.json']) },
+  updateTheme: patch => { const state = get(); const theme = { ...state.document.theme, colors: { ...state.document.theme.colors, ...patch } }; state.commitDocument(applyDocumentTheme(state.document, theme), '修改主题', ['theme.json', ...state.document.deck.slides]) },
+  applyTheme: theme => { const state = get(); state.commitDocument(applyDocumentTheme(state.document, theme), '应用主题', ['theme.json', ...state.document.deck.slides]) },
   undo: () => set(state => { const entry = state.past.at(-1); if (!entry) return state; return { document: clone(entry.document), past: state.past.slice(0, -1), future: [{ document: clone(state.document), label: entry.label }, ...state.future].slice(0, 100), dirtyPaths: new Set(['deck.json', 'theme.json', ...state.document.deck.slides]), saveState: 'dirty' } }),
   redo: () => set(state => { const entry = state.future[0]; if (!entry) return state; return { document: clone(entry.document), future: state.future.slice(1), past: [...state.past, { document: clone(state.document), label: entry.label }].slice(-100), dirtyPaths: new Set(['deck.json', 'theme.json', ...state.document.deck.slides]), saveState: 'dirty' } }),
   clearDirty: paths => set(state => { const dirtyPaths = new Set(state.dirtyPaths); paths.forEach(path => dirtyPaths.delete(path)); return { dirtyPaths, saveState: dirtyPaths.size ? 'dirty' : state.directory ? 'saved' : 'demo' } }),

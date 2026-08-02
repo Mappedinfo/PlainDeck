@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { dirname } from 'node:path'
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { dirname, join } from 'node:path'
 import { stdin, stderr, stdout } from 'node:process'
-import { applyOperations, inspectDeck, layoutPresets, validateDeck } from './core/index.js'
+import { applyOperations, createDeckTemplate, deckTemplatePresets, inspectDeck, layoutPresets, themePresets, validateDeck, type DeckTemplateId } from './core/index.js'
 import { loadDeck, prepareDocumentAssets, renderPdf, renderPng, saveDeck } from './node/index.js'
 import { renderHtml } from './render/index.js'
 
-const VERSION = '0.1.1'
+const VERSION = '0.2.0'
 const args = process.argv.slice(2)
 const command = args[0]
 const jsonMode = args.includes('--json')
@@ -14,6 +14,7 @@ const jsonMode = args.includes('--json')
 const help = `PlainDeck ${VERSION}
 
 Usage:
+  plaindeck init <project> [--title <title>] [--template showcase|pitch|blank] [--theme <id>] [--json]
   plaindeck validate <project> [--json]
   plaindeck inspect <project> [--json]
   plaindeck apply <project> --ops <file|-> [--dry-run] [--json]
@@ -46,6 +47,10 @@ async function readStdin() {
   return Buffer.concat(chunks).toString('utf8')
 }
 
+async function exists(path: string) {
+  try { await access(path); return true } catch { return false }
+}
+
 function emit(data: unknown, human: string) {
   stdout.write(jsonMode ? `${JSON.stringify(data, null, 2)}\n` : `${human}\n`)
 }
@@ -57,6 +62,24 @@ async function run() {
   }
   if (command === '--version' || command === '-v') {
     stdout.write(`${VERSION}\n`)
+    return
+  }
+  if (command === 'init') {
+    const root = projectPath()
+    const template = option('--template') ?? 'showcase'
+    const theme = option('--theme') ?? 'studio-cobalt'
+    if (!deckTemplatePresets.some(item => item.id === template)) throw new UsageError(`未知模板 ${template}。可用模板：${deckTemplatePresets.map(item => item.id).join(', ')}`)
+    if (!themePresets.some(item => item.id === theme)) throw new UsageError(`未知主题 ${theme}。可用主题：${themePresets.map(item => item.id).join(', ')}`)
+    if (await exists(join(root, 'deck.json'))) throw new UsageError(`项目已存在：${join(root, 'deck.json')}。init 不会覆盖现有项目。`)
+    const document = createDeckTemplate(template as DeckTemplateId, { title: option('--title'), id: option('--id'), theme })
+    const changedPaths = await saveDeck(root, document)
+    const ignore = join(root, '.gitignore')
+    if (!await exists(ignore)) {
+      await mkdir(root, { recursive: true })
+      await writeFile(ignore, 'exports/*\n.DS_Store\n', 'utf8')
+      changedPaths.push('.gitignore')
+    }
+    emit({ ok: true, project: root, title: document.deck.title, template, theme, slides: document.deck.slides.length, changedPaths }, `✓ 已创建 ${document.deck.title} · ${document.deck.slides.length} 页 · ${template} / ${theme}`)
     return
   }
   if (command === 'validate') {

@@ -1,6 +1,6 @@
 import type { SlideElement, Theme } from './schema.js'
 
-export type LayoutPresetId = 'blank' | 'title-body' | 'section' | 'two-column' | 'image-right' | 'three-cards'
+export type LayoutPresetId = 'blank' | 'title-body' | 'section' | 'statement' | 'metric' | 'two-column' | 'image-right' | 'three-cards'
 
 export interface LayoutPreset {
   id: LayoutPresetId
@@ -12,6 +12,8 @@ export const layoutPresets: LayoutPreset[] = [
   { id: 'blank', name: '空白页', description: '从完全空白开始' },
   { id: 'title-body', name: '标题与正文', description: '标准信息页面' },
   { id: 'section', name: '章节标题', description: '醒目的过渡页面' },
+  { id: 'statement', name: '核心观点', description: '一句话成为视觉中心' },
+  { id: 'metric', name: '关键数字', description: '数据、结论与解释' },
   { id: 'two-column', name: '双栏文字', description: '并列观点或对比' },
   { id: 'image-right', name: '图文并排', description: '左文右图的叙事页' },
   { id: 'three-cards', name: '三张卡片', description: '步骤、能力或分类' },
@@ -22,15 +24,39 @@ export interface ThemePreset {
   name: string
   description: string
   colors: Theme['colors']
+  theme: Theme
+}
+
+const makeTheme = (colors: Theme['colors'], fonts: Theme['fonts'] = {
+  title: 'Avenir Next, Aptos Display, Helvetica Neue, sans-serif',
+  body: 'Avenir Next, Aptos, Helvetica Neue, sans-serif',
+  mono: 'SFMono-Regular, IBM Plex Mono, Consolas, monospace',
+}): Theme => ({
+  fonts,
+  fontSizes: { title: 76, heading: 48, body: 28, caption: 19 },
+  colors,
+  spacing: { page: 80, small: 16, medium: 30, large: 64 },
+})
+
+const themePreset = (id: string, name: string, description: string, colors: Theme['colors'], fonts?: Theme['fonts']): ThemePreset => {
+  const theme = makeTheme(colors, fonts)
+  return { id, name, description, colors: theme.colors, theme }
 }
 
 export const themePresets: ThemePreset[] = [
-  { id: 'paper-signal', name: '纸张信号', description: '温暖、直接', colors: { background: '#FFF8E9', text: '#20211D', muted: '#706F67', accent: '#E85538' } },
-  { id: 'night-blue', name: '深夜蓝图', description: '技术、沉静', colors: { background: '#111820', text: '#F3F7F5', muted: '#8C9AA3', accent: '#36B7D4' } },
-  { id: 'field-notes', name: '田野笔记', description: '自然、克制', colors: { background: '#F1F0E7', text: '#203027', muted: '#6E786F', accent: '#547A5A' } },
-  { id: 'editorial-blue', name: '编辑蓝', description: '清晰、理性', colors: { background: '#F3F6F7', text: '#17242C', muted: '#6F7C83', accent: '#235D83' } },
-  { id: 'poster-red', name: '海报红黑', description: '高对比、强表达', colors: { background: '#F1EBDF', text: '#171715', muted: '#706A62', accent: '#C93428' } },
+  themePreset('studio-cobalt', '钴蓝工作室', '编辑感、鲜明、现代', { background: '#F2F0E8', text: '#102A43', muted: '#667085', accent: '#FF5A4F' }),
+  themePreset('night-citrus', '午夜柑橘', '深色、锐利、舞台感', { background: '#101714', text: '#F6F3E8', muted: '#9FAB9F', accent: '#D8FF52' }),
+  themePreset('ink-rose', '墨色玫瑰', '克制、时尚、高对比', { background: '#171319', text: '#FFF7F2', muted: '#BAAEB6', accent: '#FF6B8A' }),
+  themePreset('paper-signal', '纸张信号', '温暖、直接', { background: '#FFF8E9', text: '#20211D', muted: '#706F67', accent: '#E85538' }, { title: 'Georgia, Charter, serif', body: 'Avenir Next, Aptos, sans-serif', mono: 'SFMono-Regular, Consolas, monospace' }),
+  themePreset('night-blue', '深夜蓝图', '技术、沉静', { background: '#111820', text: '#F3F7F5', muted: '#8C9AA3', accent: '#36B7D4' }),
+  themePreset('field-notes', '田野笔记', '自然、克制', { background: '#F1F0E7', text: '#203027', muted: '#6E786F', accent: '#547A5A' }, { title: 'Georgia, Charter, serif', body: 'Avenir Next, Aptos, sans-serif', mono: 'SFMono-Regular, Consolas, monospace' }),
+  themePreset('editorial-blue', '编辑蓝', '清晰、理性', { background: '#F3F6F7', text: '#17242C', muted: '#6F7C83', accent: '#235D83' }),
+  themePreset('poster-red', '海报红黑', '高对比、强表达', { background: '#F1EBDF', text: '#171715', muted: '#706A62', accent: '#C93428' }),
 ]
+
+export function getThemePreset(id: string): ThemePreset | undefined {
+  return themePresets.find(preset => preset.id === id)
+}
 
 const imagePlaceholder = 'placeholder:image'
 const frame = (x: number, y: number, w: number, h: number) => ({ x, y, w, h })
@@ -54,6 +80,21 @@ export function createLayoutElements(layoutId: LayoutPresetId, theme: Theme): Sl
     title('title', '章节标题', 96, 286, 1300, 180, 76),
     body('subtitle', '用一句话说明接下来要讨论的主题', 100, 500, 1100, 70),
     { id: 'section-block', type: 'shape', frame: frame(1370, 0, 230, 900), shape: 'rectangle', fill: accent, text: '01', textColor: background, fontSize: 72, fontWeight: 700, align: 'center', verticalAlign: 'middle' },
+  ]
+  if (layoutId === 'statement') return [
+    { id: 'kicker', type: 'text', frame: frame(88, 72, 720, 40), text: 'ONE IDEA / ONE SLIDE', fontSize: 18, fontWeight: 700, color: accent },
+    { id: 'index', type: 'text', frame: frame(1260, 52, 252, 150), text: '01', fontSize: 112, fontWeight: 700, align: 'right', color: accent },
+    title('statement', '把最重要的观点，\n写成一句能被记住的话。', 88, 238, 1240, 270, 76),
+    { id: 'rule', type: 'shape', frame: frame(88, 620, 1424, 3), shape: 'rectangle', fill: text },
+    body('context', '补充一行证据、限定条件或行动含义。', 88, 682, 1040, 70),
+  ]
+  if (layoutId === 'metric') return [
+    { id: 'kicker', type: 'text', frame: frame(88, 72, 720, 40), text: 'SIGNAL / METRIC', fontSize: 18, fontWeight: 700, color: accent },
+    { id: 'metric', type: 'text', frame: frame(84, 190, 850, 260), text: '72%', fontSize: 196, fontWeight: 700, color: text },
+    { id: 'metric-rule', type: 'shape', frame: frame(930, 214, 8, 420), shape: 'rectangle', fill: accent },
+    title('title', '关键数字说明了什么', 1010, 224, 500, 138, 46),
+    body('body', '不要只展示数字。解释它改变了哪个判断，以及观众下一步应该做什么。', 1010, 410, 480, 220),
+    { id: 'source', type: 'text', frame: frame(88, 746, 900, 40), text: 'SOURCE · PERIOD · SAMPLE', fontSize: 17, fontWeight: 700, color: muted },
   ]
   if (layoutId === 'two-column') return [
     title('title', '双栏标题', 88, 70, 1424, 100, 54),

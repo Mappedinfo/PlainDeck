@@ -6,7 +6,7 @@ test('edits the sample deck and uses history', async ({ page }) => {
   await page.goto('./')
   await expect(page.getByRole('banner').getByText('PlainDeck', { exact: true })).toBeVisible()
   await expect(page.locator('.slide-thumb')).toHaveCount(5)
-  await expect(page.locator('.canvas-label strong')).toHaveText('一句话看懂')
+  await expect(page.locator('.canvas-label strong')).toHaveText('Cover')
   await expect(page.getByRole('link', { name: '在 GitHub 查看 PlainDeck 源码' })).toHaveAttribute('href', 'https://github.com/Mappedinfo/PlainDeck')
   await page.getByRole('button', { name: '添加文本' }).click()
   await expect(page.locator('.slide-element.selected')).toHaveCount(1)
@@ -24,7 +24,7 @@ test('opens presentation and export surfaces', async ({ page }) => {
   await page.getByRole('button', { name: '演示' }).click()
   await expect(page.getByRole('dialog', { name: '演示模式' })).toBeVisible()
   await page.getByRole('button', { name: /退出/ }).click()
-  await page.getByRole('button', { name: /导出/ }).click()
+  await page.getByRole('button', { name: '导出', exact: true }).click()
   await expect(page.getByText('Take the deck with you.')).toBeVisible()
 })
 
@@ -39,8 +39,8 @@ test('renames the active artboard and updates the page list', async ({ page }) =
   await expect(page.locator('.canvas-name')).toHaveText('研究结论')
   await expect(page.locator('.slide-thumb.active .slide-name')).toHaveText('研究结论')
   await page.getByRole('button', { name: '撤销' }).click()
-  await expect(page.locator('.canvas-name')).toHaveText('一句话看懂')
-  await expect(page.locator('.slide-thumb.active .slide-name')).toHaveText('一句话看懂')
+  await expect(page.locator('.canvas-name')).toHaveText('Cover')
+  await expect(page.locator('.slide-thumb.active .slide-name')).toHaveText('Cover')
 })
 
 test('activates a waiting service worker before refreshing', async ({ page }) => {
@@ -61,6 +61,11 @@ test('activates a waiting service worker before refreshing', async ({ page }) =>
 
 test('creates a layout page, changes its color style, and edits shape text', async ({ page }) => {
   await page.goto('./')
+  const nightCitrus = page.locator('.theme-presets > button').filter({ hasText: '午夜柑橘' })
+  await nightCitrus.click()
+  await expect(nightCitrus).toHaveClass(/active/)
+  await expect(page.locator('.canvas-workspace .slide-surface')).toHaveCSS('background-color', 'rgb(16, 23, 20)')
+  await expect(page.locator('.canvas-workspace [data-element-id="accent-panel"] .shape-content')).toHaveCSS('background-color', 'rgb(216, 255, 82)')
   await page.getByRole('button', { name: '页面布局' }).click()
   const layoutPicker = page.getByRole('dialog', { name: '选择页面布局' })
   await expect(layoutPicker).toBeVisible()
@@ -84,7 +89,7 @@ test('creates a layout page, changes its color style, and edits shape text', asy
 
 test('presents the five-page onboarding story in order', async ({ page }) => {
   await page.goto('./')
-  const expected = ['像 PPT 一样编辑', '给人、AI 和 Git', '第一次使用，只要四步', '为什么不直接用 PPTX', 'PlainDeck 适合你吗']
+  const expected = ['PlainDeck · Make the idea visible.', '每一页只负责一个值得记住的观点', '让叙事拥有清楚的骨架', '让视觉承担一半表达', '结束在决定']
   const thumbnails = page.locator('.slide-thumb')
   for (let index = 0; index < expected.length; index += 1) {
     await thumbnails.nth(index).click()

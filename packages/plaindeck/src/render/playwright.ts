@@ -47,7 +47,7 @@ export async function renderPng(input: DeckDocument, options: PngRenderOptions) 
   try {
     const page = await browser.newPage({ viewport: { ...prepared.document.deck.canvas }, deviceScaleFactor: scale })
     if (!options.allowNetwork) await page.route(/^https?:/, route => route.abort())
-    await page.setContent(renderHtml(prepared.document), { waitUntil: 'load' })
+    await page.setContent(renderHtml(prepared.document, { mode: 'document' }), { waitUntil: 'load' })
     if (options.slide === undefined) await mkdir(options.output, { recursive: true })
     for (const target of targets) {
       const slide = prepared.document.slides[target.path]
@@ -70,7 +70,7 @@ export async function renderPdf(input: DeckDocument, options: BrowserRenderOptio
   try {
     const page = await browser.newPage({ viewport: { ...prepared.document.deck.canvas } })
     if (!options.allowNetwork) await page.route(/^https?:/, route => route.abort())
-    await page.setContent(renderHtml(prepared.document), { waitUntil: 'load' })
+    await page.setContent(renderHtml(prepared.document, { mode: 'document' }), { waitUntil: 'load' })
     await mkdir(dirname(options.output), { recursive: true })
     await page.pdf({ path: options.output, printBackground: true, preferCSSPageSize: true })
   } finally {

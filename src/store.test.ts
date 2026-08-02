@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import { themePresets } from 'plaindeck/core'
 import { createSampleDocument } from './core/sample'
 import { useEditor } from './store'
 
@@ -10,16 +11,25 @@ describe('editor command history', () => {
     expect(state.document.slides[state.activeSlidePath]).toBeDefined()
   })
   it('undoes and redoes one stable element update', () => {
+    const firstSlide = useEditor.getState().document.deck.slides[0]
     const store = useEditor.getState(); store.updateElement('title', { text: 'Changed' }, 'edit')
-    expect(useEditor.getState().document.slides['./slides/001-intro.json'].elements.find(item => item.id === 'title')).toMatchObject({ text: 'Changed' })
+    expect(useEditor.getState().document.slides[firstSlide].elements.find(item => item.id === 'title')).toMatchObject({ text: 'Changed' })
     useEditor.getState().undo()
-    expect(useEditor.getState().document.slides['./slides/001-intro.json'].elements.find(item => item.id === 'title')).not.toMatchObject({ text: 'Changed' })
+    expect(useEditor.getState().document.slides[firstSlide].elements.find(item => item.id === 'title')).not.toMatchObject({ text: 'Changed' })
     useEditor.getState().redo()
-    expect(useEditor.getState().document.slides['./slides/001-intro.json'].elements.find(item => item.id === 'title')).toMatchObject({ text: 'Changed' })
+    expect(useEditor.getState().document.slides[firstSlide].elements.find(item => item.id === 'title')).toMatchObject({ text: 'Changed' })
   })
   it('marks only active slide dirty for an element update', () => {
     const store = useEditor.getState(); store.updateElement('title', { text: 'Changed' })
-    expect([...useEditor.getState().dirtyPaths]).toEqual(['./slides/001-intro.json'])
+    expect([...useEditor.getState().dirtyPaths]).toEqual([useEditor.getState().activeSlidePath])
+  })
+  it('applies a color system to theme-bound slide elements', () => {
+    const theme = themePresets.find(preset => preset.id === 'night-citrus')!.theme
+    useEditor.getState().applyTheme(theme)
+    const state = useEditor.getState(); const cover = state.document.slides[state.activeSlidePath]
+    expect(cover.background).toEqual({ color: '#101714' })
+    expect(cover.elements.find(element => element.id === 'accent-panel')).toMatchObject({ type: 'shape', fill: '#D8FF52' })
+    expect([...state.dirtyPaths]).toEqual(['theme.json', ...state.document.deck.slides])
   })
   it('renames only the active slide and records history', () => {
     const store = useEditor.getState(); store.renameSlide('研究结论')

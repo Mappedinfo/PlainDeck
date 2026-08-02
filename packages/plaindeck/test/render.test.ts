@@ -15,12 +15,16 @@ describe('PlainDeck renderer', () => {
       { op: 'add-element', slide: './slides/001-intro.json', element: { id: 'arrow', type: 'line', frame: { x: 0, y: 120, w: 100, h: 20 }, color: '#123456', strokeWidth: 4, arrowEnd: true } },
     ])
     const html = renderHtml(result.document)
+    expect(html).toContain('data-mode="presentation"')
+    expect(html).toContain('class="player-bar"')
+    expect(html).toContain('class="player-progress"')
     expect(html).toContain('双击编辑卡片文字')
     expect(html).toContain('图片占位')
     expect(html).toContain('Render &lt;check&gt;')
     expect(html).toContain('#FFF8E9')
     expect(html).toContain('style="background:#E85538"')
     expect(html).toContain('border-left:16px solid #123456')
+    expect(renderHtml(result.document, { mode: 'document' })).toContain('data-mode="document"')
   })
 
   it('embeds local assets and blocks remote assets by default', async () => {
@@ -51,6 +55,12 @@ describe.runIf(process.env.PLAINDECK_BROWSER_TESTS === '1')('Playwright renderer
     const browser = await chromium.launch({ headless: true })
     const page = await browser.newPage()
     await page.setContent(renderHtml(document))
+    expect(await page.locator('.slide.is-active').count()).toBe(1)
+    expect(await page.locator('#counter').textContent()).toBe(`1 / ${document.deck.slides.length}`)
+    await page.keyboard.press('ArrowRight')
+    expect(await page.locator('#counter').textContent()).toBe(`2 / ${document.deck.slides.length}`)
+    expect(await page.locator('.slide.is-active').getAttribute('data-slide-path')).toBe(document.deck.slides[1])
+    await page.setContent(renderHtml(document, { mode: 'document' }))
     const computed = await page.evaluate(() => {
       const element = document.querySelector('.slide > div[style*="font-family"]')
       if (!(element instanceof HTMLElement)) throw new Error('Rendered text element missing.')

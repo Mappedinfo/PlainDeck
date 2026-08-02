@@ -9,6 +9,8 @@ function LayoutDiagram({ id }: { id: LayoutPresetId }) {
     {id !== 'blank' && <i className="diagram-title" />}
     {id === 'title-body' && <><i className="diagram-accent" /><i className="diagram-copy" /><i className="diagram-copy short" /></>}
     {id === 'section' && <><i className="diagram-subtitle" /><i className="diagram-edge" /></>}
+    {id === 'statement' && <><i className="diagram-statement" /><i className="diagram-index" /></>}
+    {id === 'metric' && <><i className="diagram-metric" /><i className="diagram-metric-copy" /></>}
     {id === 'two-column' && <><i className="diagram-column left" /><i className="diagram-column right" /></>}
     {id === 'image-right' && <><i className="diagram-copy left" /><i className="diagram-image" /></>}
     {id === 'three-cards' && <div className="diagram-cards"><i /><i /><i /></div>}

@@ -1,22 +1,25 @@
 # PlainDeck Agent API 与 CLI
 
-PlainDeck v0.1 面向 Agent 的推荐工作流是：
+PlainDeck v0.2 面向 Agent 的推荐工作流是：
 
 ```text
-inspect → operations → validate → dry-run → apply → render
+init → inspect → operations → validate → dry-run → apply → render
 ```
 
-项目格式版本仍为 `schemaVersion: "0.1"`，npm 包版本从 `0.1.0` 开始。运行环境要求 Node.js 22 或更高版本。
+项目格式版本仍为 `schemaVersion: "0.1"`。运行环境要求 Node.js 22 或更高版本。
 
 ## CLI
 
 ```bash
+plaindeck init <project> [--title <title>] [--template showcase|pitch|blank] [--theme <id>] [--json]
 plaindeck validate <project> [--json]
 plaindeck inspect <project> [--json]
 plaindeck apply <project> --ops <file|-> [--dry-run] [--json]
 plaindeck add-slide <project> --layout <id> [--name <name>]
 plaindeck render <project> --format html|png|pdf --output <path> [--slide <index|path>] [--allow-network]
 ```
+
+`init` 让 Agent 无需先编写 TypeScript 即可创建完整项目。默认生成五页 `showcase` 模板与 `studio-cobalt` 配色；若目标目录已经有 `deck.json`，命令会以退出码 `2` 拒绝覆盖。内置模板为 `showcase`、`pitch`、`blank`，内置主题为 `studio-cobalt`、`night-citrus`、`ink-rose`、`paper-signal`、`night-blue`、`field-notes`、`editorial-blue`、`poster-red`。
 
 `--json` 时 stdout 只包含 JSON，错误诊断写入 stderr。成功退出码为 `0`，校验或执行失败为 `1`，参数错误为 `2`。`apply --dry-run` 会返回 `changedPaths` 与 validation 结果，但不会写入文件。
 
@@ -62,13 +65,14 @@ printf '[{"op":"rename-slide","slide":"./slides/001-intro.json","name":"Introduc
 
 `set-element` 不能修改元素的 `id` 或 `type`。不存在的页面或元素、重复元素 ID、非法 patch、删除最后一页等都会使整批操作失败；操作在内存中全部完成并通过全量 schema 校验后，CLI 才会写盘。
 
-可用布局：`blank`、`title-body`、`section`、`two-column`、`image-right`、`three-cards`。
+可用布局：`blank`、`title-body`、`section`、`statement`、`metric`、`two-column`、`image-right`、`three-cards`。
 
 ## TypeScript API
 
 ```ts
 import {
   applyOperations,
+  createDeckTemplate,
   inspectDeck,
   loadDeck,
   renderPdf,
@@ -90,11 +94,13 @@ await renderPng(result.document, { projectPath: './my-deck', output: './dist/sli
 await renderPdf(result.document, { projectPath: './my-deck', output: './dist/deck.pdf' })
 ```
 
+`createDeckTemplate('showcase', { title: 'My story', theme: 'studio-cobalt' })` 与 CLI `init` 使用同一个模板工厂，因此 Web 默认项目、Agent API 与命令行不会产生三套不同的设计。
+
 `plaindeck/core` 公开 schema、类型、migration、canonical serializer、布局和主题预设。`plaindeck/render` 只包含浏览器安全的纯 HTML renderer；文件系统、资源嵌入和 Playwright 渲染能力从包根入口 `plaindeck` 导出。
 
 ## 渲染安全与输出
 
-- HTML 默认将项目内的本地图片转为 data URI，输出为独立文件。
+- HTML 默认将项目内的本地图片转为 data URI，输出为独立的 Web 演示文件，并提供方向键、进度、页名和全屏控制。
 - 外部 `http(s)` 图片默认替换为占位图且不发起请求；仅对可信项目使用 `--allow-network`。
 - PNG 默认输出全部页面到目录，以 `001-name.png` 命名；`--slide` 可接受从 1 开始的页码或完整页面路径。
 - PDF 每张幻灯片对应一页，页面尺寸来自 deck canvas。

@@ -20,6 +20,27 @@ function run(args: string[], input?: string) {
 }
 
 describe('PlainDeck CLI', () => {
+  it('initializes a complete project without the TypeScript API', async () => {
+    const parent = await mkdtemp(join(tmpdir(), 'plaindeck-cli-init-'))
+    const root = join(parent, 'agent-deck')
+    const initialized = await run(['init', root, '--title', 'Agent-native deck', '--template', 'pitch', '--theme', 'night-citrus', '--json'])
+    expect(initialized.code).toBe(0)
+    expect(JSON.parse(initialized.stdout)).toMatchObject({ ok: true, project: root, title: 'Agent-native deck', template: 'pitch', theme: 'night-citrus', slides: 5 })
+    expect(await readFile(join(root, 'deck.json'), 'utf8')).toContain('Agent-native deck')
+    expect(await readFile(join(root, 'theme.json'), 'utf8')).toContain('#D8FF52')
+    expect(await readFile(join(root, '.gitignore'), 'utf8')).toContain('exports/*')
+
+    const validation = await run(['validate', root, '--json'])
+    expect(JSON.parse(validation.stdout)).toMatchObject({ ok: true, issues: [] })
+    const inspection = await run(['inspect', root, '--json'])
+    expect(JSON.parse(inspection.stdout).slides).toHaveLength(5)
+
+    const before = await readFile(join(root, 'deck.json'), 'utf8')
+    const repeated = await run(['init', root, '--json'])
+    expect(repeated.code).toBe(2)
+    expect(await readFile(join(root, 'deck.json'), 'utf8')).toBe(before)
+  })
+
   it('validates and inspects a project as JSON', async () => {
     const validation = await run(['validate', starter, '--json'])
     expect(validation.code).toBe(0)
@@ -50,7 +71,9 @@ describe('PlainDeck CLI', () => {
     const html = join(root, 'exports/deck.html')
     const rendered = await run(['render', root, '--format', 'html', '--output', html, '--json'])
     expect(JSON.parse(rendered.stdout)).toMatchObject({ ok: true, format: 'html', files: [html] })
-    expect(await readFile(html, 'utf8')).toContain('Results')
+    const output = await readFile(html, 'utf8')
+    expect(output).toContain('Results')
+    expect(output).toContain('class="player-bar"')
   })
 
   it('uses a distinct usage error exit code', async () => {

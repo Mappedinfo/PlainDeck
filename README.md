@@ -100,26 +100,27 @@ PlainDeck 的 npm 包提供 TypeScript API、`plaindeck` 命令和 HTML/PNG/PDF 
 
 ```bash
 npm install plaindeck
-npx plaindeck inspect ./examples/starter --json
-npx plaindeck apply ./examples/starter --ops changes.json --dry-run --json
-npx plaindeck apply ./examples/starter --ops changes.json
-npx plaindeck render ./examples/starter --format html --output deck.html
+npx plaindeck init ./my-deck --title "生成式 AI 简介"
+npx plaindeck inspect ./my-deck --json
+npx plaindeck apply ./my-deck --ops changes.json --dry-run --json
+npx plaindeck apply ./my-deck --ops changes.json
+npx plaindeck render ./my-deck --format html --output deck.html
 ```
 
-推荐闭环是 `inspect → operations → validate → dry-run → apply → render`。HTML 默认嵌入本地图片；外部图片默认不联网。PNG/PDF 渲染需要 Playwright Chromium：
+`init` 默认创建一套可直接播放的五页编辑型模板，也可选择 `pitch`、`blank` 和 8 套内置配色。推荐闭环是 `init → inspect → operations → validate → dry-run → apply → render`。HTML 默认嵌入本地图片并生成带方向键、进度和全屏控制的 Web 演示；外部图片默认不联网。PNG/PDF 渲染需要 Playwright Chromium：
 
 ```bash
 npm install playwright
 npx playwright install chromium
 ```
 
-公共 API 与操作格式见 [`docs/agent-api.md`](./docs/agent-api.md)，npm 包说明见 [`packages/plaindeck/README.md`](./packages/plaindeck/README.md)。v0.1 不包含 HTTP API、MCP、serve/watch 或 PPTX 导入导出。
+公共 API 与操作格式见 [`docs/agent-api.md`](./docs/agent-api.md)，npm 包说明见 [`packages/plaindeck/README.md`](./packages/plaindeck/README.md)。v0.2 不包含 HTTP API、MCP、serve/watch 或 PPTX 导入导出；项目 schema 仍保持 `0.1` 兼容。
 
 ## 已实现的 MVP 能力
 
 - Zod schema、`0.1` schema version、迁移入口和 canonical JSON serializer；
 - 页面新建、重命名、复制、删除、排序，文本、图片、矩形和线条元素；
-- 6 种页面布局骨架、图片占位、5 套默认配色与自定义主题颜色；
+- 8 种页面布局骨架、图片占位、8 套默认配色与自定义主题颜色；
 - 形状内文字、双击编辑、字号、颜色与对齐方式；
 - 选择、Shift 多选、拖动、缩放、属性编辑、图层、对齐和网格吸附；
 - 100 步 Undo/Redo、复制、删除和键盘微调；
