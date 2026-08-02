@@ -107,4 +107,13 @@ npm run test:e2e
 
 推送到 `main` 后，[Pages 工作流](./.github/workflows/deploy-pages.yml)会完成检查、构建并部署在线版本。
 
+### 可选访问统计
+
+PlainDeck 默认不加载统计脚本。若需要统计公开网站的页面访问，可在 GitHub 仓库的 **Settings → Secrets and variables → Actions → Variables** 中配置一个或两个仓库变量：
+
+- `GOOGLE_ANALYTICS_ID`：Google Analytics 4 衡量 ID，例如 `G-XXXXXXXXXX`；
+- `BAIDU_ANALYTICS_ID`：百度统计站点代码中的 32 位站点 ID。
+
+配置后重新运行 Pages 工作流即可生效。统计代码只在生产构建中启用；PlainDeck 不会上报幻灯片内容、编辑操作、文件名或本地目录信息。删除变量并重新部署即可关闭。
+
 完整格式说明见 [`docs/project-format.md`](./docs/project-format.md)，项目目标与设计背景见 [`PlainDeck_项目计划书_v0.1.md`](./PlainDeck_项目计划书_v0.1.md)。

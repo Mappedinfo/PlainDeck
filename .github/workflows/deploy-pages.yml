@@ -33,6 +33,9 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+        env:
+          VITE_GOOGLE_ANALYTICS_ID: ${{ vars.GOOGLE_ANALYTICS_ID }}
+          VITE_BAIDU_ANALYTICS_ID: ${{ vars.BAIDU_ANALYTICS_ID }}
       - name: Configure Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
       - name: Upload Pages artifact
