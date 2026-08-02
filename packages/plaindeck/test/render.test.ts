@@ -43,6 +43,22 @@ describe.runIf(process.env.PLAINDECK_BROWSER_TESTS === '1')('Playwright renderer
   it('renders exact-size PNG and a multi-page PDF', async () => {
     const root = await mkdtemp(join(tmpdir(), 'plaindeck-render-'))
     const document = await loadDeck(resolve('examples/starter'))
+    const firstText = document.slides[document.deck.slides[0]].elements.find(element => element.type === 'text')
+    if (!firstText || firstText.type !== 'text') throw new Error('Expected a text fixture.')
+    firstText.color = '#58E6C2'
+    firstText.fontSize = 37
+    const { chromium } = await import('playwright')
+    const browser = await chromium.launch({ headless: true })
+    const page = await browser.newPage()
+    await page.setContent(renderHtml(document))
+    const computed = await page.evaluate(() => {
+      const element = document.querySelector('.slide > div[style*="font-family"]')
+      if (!(element instanceof HTMLElement)) throw new Error('Rendered text element missing.')
+      return { color: getComputedStyle(element).color, fontSize: getComputedStyle(element).fontSize, style: element.getAttribute('style') }
+    })
+    await browser.close()
+    expect(computed).toMatchObject({ color: 'rgb(88, 230, 194)', fontSize: '37px' })
+    expect(computed.style).toContain('color:#58E6C2')
     const png = join(root, 'slide.png')
     const pdf = join(root, 'deck.pdf')
     await renderPng(document, { output: png, projectPath: resolve('examples/starter'), slide: 1 })

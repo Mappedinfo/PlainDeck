@@ -6,7 +6,7 @@ import { applyOperations, inspectDeck, layoutPresets, validateDeck } from './cor
 import { loadDeck, prepareDocumentAssets, renderPdf, renderPng, saveDeck } from './node/index.js'
 import { renderHtml } from './render/index.js'
 
-const VERSION = '0.1.0'
+const VERSION = '0.1.1'
 const args = process.argv.slice(2)
 const command = args[0]
 const jsonMode = args.includes('--json')

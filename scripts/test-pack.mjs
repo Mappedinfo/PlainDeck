@@ -22,7 +22,7 @@ try {
   run(npm, ['install', '--ignore-scripts', '--no-audit', '--no-fund', tarball], { cwd: installRoot })
   const cli = join(installRoot, 'node_modules', '.bin', process.platform === 'win32' ? 'plaindeck.cmd' : 'plaindeck')
   const version = run(cli, ['--version'], { cwd: installRoot })
-  if (version !== '0.1.0') throw new Error(`unexpected CLI version: ${version}`)
+  if (version !== '0.1.1') throw new Error(`unexpected CLI version: ${version}`)
   const exportsCheck = run(process.execPath, ['--input-type=module', '-e', "import { validateDeck } from 'plaindeck'; import { DeckSchema } from 'plaindeck/core'; import { renderHtml } from 'plaindeck/render'; console.log([typeof validateDeck, typeof DeckSchema.parse, typeof renderHtml].join(','))"], { cwd: installRoot })
   if (exportsCheck !== 'function,function,function') throw new Error(`unexpected package exports: ${exportsCheck}`)
   const starter = resolve(root, 'examples/starter')
