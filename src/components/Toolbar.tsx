@@ -1,10 +1,10 @@
 import { AlignCenter, AlignHorizontalDistributeCenter, AlignLeft, AlignRight, Box, Download, FilePlus2, FolderOpen, Image, Minus, MousePointer2, Play, Redo2, Save, Square, Type, Undo2 } from 'lucide-react'
 import { useEditor } from '../store'
 
-interface Props { onOpen: () => void; onNew: () => void; onImportZip: () => void; onExport: () => void; onPresent: () => void; onSave: () => void }
+interface Props { onOpen: () => void; onNew: () => void; onImportZip: () => void; onAddImage: () => void; onExport: () => void; onPresent: () => void; onSave: () => void }
 const ToolButton = ({ label, children, onClick, disabled, accent = false }: { label: string; children: React.ReactNode; onClick?: () => void; disabled?: boolean; accent?: boolean }) => <button className={`tool-button ${accent ? 'accent' : ''}`} title={label} aria-label={label} onClick={onClick} disabled={disabled}>{children}</button>
 
-export function Toolbar({ onOpen, onNew, onImportZip, onExport, onPresent, onSave }: Props) {
+export function Toolbar({ onOpen, onNew, onImportZip, onAddImage, onExport, onPresent, onSave }: Props) {
   const { addElement, undo, redo, past, future, selectedIds, reorderLayer } = useEditor()
   return <header className="toolbar">
     <div className="brand"><span className="brand-mark">P/D</span><span>PlainDeck</span><small>0.1</small></div>
@@ -18,7 +18,7 @@ export function Toolbar({ onOpen, onNew, onImportZip, onExport, onPresent, onSav
     <div className="tool-group">
       <ToolButton label="选择工具"><MousePointer2 /></ToolButton>
       <ToolButton label="添加文本" onClick={() => addElement('text')}><Type /></ToolButton>
-      <ToolButton label="添加图片" onClick={() => addElement('image')}><Image /></ToolButton>
+      <ToolButton label="插入本地图片" onClick={onAddImage}><Image /></ToolButton>
       <ToolButton label="添加矩形" onClick={() => addElement('shape')}><Square /></ToolButton>
       <ToolButton label="添加线条" onClick={() => addElement('line')}><Minus /></ToolButton>
     </div>

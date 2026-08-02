@@ -26,6 +26,7 @@ interface EditorState {
   setSaveState(state: SaveState, error?: string | null): void
   updateElement(id: string, patch: Partial<SlideElement>, label?: string): void
   addElement(type: SlideElement['type']): void
+  addImage(src: string, frame: SlideElement['frame'], alt?: string): string
   removeSelected(): void
   duplicateSelected(): void
   addSlide(layoutId?: LayoutPresetId): void
@@ -83,6 +84,11 @@ export const useEditor = create<EditorState>((set, get) => ({
     else if (type === 'shape') element = { id: uid('shape'), type, frame: { x: 240, y: 220, w: 420, h: 240 }, shape: 'rounded-rectangle', fill: state.document.theme.colors.accent, radius: 24, text: '双击添加文字', textColor: state.document.theme.colors.background, fontSize: 30, fontWeight: 700, align: 'center', verticalAlign: 'middle' }
     else element = { id: uid('line'), type, frame: { x: 240, y: 360, w: 560, h: 8 }, color: state.document.theme.colors.text, strokeWidth: 4 }
     commitOperations(state, [{ op: 'add-element', slide: state.activeSlidePath, element }], `添加${type}`); set({ selectedIds: [element.id] })
+  },
+  addImage: (src, frame, alt = '') => {
+    const state = get(); const id = uid('image')
+    const element: SlideElement = { id, type: 'image', frame, src, fit: 'contain', alt }
+    commitOperations(state, [{ op: 'add-element', slide: state.activeSlidePath, element }], '插入本地图片'); set({ selectedIds: [id] }); return id
   },
   removeSelected: () => {
     const state = get(); if (!state.selectedIds.length) return

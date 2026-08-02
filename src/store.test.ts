@@ -84,4 +84,12 @@ describe('editor command history', () => {
     const state = useEditor.getState(); const shape = state.document.slides[state.activeSlidePath].elements.at(-1)
     expect(shape).toMatchObject({ type: 'shape', text: '双击添加文字', align: 'center', verticalAlign: 'middle' })
   })
+  it('adds imported images through the public operation kernel', () => {
+    const path = useEditor.getState().activeSlidePath
+    const id = useEditor.getState().addImage('data:image/png;base64,iVBORw0KGgo=', { x: 120, y: 80, w: 400, h: 240 }, 'local.png')
+    const state = useEditor.getState(); const image = state.document.slides[path].elements.find(element => element.id === id)
+    expect(image).toMatchObject({ type: 'image', src: 'data:image/png;base64,iVBORw0KGgo=', frame: { x: 120, y: 80, w: 400, h: 240 }, alt: 'local.png' })
+    expect(state.selectedIds).toEqual([id])
+    expect([...state.dirtyPaths]).toEqual([path])
+  })
 })

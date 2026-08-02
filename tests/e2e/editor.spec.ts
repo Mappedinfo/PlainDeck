@@ -19,6 +19,41 @@ test('edits the sample deck and uses history', async ({ page }) => {
   expect(errors).toEqual([])
 })
 
+test('inserts local images from file picker, clipboard, and canvas drop', async ({ page }) => {
+  await page.goto('./')
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180"><rect width="320" height="180" fill="#ff5a4f"/></svg>'
+  const chooser = page.waitForEvent('filechooser')
+  await page.getByRole('button', { name: '插入本地图片' }).click()
+  await (await chooser).setFiles({ name: 'picker.svg', mimeType: 'image/svg+xml', buffer: Buffer.from(svg) })
+  const imported = page.locator('.canvas-workspace .slide-element img')
+  await expect(imported).toHaveCount(1)
+  await expect(imported.first()).toHaveAttribute('src', /^data:image\/svg\+xml;base64,/)
+  await expect(page.getByRole('status')).toContainText('已放入画板')
+
+  await page.evaluate(source => {
+    const transfer = new DataTransfer(); transfer.items.add(new File([source], 'clipboard.svg', { type: 'image/svg+xml' }))
+    document.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, clipboardData: transfer }))
+  }, svg)
+  await expect(imported).toHaveCount(2)
+
+  const canvas = page.locator('.canvas-workspace'); const box = await canvas.boundingBox()
+  if (!box) throw new Error('Canvas bounds missing')
+  await page.evaluate(({ source, x, y }) => {
+    const transfer = new DataTransfer(); transfer.items.add(new File([source], 'dropped.svg', { type: 'image/svg+xml' }))
+    const canvas = document.querySelector('.canvas-workspace')!
+    canvas.dispatchEvent(new DragEvent('dragenter', { bubbles: true, dataTransfer: transfer, clientX: x, clientY: y }))
+  }, { source: svg, x: box.x + box.width * .7, y: box.y + box.height * .6 })
+  await expect(canvas).toHaveClass(/image-drop-active/)
+  await page.screenshot({ path: '/tmp/plaindeck-image-drop.png', fullPage: true })
+  await page.evaluate(({ source, x, y }) => {
+    const transfer = new DataTransfer(); transfer.items.add(new File([source], 'dropped.svg', { type: 'image/svg+xml' }))
+    const canvas = document.querySelector('.canvas-workspace')!
+    canvas.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: transfer, clientX: x, clientY: y }))
+  }, { source: svg, x: box.x + box.width * .7, y: box.y + box.height * .6 })
+  await expect(imported).toHaveCount(3)
+  await expect(page.locator('.canvas-workspace .slide-element.selected img')).toHaveAttribute('alt', 'dropped.svg')
+})
+
 test('opens presentation and export surfaces', async ({ page }) => {
   await page.goto('./')
   await page.getByRole('button', { name: '演示' }).click()

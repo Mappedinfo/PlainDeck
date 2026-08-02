@@ -3,18 +3,28 @@ import { useEffect, useRef, useState } from 'react'
 import type { Frame, Slide, SlideElement } from 'plaindeck/core'
 import { resizeFrame, snap } from '../core/geometry'
 import { useEditor } from '../store'
+import { resolveAssetUrl } from '../storage/browserStorage'
 
 interface SurfaceProps { slide: Slide; interactive?: boolean; zoom: number }
 
 function ElementView({ element, interactive, zoom }: { element: SlideElement; interactive: boolean; zoom: number }) {
-  const { document, selectedIds, select, updateElement } = useEditor()
+  const { document, directory, selectedIds, select, updateElement } = useEditor()
   const selected = selectedIds.includes(element.id)
   const [draft, setDraft] = useState<Frame | null>(null)
   const [editing, setEditing] = useState(false)
+  const [imageSrc, setImageSrc] = useState(element.type === 'image' && !element.src.startsWith('./assets/') ? element.src : '')
+  const sourcePath = element.type === 'image' ? element.src : ''
   const start = useRef<{ x: number; y: number; frame: Frame; mode: 'move' | 'resize' } | null>(null)
   const frame = draft ?? element.frame
 
   useEffect(() => setDraft(null), [element.frame.x, element.frame.y, element.frame.w, element.frame.h])
+  useEffect(() => {
+    if (!sourcePath) return
+    if (!sourcePath.startsWith('./assets/') || !directory) { setImageSrc(sourcePath); return }
+    let active = true; setImageSrc('')
+    resolveAssetUrl(directory, sourcePath).then(url => { if (active) setImageSrc(url) }).catch(() => { if (active) setImageSrc(sourcePath) })
+    return () => { active = false }
+  }, [directory, sourcePath])
 
   const begin = (event: React.PointerEvent, mode: 'move' | 'resize') => {
     if (!interactive || editing) return
@@ -41,7 +51,7 @@ function ElementView({ element, interactive, zoom }: { element: SlideElement; in
   }
   const content = element.type === 'text'
     ? <div className={`text-content editable-content ${element.styleRef ?? ''}`} style={{ fontSize: element.fontSize, fontWeight: element.fontWeight, color: element.color, textAlign: element.align, justifyContent: element.align === 'center' ? 'center' : element.align === 'right' ? 'flex-end' : 'flex-start', alignItems: element.verticalAlign === 'middle' ? 'center' : element.verticalAlign === 'bottom' ? 'flex-end' : 'flex-start' }} contentEditable={interactive && editing} suppressContentEditableWarning onBlur={e => finishTextEditing(e, element.text)}><span>{element.text}</span></div>
-    : element.type === 'image' ? element.src === 'placeholder:image' ? <div className="image-placeholder"><ImageIcon /><strong>IMAGE</strong><span>在右侧属性中设置图片路径</span></div> : <img src={element.src} alt={element.alt ?? ''} draggable={false} style={{ objectFit: element.fit === 'stretch' ? 'fill' : element.fit }} onError={event => event.currentTarget.classList.add('broken-image')} />
+    : element.type === 'image' ? element.src === 'placeholder:image' ? <div className="image-placeholder"><ImageIcon /><strong>IMAGE</strong><span>在右侧属性中设置图片路径</span></div> : imageSrc ? <img src={imageSrc} alt={element.alt ?? ''} draggable={false} style={{ objectFit: element.fit === 'stretch' ? 'fill' : element.fit }} onError={event => event.currentTarget.classList.add('broken-image')} /> : <div className="image-loading"><ImageIcon /><span>载入本地图片…</span></div>
     : element.type === 'shape' ? <div className="shape-content" style={{ background: element.fill, borderColor: element.stroke, borderWidth: element.strokeWidth, borderRadius: element.shape === 'ellipse' ? '50%' : element.radius }}><div className="shape-label editable-content" style={{ fontSize: element.fontSize, fontWeight: element.fontWeight, color: element.textColor, textAlign: element.align, justifyContent: element.align === 'center' ? 'center' : element.align === 'right' ? 'flex-end' : 'flex-start', alignItems: element.verticalAlign === 'top' ? 'flex-start' : element.verticalAlign === 'bottom' ? 'flex-end' : 'center' }} contentEditable={interactive && editing} suppressContentEditableWarning onBlur={e => finishTextEditing(e, element.text ?? '')}><span>{element.text ?? ''}</span></div></div>
     : <div className={`line-content ${element.dash ? 'dashed' : ''} ${element.arrowEnd ? 'arrow' : ''}`} style={{ borderColor: element.color, borderTopWidth: element.strokeWidth }} />
 

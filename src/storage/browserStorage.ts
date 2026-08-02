@@ -3,6 +3,7 @@ import { DeckSchema, SlideSchema, ThemeSchema, assertDocument, migrateDeck, cano
 
 export type DirectoryHandle = FileSystemDirectoryHandle
 const baselines = new WeakMap<DirectoryHandle, Map<string, string>>()
+const assetUrls = new WeakMap<DirectoryHandle, Map<string, string>>()
 
 type PermissionStateValue = 'granted' | 'denied' | 'prompt'
 type WritableDirectoryHandle = FileSystemDirectoryHandle & {
@@ -22,6 +23,28 @@ async function fileHandle(root: DirectoryHandle, path: string, create = false): 
 async function readText(root: DirectoryHandle, path: string): Promise<string> {
   const handle = await fileHandle(root, path)
   return (await handle.getFile()).text()
+}
+
+export async function readAsset(root: DirectoryHandle, path: string): Promise<Blob> {
+  return (await fileHandle(root, path)).getFile()
+}
+
+export async function resolveAssetUrl(root: DirectoryHandle, path: string): Promise<string> {
+  const cached = assetUrls.get(root)?.get(path)
+  if (cached) return cached
+  const url = URL.createObjectURL(await readAsset(root, path))
+  const urls = assetUrls.get(root) ?? new Map<string, string>(); urls.set(path, url); assetUrls.set(root, urls)
+  return url
+}
+
+export async function writeImageAsset(root: DirectoryHandle, file: File): Promise<string> {
+  const extensionByType: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif', 'image/svg+xml': 'svg' }
+  const extension = extensionByType[file.type] ?? file.name.match(/\.([a-zA-Z0-9]+)$/)?.[1]?.toLowerCase() ?? 'image'
+  const base = file.name.replace(/\.[^.]+$/, '').normalize('NFKD').replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'image'
+  const path = `./assets/${base}-${crypto.randomUUID().slice(0, 8)}.${extension}`
+  const handle = await fileHandle(root, path, true); const writable = await handle.createWritable(); await writable.write(file); await writable.close()
+  const urls = assetUrls.get(root) ?? new Map<string, string>(); urls.set(path, URL.createObjectURL(file)); assetUrls.set(root, urls)
+  return path
 }
 
 async function readJson(root: DirectoryHandle, path: string): Promise<unknown> {
