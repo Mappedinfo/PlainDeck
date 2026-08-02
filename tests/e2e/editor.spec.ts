@@ -7,6 +7,7 @@ test('edits the sample deck and uses history', async ({ page }) => {
   await expect(page.getByRole('banner').getByText('PlainDeck', { exact: true })).toBeVisible()
   await expect(page.locator('.slide-thumb')).toHaveCount(5)
   await expect(page.locator('.canvas-label strong')).toHaveText('一句话看懂')
+  await expect(page.getByRole('link', { name: '在 GitHub 查看 PlainDeck 源码' })).toHaveAttribute('href', 'https://github.com/Mappedinfo/PlainDeck')
   await page.getByRole('button', { name: '添加文本' }).click()
   await expect(page.locator('.slide-element.selected')).toHaveCount(1)
   await page.getByRole('button', { name: '撤销' }).click()

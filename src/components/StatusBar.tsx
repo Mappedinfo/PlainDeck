@@ -1,4 +1,4 @@
-import { CloudOff, GitBranch, Minus, Plus } from 'lucide-react'
+import { CloudOff, GitBranch, Github, Minus, Plus } from 'lucide-react'
 import { useEditor } from '../store'
 
 export function StatusBar() {
@@ -9,6 +9,7 @@ export function StatusBar() {
     {error && <span className="status-error" title={error}>{error}</span>}
     <span><GitBranch /> {directory ? 'LOCAL DIRECTORY' : 'MEMORY / ZIP'}</span>
     <span><CloudOff /> LOCAL-FIRST</span>
+    <a className="source-link" href="https://github.com/Mappedinfo/PlainDeck" target="_blank" rel="noreferrer" aria-label="在 GitHub 查看 PlainDeck 源码" title="GitHub · Mappedinfo/PlainDeck"><Github /> SOURCE</a>
     <span className="status-spacer" />
     <span>{document.deck.canvas.width} × {document.deck.canvas.height}</span>
     <button onClick={() => setZoom(zoom - .05)}><Minus /></button><input aria-label="画布缩放" type="range" min="20" max="125" value={zoom * 100} onChange={e => setZoom(Number(e.target.value) / 100)} /><button onClick={() => setZoom(zoom + .05)}><Plus /></button><strong>{Math.round(zoom * 100)}%</strong>
