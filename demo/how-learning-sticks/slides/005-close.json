@@ -1,0 +1,106 @@
+{
+  "id": "close",
+  "name": "Retrieve, check, return",
+  "layoutRef": "section",
+  "background": {
+    "color": "#20211D"
+  },
+  "elements": [
+    {
+      "id": "accent-block",
+      "type": "shape",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 34,
+        "h": 900
+      },
+      "shape": "rectangle",
+      "fill": "#E85538"
+    },
+    {
+      "id": "kicker",
+      "color": "#E85538",
+      "type": "text",
+      "frame": {
+        "x": 96,
+        "y": 80,
+        "w": 700,
+        "h": 42
+      },
+      "text": "04 / THE STUDY ROUTINE",
+      "fontSize": 18,
+      "fontWeight": 800
+    },
+    {
+      "id": "title",
+      "color": "#FFF8E9",
+      "type": "text",
+      "styleRef": "slide-title",
+      "frame": {
+        "x": 96,
+        "y": 220,
+        "w": 1270,
+        "h": 260
+      },
+      "text": "Try to remember.\nUse feedback to correct the gap.\nReturn later.",
+      "fontSize": 68,
+      "fontWeight": 800
+    },
+    {
+      "id": "rule",
+      "type": "shape",
+      "frame": {
+        "x": 96,
+        "y": 598,
+        "w": 1408,
+        "h": 3
+      },
+      "shape": "rectangle",
+      "fill": "#E85538"
+    },
+    {
+      "id": "body",
+      "color": "#706F67",
+      "type": "text",
+      "frame": {
+        "x": 96,
+        "y": 660,
+        "w": 1200,
+        "h": 70
+      },
+      "text": "Question · retrieve · check · schedule the next attempt",
+      "fontSize": 29,
+      "fontWeight": 600
+    },
+    {
+      "id": "end",
+      "color": "#E85538",
+      "type": "text",
+      "frame": {
+        "x": 1320,
+        "y": 768,
+        "w": 184,
+        "h": 46
+      },
+      "text": "END / CLOSE THE BOOK",
+      "align": "right",
+      "fontSize": 19,
+      "fontWeight": 800
+    },
+    {
+      "id": "sources",
+      "color": "#C9BFAE",
+      "type": "text",
+      "frame": {
+        "x": 96,
+        "y": 810,
+        "w": 1120,
+        "h": 30
+      },
+      "text": "SOURCE NOTES · Roediger & Karpicke (2006) · Dunlosky et al. (2013)",
+      "fontSize": 14,
+      "fontWeight": 600
+    }
+  ]
+}

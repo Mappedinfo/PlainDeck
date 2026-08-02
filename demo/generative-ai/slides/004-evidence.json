@@ -1,0 +1,153 @@
+{
+  "id": "evidence",
+  "name": "Three useful modes",
+  "layoutRef": "image-right",
+  "background": {
+    "color": "#101714"
+  },
+  "elements": [
+    {
+      "id": "kicker",
+      "color": "#D8FF52",
+      "type": "text",
+      "frame": {
+        "x": 990,
+        "y": 76,
+        "w": 500,
+        "h": 36
+      },
+      "text": "03 / WHERE IT HELPS",
+      "fontSize": 18,
+      "fontWeight": 800
+    },
+    {
+      "id": "title",
+      "color": "#F6F3E8",
+      "type": "text",
+      "styleRef": "slide-title",
+      "frame": {
+        "x": 990,
+        "y": 148,
+        "w": 510,
+        "h": 170
+      },
+      "text": "One engine, three practical modes",
+      "fontSize": 50,
+      "fontWeight": 800
+    },
+    {
+      "id": "body",
+      "color": "#9FAB9F",
+      "type": "text",
+      "frame": {
+        "x": 990,
+        "y": 372,
+        "w": 500,
+        "h": 175
+      },
+      "text": "The model produces candidates. Your workflow supplies context, constraints, feedback, and a stopping rule.",
+      "fontSize": 24,
+      "fontWeight": 500
+    },
+    {
+      "id": "metric-rule",
+      "type": "shape",
+      "frame": {
+        "x": 990,
+        "y": 602,
+        "w": 500,
+        "h": 3
+      },
+      "shape": "rectangle",
+      "fill": "#F6F3E8"
+    },
+    {
+      "id": "metric",
+      "color": "#D8FF52",
+      "type": "text",
+      "frame": {
+        "x": 990,
+        "y": 636,
+        "w": 220,
+        "h": 120
+      },
+      "text": "3×",
+      "fontSize": 78,
+      "fontWeight": 800
+    },
+    {
+      "id": "metric-label",
+      "color": "#F6F3E8",
+      "type": "text",
+      "frame": {
+        "x": 1216,
+        "y": 654,
+        "w": 274,
+        "h": 86
+      },
+      "text": "draft · transform · explore",
+      "verticalAlign": "middle",
+      "fontSize": 21,
+      "fontWeight": 700
+    },
+    {
+      "id": "mode-one",
+      "type": "shape",
+      "frame": {
+        "x": 72,
+        "y": 88,
+        "w": 756,
+        "h": 190
+      },
+      "text": "DRAFT\nTurn intent into a first form",
+      "textColor": "#101714",
+      "align": "left",
+      "verticalAlign": "middle",
+      "fontSize": 34,
+      "fontWeight": 800,
+      "shape": "rounded-rectangle",
+      "fill": "#D8FF52",
+      "radius": 24
+    },
+    {
+      "id": "mode-two",
+      "type": "shape",
+      "frame": {
+        "x": 72,
+        "y": 354,
+        "w": 756,
+        "h": 190
+      },
+      "text": "TRANSFORM\nSummarize, translate, restructure",
+      "textColor": "#101714",
+      "align": "left",
+      "verticalAlign": "middle",
+      "fontSize": 34,
+      "fontWeight": 800,
+      "shape": "rounded-rectangle",
+      "fill": "#F6F3E8",
+      "radius": 24
+    },
+    {
+      "id": "mode-three",
+      "type": "shape",
+      "frame": {
+        "x": 72,
+        "y": 620,
+        "w": 756,
+        "h": 190
+      },
+      "text": "EXPLORE\nCompare possibilities quickly",
+      "textColor": "#F6F3E8",
+      "align": "left",
+      "verticalAlign": "middle",
+      "fontSize": 34,
+      "fontWeight": 800,
+      "shape": "rounded-rectangle",
+      "fill": "#28332E",
+      "stroke": "#D8FF52",
+      "strokeWidth": 3,
+      "radius": 24
+    }
+  ]
+}

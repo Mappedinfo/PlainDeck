@@ -1,0 +1,40 @@
+[
+  { "op": "rename-slide", "slide": "./slides/001-cover.json", "name": "A practical mental model" },
+  { "op": "set-element", "slide": "./slides/001-cover.json", "element": "panel-mark", "patch": { "text": "GEN\nAI" } },
+  { "op": "set-element", "slide": "./slides/001-cover.json", "element": "panel-index", "patch": { "text": "A FIVE-SLIDE PRIMER" } },
+  { "op": "set-element", "slide": "./slides/001-cover.json", "element": "kicker", "patch": { "text": "GENERAL KNOWLEDGE / PLAINDECK DEMO" } },
+  { "op": "set-element", "slide": "./slides/001-cover.json", "element": "title", "patch": { "text": "Generative AI\nA Practical Mental Model", "fontSize": 70 } },
+  { "op": "set-element", "slide": "./slides/001-cover.json", "element": "subtitle", "patch": { "text": "It predicts useful patterns. Humans decide what belongs in the world.", "fontSize": 29 } },
+  { "op": "set-element", "slide": "./slides/001-cover.json", "element": "hint", "patch": { "text": "CREATED WITH PLAINDECK CLI · SOURCE IS ONE JSON FILE PER SLIDE" } },
+
+  { "op": "rename-slide", "slide": "./slides/002-thesis.json", "name": "Prediction, not retrieval" },
+  { "op": "set-element", "slide": "./slides/002-thesis.json", "element": "kicker", "patch": { "text": "01 / THE CORE MECHANISM" } },
+  { "op": "set-element", "slide": "./slides/002-thesis.json", "element": "statement", "patch": { "text": "A model does not retrieve a finished answer.\nIt builds the next token from patterns.", "fontSize": 64 } },
+  { "op": "set-element", "slide": "./slides/002-thesis.json", "element": "context", "patch": { "text": "Prompt + context → probabilities → one generated continuation", "fontSize": 27 } },
+
+  { "op": "rename-slide", "slide": "./slides/003-structure.json", "name": "The human–AI loop" },
+  { "op": "set-element", "slide": "./slides/003-structure.json", "element": "kicker", "patch": { "text": "02 / A USEFUL WORKFLOW" } },
+  { "op": "set-element", "slide": "./slides/003-structure.json", "element": "title", "patch": { "text": "Good results come from a repeatable loop", "fontSize": 54 } },
+  { "op": "set-element", "slide": "./slides/003-structure.json", "element": "card-label-1", "patch": { "text": "FRAME\nSet the job", "fontSize": 38 } },
+  { "op": "set-element", "slide": "./slides/003-structure.json", "element": "card-label-2", "patch": { "text": "GENERATE\nExplore options", "fontSize": 38 } },
+  { "op": "set-element", "slide": "./slides/003-structure.json", "element": "card-label-3", "patch": { "text": "REVIEW\nVerify + refine", "fontSize": 38 } },
+  { "op": "set-element", "slide": "./slides/003-structure.json", "element": "footer", "patch": { "text": "CONTEXT IN · CANDIDATES OUT · JUDGMENT THROUGHOUT" } },
+
+  { "op": "rename-slide", "slide": "./slides/004-evidence.json", "name": "Three useful modes" },
+  { "op": "remove-element", "slide": "./slides/004-evidence.json", "element": "visual" },
+  { "op": "add-element", "slide": "./slides/004-evidence.json", "element": { "id": "mode-one", "type": "shape", "frame": { "x": 72, "y": 88, "w": 756, "h": 190 }, "shape": "rounded-rectangle", "fill": "#D8FF52", "radius": 24, "text": "DRAFT\nTurn intent into a first form", "textColor": "#101714", "fontSize": 34, "fontWeight": 800, "align": "left", "verticalAlign": "middle" } },
+  { "op": "add-element", "slide": "./slides/004-evidence.json", "element": { "id": "mode-two", "type": "shape", "frame": { "x": 72, "y": 354, "w": 756, "h": 190 }, "shape": "rounded-rectangle", "fill": "#F6F3E8", "radius": 24, "text": "TRANSFORM\nSummarize, translate, restructure", "textColor": "#101714", "fontSize": 34, "fontWeight": 800, "align": "left", "verticalAlign": "middle" } },
+  { "op": "add-element", "slide": "./slides/004-evidence.json", "element": { "id": "mode-three", "type": "shape", "frame": { "x": 72, "y": 620, "w": 756, "h": 190 }, "shape": "rounded-rectangle", "fill": "#28332E", "stroke": "#D8FF52", "strokeWidth": 3, "radius": 24, "text": "EXPLORE\nCompare possibilities quickly", "textColor": "#F6F3E8", "fontSize": 34, "fontWeight": 800, "align": "left", "verticalAlign": "middle" } },
+  { "op": "set-element", "slide": "./slides/004-evidence.json", "element": "kicker", "patch": { "text": "03 / WHERE IT HELPS" } },
+  { "op": "set-element", "slide": "./slides/004-evidence.json", "element": "title", "patch": { "text": "One engine, three practical modes", "fontSize": 50 } },
+  { "op": "set-element", "slide": "./slides/004-evidence.json", "element": "body", "patch": { "text": "The model produces candidates. Your workflow supplies context, constraints, feedback, and a stopping rule.", "fontSize": 24 } },
+  { "op": "set-element", "slide": "./slides/004-evidence.json", "element": "metric", "patch": { "text": "3×", "fontSize": 78 } },
+  { "op": "set-element", "slide": "./slides/004-evidence.json", "element": "metric-label", "patch": { "text": "draft · transform · explore" } },
+
+  { "op": "rename-slide", "slide": "./slides/005-close.json", "name": "Keep judgment human" },
+  { "op": "set-element", "slide": "./slides/005-close.json", "element": "kicker", "patch": { "text": "04 / THE OPERATING PRINCIPLE" } },
+  { "op": "set-element", "slide": "./slides/005-close.json", "element": "title", "patch": { "text": "Use AI for breadth.\nKeep judgment for truth, taste, and consequences.", "fontSize": 68 } },
+  { "op": "set-element", "slide": "./slides/005-close.json", "element": "body", "patch": { "text": "Frame the task · verify the output · own the decision" } },
+  { "op": "set-element", "slide": "./slides/005-close.json", "element": "end", "patch": { "text": "END / HUMAN IN THE LOOP" } },
+  { "op": "add-element", "slide": "./slides/005-close.json", "element": { "id": "sources", "type": "text", "frame": { "x": 96, "y": 810, "w": 1040, "h": 30 }, "text": "SOURCE NOTES · Vaswani et al. (2017) · NIST AI RMF 1.0 (2023)", "fontSize": 14, "fontWeight": 600, "color": "#9FAB9F" } }
+]

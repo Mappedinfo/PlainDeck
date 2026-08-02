@@ -1,0 +1,119 @@
+{
+  "id": "cover",
+  "name": "A practical mental model",
+  "layoutRef": "showcase-cover",
+  "background": {
+    "color": "#101714"
+  },
+  "elements": [
+    {
+      "id": "accent-panel",
+      "type": "shape",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 420,
+        "h": 900
+      },
+      "shape": "rectangle",
+      "fill": "#D8FF52"
+    },
+    {
+      "id": "panel-mark",
+      "color": "#101714",
+      "type": "text",
+      "frame": {
+        "x": 62,
+        "y": 76,
+        "w": 300,
+        "h": 170
+      },
+      "text": "GEN\nAI",
+      "fontSize": 62,
+      "fontWeight": 800
+    },
+    {
+      "id": "panel-index",
+      "color": "#101714",
+      "type": "text",
+      "frame": {
+        "x": 62,
+        "y": 756,
+        "w": 280,
+        "h": 50
+      },
+      "text": "A FIVE-SLIDE PRIMER",
+      "fontSize": 20,
+      "fontWeight": 700
+    },
+    {
+      "id": "kicker",
+      "color": "#D8FF52",
+      "type": "text",
+      "frame": {
+        "x": 510,
+        "y": 78,
+        "w": 880,
+        "h": 42
+      },
+      "text": "GENERAL KNOWLEDGE / PLAINDECK DEMO",
+      "fontSize": 18,
+      "fontWeight": 800
+    },
+    {
+      "id": "title",
+      "color": "#F6F3E8",
+      "type": "text",
+      "styleRef": "slide-title",
+      "frame": {
+        "x": 510,
+        "y": 188,
+        "w": 980,
+        "h": 260
+      },
+      "text": "Generative AI\nA Practical Mental Model",
+      "fontSize": 70,
+      "fontWeight": 800
+    },
+    {
+      "id": "rule",
+      "type": "shape",
+      "frame": {
+        "x": 510,
+        "y": 530,
+        "w": 980,
+        "h": 4
+      },
+      "shape": "rectangle",
+      "fill": "#F6F3E8"
+    },
+    {
+      "id": "subtitle",
+      "color": "#9FAB9F",
+      "type": "text",
+      "frame": {
+        "x": 510,
+        "y": 588,
+        "w": 890,
+        "h": 130
+      },
+      "text": "It predicts useful patterns. Humans decide what belongs in the world.",
+      "fontSize": 29,
+      "fontWeight": 500
+    },
+    {
+      "id": "hint",
+      "color": "#9FAB9F",
+      "type": "text",
+      "frame": {
+        "x": 510,
+        "y": 790,
+        "w": 900,
+        "h": 34
+      },
+      "text": "CREATED WITH PLAINDECK CLI · SOURCE IS ONE JSON FILE PER SLIDE",
+      "fontSize": 16,
+      "fontWeight": 700
+    }
+  ]
+}

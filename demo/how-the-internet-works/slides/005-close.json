@@ -1,0 +1,106 @@
+{
+  "id": "close",
+  "name": "Small contracts, global system",
+  "layoutRef": "section",
+  "background": {
+    "color": "#17242C"
+  },
+  "elements": [
+    {
+      "id": "accent-block",
+      "type": "shape",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 34,
+        "h": 900
+      },
+      "shape": "rectangle",
+      "fill": "#235D83"
+    },
+    {
+      "id": "kicker",
+      "color": "#235D83",
+      "type": "text",
+      "frame": {
+        "x": 96,
+        "y": 80,
+        "w": 700,
+        "h": 42
+      },
+      "text": "04 / WHY THE SYSTEM SCALES",
+      "fontSize": 18,
+      "fontWeight": 800
+    },
+    {
+      "id": "title",
+      "color": "#F3F6F7",
+      "type": "text",
+      "styleRef": "slide-title",
+      "frame": {
+        "x": 96,
+        "y": 220,
+        "w": 1270,
+        "h": 260
+      },
+      "text": "The internet works because every layer has a small, shared contract.",
+      "fontSize": 72,
+      "fontWeight": 800
+    },
+    {
+      "id": "rule",
+      "type": "shape",
+      "frame": {
+        "x": 96,
+        "y": 598,
+        "w": 1408,
+        "h": 3
+      },
+      "shape": "rectangle",
+      "fill": "#235D83"
+    },
+    {
+      "id": "body",
+      "color": "#6F7C83",
+      "type": "text",
+      "frame": {
+        "x": 96,
+        "y": 660,
+        "w": 1200,
+        "h": 70
+      },
+      "text": "Open standards let billions of devices cooperate without one central machine.",
+      "fontSize": 29,
+      "fontWeight": 600
+    },
+    {
+      "id": "end",
+      "color": "#235D83",
+      "type": "text",
+      "frame": {
+        "x": 1320,
+        "y": 768,
+        "w": 184,
+        "h": 46
+      },
+      "text": "END / KEEP EXPLORING",
+      "align": "right",
+      "fontSize": 19,
+      "fontWeight": 800
+    },
+    {
+      "id": "sources",
+      "color": "#AAB7BD",
+      "type": "text",
+      "frame": {
+        "x": 96,
+        "y": 810,
+        "w": 1040,
+        "h": 30
+      },
+      "text": "SOURCE NOTES · IETF RFC 8200 (IP) · RFC 9110 (HTTP)",
+      "fontSize": 14,
+      "fontWeight": 600
+    }
+  ]
+}

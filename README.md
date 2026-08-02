@@ -6,6 +6,17 @@ PlainDeck 是一个以用户操作为先的幻灯片编辑器：你在浏览器�
 
 [在线试用](https://mappedinfo.github.io/PlainDeck/) · [查看源码](https://github.com/Mappedinfo/PlainDeck)
 
+## 用 CLI 生成的真实演示
+
+这些不是截图式样板，而是由 `plaindeck` npm 包通过 `init → operations → validate → render` 生成的完整项目。每一页仍然是可编辑、可审查的 JSON。
+
+| 生成式 AI | 互联网如何工作 | 学习如何留下来 |
+| --- | --- | --- |
+| [![Generative AI demo](./demo/renders/generative-ai-cover.png)](./demo/renders/generative-ai.pdf) | [![Internet demo](./demo/renders/how-the-internet-works-cover.png)](./demo/renders/how-the-internet-works.pdf) | [![Learning demo](./demo/renders/how-learning-sticks-cover.png)](./demo/renders/how-learning-sticks.pdf) |
+| [`源文件`](./demo/generative-ai) · [`PDF`](./demo/renders/generative-ai.pdf) | [`源文件`](./demo/how-the-internet-works) · [`PDF`](./demo/renders/how-the-internet-works.pdf) | [`源文件`](./demo/how-learning-sticks) · [`PDF`](./demo/renders/how-learning-sticks.pdf) |
+
+[查看完整 demo gallery 与复现命令](./demo/README.md)
+
 ## 30 秒看懂
 
 - **对人友好**：逐页画布、拖放、缩放、文字编辑和主题调整，不需要手写代码。

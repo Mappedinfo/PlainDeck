@@ -1,0 +1,25 @@
+{
+  "fonts": {
+    "title": "Georgia, Charter, serif",
+    "body": "Avenir Next, Aptos, sans-serif",
+    "mono": "SFMono-Regular, Consolas, monospace"
+  },
+  "fontSizes": {
+    "title": 76,
+    "body": 28,
+    "heading": 48,
+    "caption": 19
+  },
+  "colors": {
+    "background": "#FFF8E9",
+    "text": "#20211D",
+    "muted": "#706F67",
+    "accent": "#E85538"
+  },
+  "spacing": {
+    "page": 80,
+    "small": 16,
+    "medium": 30,
+    "large": 64
+  }
+}

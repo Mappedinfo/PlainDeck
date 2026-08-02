@@ -1,0 +1,80 @@
+{
+  "id": "thesis",
+  "name": "Familiarity is not recall",
+  "layoutRef": "statement",
+  "background": {
+    "color": "#FFF8E9"
+  },
+  "elements": [
+    {
+      "id": "kicker",
+      "color": "#E85538",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 72,
+        "w": 720,
+        "h": 40
+      },
+      "text": "01 / THE KEY DISTINCTION",
+      "fontSize": 18,
+      "fontWeight": 800
+    },
+    {
+      "id": "index",
+      "color": "#E85538",
+      "type": "text",
+      "frame": {
+        "x": 1260,
+        "y": 46,
+        "w": 252,
+        "h": 150
+      },
+      "text": "01",
+      "align": "right",
+      "fontSize": 112,
+      "fontWeight": 800
+    },
+    {
+      "id": "statement",
+      "color": "#20211D",
+      "type": "text",
+      "styleRef": "slide-title",
+      "frame": {
+        "x": 88,
+        "y": 230,
+        "w": 1240,
+        "h": 275
+      },
+      "text": "Reading creates familiarity.\nRetrieval creates a usable memory.",
+      "fontSize": 72,
+      "fontWeight": 800
+    },
+    {
+      "id": "rule",
+      "type": "shape",
+      "frame": {
+        "x": 88,
+        "y": 622,
+        "w": 1424,
+        "h": 3
+      },
+      "shape": "rectangle",
+      "fill": "#20211D"
+    },
+    {
+      "id": "context",
+      "color": "#706F67",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 682,
+        "w": 1180,
+        "h": 90
+      },
+      "text": "If the page is always open, recognition can feel like knowledge. Close it and try to reconstruct the idea.",
+      "fontSize": 28,
+      "fontWeight": 500
+    }
+  ]
+}

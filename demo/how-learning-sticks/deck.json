@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "0.1",
+  "id": "how-learning-sticks",
+  "title": "How Learning Sticks",
+  "canvas": {
+    "width": 1600,
+    "height": 900
+  },
+  "theme": "./theme.json",
+  "slides": [
+    "./slides/001-cover.json",
+    "./slides/002-thesis.json",
+    "./slides/003-structure.json",
+    "./slides/004-evidence.json",
+    "./slides/005-close.json"
+  ]
+}

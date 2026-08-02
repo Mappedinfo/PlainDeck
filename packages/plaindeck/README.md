@@ -9,6 +9,17 @@ npx plaindeck validate ./my-deck
 npx plaindeck inspect ./my-deck --json
 ```
 
+## Made with `plaindeck`
+
+Each example below is a real five-slide PlainDeck project generated through `init → operations → validate → render`. Click a cover to download the PDF, or open the source to inspect one editable JSON file per slide.
+
+| Generative AI | How the Internet Works | How Learning Sticks |
+| --- | --- | --- |
+| [![Generative AI demo](https://raw.githubusercontent.com/Mappedinfo/PlainDeck/main/demo/renders/generative-ai-cover.png)](https://github.com/Mappedinfo/PlainDeck/raw/main/demo/renders/generative-ai.pdf) | [![Internet demo](https://raw.githubusercontent.com/Mappedinfo/PlainDeck/main/demo/renders/how-the-internet-works-cover.png)](https://github.com/Mappedinfo/PlainDeck/raw/main/demo/renders/how-the-internet-works.pdf) | [![Learning demo](https://raw.githubusercontent.com/Mappedinfo/PlainDeck/main/demo/renders/how-learning-sticks-cover.png)](https://github.com/Mappedinfo/PlainDeck/raw/main/demo/renders/how-learning-sticks.pdf) |
+| [Source](https://github.com/Mappedinfo/PlainDeck/tree/main/demo/generative-ai) · [PDF](https://github.com/Mappedinfo/PlainDeck/raw/main/demo/renders/generative-ai.pdf) | [Source](https://github.com/Mappedinfo/PlainDeck/tree/main/demo/how-the-internet-works) · [PDF](https://github.com/Mappedinfo/PlainDeck/raw/main/demo/renders/how-the-internet-works.pdf) | [Source](https://github.com/Mappedinfo/PlainDeck/tree/main/demo/how-learning-sticks) · [PDF](https://github.com/Mappedinfo/PlainDeck/raw/main/demo/renders/how-learning-sticks.pdf) |
+
+[Browse the demo gallery and reproduction commands](https://github.com/Mappedinfo/PlainDeck/tree/main/demo).
+
 ## CLI
 
 ```bash

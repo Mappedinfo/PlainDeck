@@ -1,0 +1,119 @@
+{
+  "id": "cover",
+  "name": "A practice loop for memory",
+  "layoutRef": "showcase-cover",
+  "background": {
+    "color": "#FFF8E9"
+  },
+  "elements": [
+    {
+      "id": "accent-panel",
+      "type": "shape",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 420,
+        "h": 900
+      },
+      "shape": "rectangle",
+      "fill": "#E85538"
+    },
+    {
+      "id": "panel-mark",
+      "color": "#FFF8E9",
+      "type": "text",
+      "frame": {
+        "x": 62,
+        "y": 76,
+        "w": 300,
+        "h": 170
+      },
+      "text": "LEARN\nRECALL",
+      "fontSize": 62,
+      "fontWeight": 800
+    },
+    {
+      "id": "panel-index",
+      "color": "#FFF8E9",
+      "type": "text",
+      "frame": {
+        "x": 62,
+        "y": 756,
+        "w": 280,
+        "h": 50
+      },
+      "text": "A FIVE-SLIDE FIELD GUIDE",
+      "fontSize": 20,
+      "fontWeight": 700
+    },
+    {
+      "id": "kicker",
+      "color": "#E85538",
+      "type": "text",
+      "frame": {
+        "x": 510,
+        "y": 78,
+        "w": 880,
+        "h": 42
+      },
+      "text": "GENERAL KNOWLEDGE / PLAINDECK DEMO",
+      "fontSize": 18,
+      "fontWeight": 800
+    },
+    {
+      "id": "title",
+      "color": "#20211D",
+      "type": "text",
+      "styleRef": "slide-title",
+      "frame": {
+        "x": 510,
+        "y": 188,
+        "w": 980,
+        "h": 260
+      },
+      "text": "How\nLearning Sticks",
+      "fontSize": 82,
+      "fontWeight": 800
+    },
+    {
+      "id": "rule",
+      "type": "shape",
+      "frame": {
+        "x": 510,
+        "y": 530,
+        "w": 980,
+        "h": 4
+      },
+      "shape": "rectangle",
+      "fill": "#20211D"
+    },
+    {
+      "id": "subtitle",
+      "color": "#706F67",
+      "type": "text",
+      "frame": {
+        "x": 510,
+        "y": 588,
+        "w": 890,
+        "h": 130
+      },
+      "text": "A practical loop for turning exposure into durable, usable memory.",
+      "fontSize": 30,
+      "fontWeight": 500
+    },
+    {
+      "id": "hint",
+      "color": "#706F67",
+      "type": "text",
+      "frame": {
+        "x": 510,
+        "y": 790,
+        "w": 900,
+        "h": 34
+      },
+      "text": "CREATED WITH PLAINDECK CLI · RENDERED FROM READABLE JSON",
+      "fontSize": 16,
+      "fontWeight": 700
+    }
+  ]
+}

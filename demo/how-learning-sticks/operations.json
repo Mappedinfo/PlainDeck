@@ -1,0 +1,43 @@
+[
+  { "op": "rename-slide", "slide": "./slides/001-cover.json", "name": "A practice loop for memory" },
+  { "op": "set-element", "slide": "./slides/001-cover.json", "element": "panel-mark", "patch": { "text": "LEARN\nRECALL" } },
+  { "op": "set-element", "slide": "./slides/001-cover.json", "element": "panel-index", "patch": { "text": "A FIVE-SLIDE FIELD GUIDE" } },
+  { "op": "set-element", "slide": "./slides/001-cover.json", "element": "kicker", "patch": { "text": "GENERAL KNOWLEDGE / PLAINDECK DEMO" } },
+  { "op": "set-element", "slide": "./slides/001-cover.json", "element": "title", "patch": { "text": "How\nLearning Sticks", "fontSize": 82 } },
+  { "op": "set-element", "slide": "./slides/001-cover.json", "element": "subtitle", "patch": { "text": "A practical loop for turning exposure into durable, usable memory." } },
+  { "op": "set-element", "slide": "./slides/001-cover.json", "element": "hint", "patch": { "text": "CREATED WITH PLAINDECK CLI · RENDERED FROM READABLE JSON" } },
+
+  { "op": "rename-slide", "slide": "./slides/002-thesis.json", "name": "Familiarity is not recall" },
+  { "op": "set-element", "slide": "./slides/002-thesis.json", "element": "kicker", "patch": { "text": "01 / THE KEY DISTINCTION" } },
+  { "op": "set-element", "slide": "./slides/002-thesis.json", "element": "statement", "patch": { "text": "Reading creates familiarity.\nRetrieval creates a usable memory.", "fontSize": 72 } },
+  { "op": "set-element", "slide": "./slides/002-thesis.json", "element": "context", "patch": { "text": "If the page is always open, recognition can feel like knowledge. Close it and try to reconstruct the idea." } },
+
+  { "op": "rename-slide", "slide": "./slides/003-structure.json", "name": "Three moves that work" },
+  { "op": "set-element", "slide": "./slides/003-structure.json", "element": "kicker", "patch": { "text": "02 / BUILD A PRACTICE LOOP" } },
+  { "op": "set-element", "slide": "./slides/003-structure.json", "element": "title", "patch": { "text": "Three moves make learning durable", "fontSize": 54 } },
+  { "op": "set-element", "slide": "./slides/003-structure.json", "element": "card-label-1", "patch": { "text": "SPACE\nReturn later", "fontSize": 39 } },
+  { "op": "set-element", "slide": "./slides/003-structure.json", "element": "card-label-2", "patch": { "text": "RETRIEVE\nAnswer first", "fontSize": 39 } },
+  { "op": "set-element", "slide": "./slides/003-structure.json", "element": "card-label-3", "patch": { "text": "CONNECT\nExplain why", "fontSize": 39 } },
+  { "op": "set-element", "slide": "./slides/003-structure.json", "element": "footer", "patch": { "text": "SHORT ATTEMPTS · USEFUL DIFFICULTY · FAST FEEDBACK" } },
+
+  { "op": "rename-slide", "slide": "./slides/004-evidence.json", "name": "Space the reconstruction" },
+  { "op": "remove-element", "slide": "./slides/004-evidence.json", "element": "visual" },
+  { "op": "add-element", "slide": "./slides/004-evidence.json", "element": { "id": "timeline", "type": "line", "frame": { "x": 124, "y": 450, "w": 650, "h": 4 }, "color": "#20211D", "strokeWidth": 5, "arrowEnd": true } },
+  { "op": "add-element", "slide": "./slides/004-evidence.json", "element": { "id": "day-one", "type": "shape", "frame": { "x": 86, "y": 338, "w": 188, "h": 188 }, "shape": "ellipse", "fill": "#E85538", "text": "TODAY\nlearn", "textColor": "#FFF8E9", "fontSize": 31, "fontWeight": 800, "align": "center", "verticalAlign": "middle" } },
+  { "op": "add-element", "slide": "./slides/004-evidence.json", "element": { "id": "day-two", "type": "shape", "frame": { "x": 352, "y": 365, "w": 134, "h": 134 }, "shape": "ellipse", "fill": "#20211D", "text": "SOON\nretrieve", "textColor": "#FFF8E9", "fontSize": 24, "fontWeight": 800, "align": "center", "verticalAlign": "middle" } },
+  { "op": "add-element", "slide": "./slides/004-evidence.json", "element": { "id": "day-three", "type": "shape", "frame": { "x": 574, "y": 386, "w": 92, "h": 92 }, "shape": "ellipse", "fill": "#D6CBB8", "text": "LATER", "textColor": "#20211D", "fontSize": 18, "fontWeight": 800, "align": "center", "verticalAlign": "middle" } },
+  { "op": "add-element", "slide": "./slides/004-evidence.json", "element": { "id": "day-four", "type": "shape", "frame": { "x": 740, "y": 400, "w": 64, "h": 64 }, "shape": "ellipse", "fill": "#E85538", "text": "+", "textColor": "#FFF8E9", "fontSize": 30, "fontWeight": 800, "align": "center", "verticalAlign": "middle" } },
+  { "op": "add-element", "slide": "./slides/004-evidence.json", "element": { "id": "timeline-caption", "type": "text", "frame": { "x": 86, "y": 610, "w": 718, "h": 108 }, "text": "Let some forgetting happen—then reconstruct. Each successful return makes the route easier to find.", "fontSize": 27, "fontWeight": 600, "color": "#706F67" } },
+  { "op": "set-element", "slide": "./slides/004-evidence.json", "element": "kicker", "patch": { "text": "03 / SPACE THE EFFORT" } },
+  { "op": "set-element", "slide": "./slides/004-evidence.json", "element": "title", "patch": { "text": "Useful difficulty makes you reconstruct", "fontSize": 49 } },
+  { "op": "set-element", "slide": "./slides/004-evidence.json", "element": "body", "patch": { "text": "One long pass can feel fluent. Short, spaced attempts reveal what is actually available from memory.", "fontSize": 24 } },
+  { "op": "set-element", "slide": "./slides/004-evidence.json", "element": "metric", "patch": { "text": "1→3", "fontSize": 76 } },
+  { "op": "set-element", "slide": "./slides/004-evidence.json", "element": "metric-label", "patch": { "text": "one exposure becomes repeated retrieval" } },
+
+  { "op": "rename-slide", "slide": "./slides/005-close.json", "name": "Retrieve, check, return" },
+  { "op": "set-element", "slide": "./slides/005-close.json", "element": "kicker", "patch": { "text": "04 / THE STUDY ROUTINE" } },
+  { "op": "set-element", "slide": "./slides/005-close.json", "element": "title", "patch": { "text": "Try to remember.\nUse feedback to correct the gap.\nReturn later.", "fontSize": 68 } },
+  { "op": "set-element", "slide": "./slides/005-close.json", "element": "body", "patch": { "text": "Question · retrieve · check · schedule the next attempt" } },
+  { "op": "set-element", "slide": "./slides/005-close.json", "element": "end", "patch": { "text": "END / CLOSE THE BOOK" } },
+  { "op": "add-element", "slide": "./slides/005-close.json", "element": { "id": "sources", "type": "text", "frame": { "x": 96, "y": 810, "w": 1120, "h": 30 }, "text": "SOURCE NOTES · Roediger & Karpicke (2006) · Dunlosky et al. (2013)", "fontSize": 14, "fontWeight": 600, "color": "#C9BFAE" } }
+]

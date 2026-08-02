@@ -1,0 +1,211 @@
+{
+  "id": "evidence",
+  "name": "One URL, four steps",
+  "layoutRef": "image-right",
+  "background": {
+    "color": "#F3F6F7"
+  },
+  "elements": [
+    {
+      "id": "kicker",
+      "color": "#235D83",
+      "type": "text",
+      "frame": {
+        "x": 990,
+        "y": 76,
+        "w": 500,
+        "h": 36
+      },
+      "text": "03 / AFTER YOU PRESS ENTER",
+      "fontSize": 18,
+      "fontWeight": 800
+    },
+    {
+      "id": "title",
+      "color": "#17242C",
+      "type": "text",
+      "styleRef": "slide-title",
+      "frame": {
+        "x": 990,
+        "y": 148,
+        "w": 510,
+        "h": 170
+      },
+      "text": "One URL triggers a chain of agreements",
+      "fontSize": 49,
+      "fontWeight": 800
+    },
+    {
+      "id": "body",
+      "color": "#6F7C83",
+      "type": "text",
+      "frame": {
+        "x": 990,
+        "y": 372,
+        "w": 500,
+        "h": 175
+      },
+      "text": "Each layer solves one small problem. Together they turn a human-readable address into a usable page.",
+      "fontSize": 24,
+      "fontWeight": 500
+    },
+    {
+      "id": "metric-rule",
+      "type": "shape",
+      "frame": {
+        "x": 990,
+        "y": 602,
+        "w": 500,
+        "h": 3
+      },
+      "shape": "rectangle",
+      "fill": "#17242C"
+    },
+    {
+      "id": "metric",
+      "color": "#235D83",
+      "type": "text",
+      "frame": {
+        "x": 990,
+        "y": 636,
+        "w": 220,
+        "h": 120
+      },
+      "text": "4",
+      "fontSize": 88,
+      "fontWeight": 800
+    },
+    {
+      "id": "metric-label",
+      "color": "#17242C",
+      "type": "text",
+      "frame": {
+        "x": 1216,
+        "y": 654,
+        "w": 274,
+        "h": 86
+      },
+      "text": "resolve · connect · request · render",
+      "verticalAlign": "middle",
+      "fontSize": 21,
+      "fontWeight": 700
+    },
+    {
+      "id": "flow-1",
+      "color": "#235D83",
+      "type": "line",
+      "frame": {
+        "x": 312,
+        "y": 220,
+        "w": 246,
+        "h": 4
+      },
+      "strokeWidth": 5,
+      "arrowEnd": true
+    },
+    {
+      "id": "flow-2",
+      "color": "#235D83",
+      "type": "line",
+      "frame": {
+        "x": 312,
+        "y": 448,
+        "w": 246,
+        "h": 4
+      },
+      "strokeWidth": 5,
+      "arrowEnd": true
+    },
+    {
+      "id": "step-1",
+      "type": "shape",
+      "frame": {
+        "x": 74,
+        "y": 144,
+        "w": 238,
+        "h": 150
+      },
+      "text": "01\nRESOLVE",
+      "textColor": "#F3F6F7",
+      "align": "center",
+      "verticalAlign": "middle",
+      "fontSize": 32,
+      "fontWeight": 800,
+      "shape": "rounded-rectangle",
+      "fill": "#235D83",
+      "radius": 20
+    },
+    {
+      "id": "step-2",
+      "type": "shape",
+      "frame": {
+        "x": 558,
+        "y": 144,
+        "w": 264,
+        "h": 150
+      },
+      "text": "02\nCONNECT",
+      "textColor": "#F3F6F7",
+      "align": "center",
+      "verticalAlign": "middle",
+      "fontSize": 32,
+      "fontWeight": 800,
+      "shape": "rounded-rectangle",
+      "fill": "#17242C",
+      "radius": 20
+    },
+    {
+      "id": "step-3",
+      "type": "shape",
+      "frame": {
+        "x": 74,
+        "y": 372,
+        "w": 238,
+        "h": 150
+      },
+      "text": "03\nREQUEST",
+      "textColor": "#17242C",
+      "align": "center",
+      "verticalAlign": "middle",
+      "fontSize": 32,
+      "fontWeight": 800,
+      "shape": "rounded-rectangle",
+      "fill": "#D6E4EA",
+      "radius": 20
+    },
+    {
+      "id": "step-4",
+      "type": "shape",
+      "frame": {
+        "x": 558,
+        "y": 372,
+        "w": 264,
+        "h": 150
+      },
+      "text": "04\nRENDER",
+      "textColor": "#F3F6F7",
+      "align": "center",
+      "verticalAlign": "middle",
+      "fontSize": 32,
+      "fontWeight": 800,
+      "shape": "rounded-rectangle",
+      "fill": "#235D83",
+      "radius": 20
+    },
+    {
+      "id": "browser-note",
+      "color": "#6F7C83",
+      "type": "text",
+      "frame": {
+        "x": 74,
+        "y": 640,
+        "w": 748,
+        "h": 112
+      },
+      "text": "The browser repeats this pattern for HTML, styles, scripts, fonts, and images—then combines the results.",
+      "align": "left",
+      "fontSize": 25,
+      "fontWeight": 600
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "fonts": {
+    "title": "Avenir Next, Aptos Display, Helvetica Neue, sans-serif",
+    "body": "Avenir Next, Aptos, Helvetica Neue, sans-serif",
+    "mono": "SFMono-Regular, IBM Plex Mono, Consolas, monospace"
+  },
+  "fontSizes": {
+    "title": 76,
+    "body": 28,
+    "heading": 48,
+    "caption": 19
+  },
+  "colors": {
+    "background": "#F3F6F7",
+    "text": "#17242C",
+    "muted": "#6F7C83",
+    "accent": "#235D83"
+  },
+  "spacing": {
+    "page": 80,
+    "small": 16,
+    "medium": 30,
+    "large": 64
+  }
+}
