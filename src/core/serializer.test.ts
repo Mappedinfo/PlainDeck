@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canonicalJson } from './serializer'
+import { canonicalJson } from 'plaindeck/core'
 
 describe('canonicalJson', () => {
   it('uses stable key order, two spaces, and LF', () => {

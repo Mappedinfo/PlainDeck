@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { assertDocument, SlideSchema } from './schema'
+import { assertDocument, SlideSchema } from 'plaindeck/core'
 import { createSampleDocument } from './sample'
 
 describe('schema', () => {

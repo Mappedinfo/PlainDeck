@@ -1,7 +1,7 @@
 import { create } from 'zustand'
-import type { DeckDocument, SlideElement, Theme } from './core/schema'
+import type { DeckDocument, SlideElement, Theme } from 'plaindeck/core'
 import { createSampleDocument } from './core/sample'
-import { createLayoutElements, layoutPresets, type LayoutPresetId } from './core/presets'
+import { createLayoutElements, layoutPresets, type LayoutPresetId } from 'plaindeck/core'
 import type { DirectoryHandle } from './storage/browserStorage'
 
 type SaveState = 'demo' | 'dirty' | 'saving' | 'saved' | 'error'

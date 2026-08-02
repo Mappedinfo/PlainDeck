@@ -1,7 +1,5 @@
-import type { DeckDocument, Slide, Theme } from '../core/schema'
-import { DeckSchema, SlideSchema, ThemeSchema } from '../core/schema'
-import { migrateDeck } from '../core/migration'
-import { canonicalJson } from '../core/serializer'
+import type { DeckDocument, Slide, Theme } from 'plaindeck/core'
+import { DeckSchema, SlideSchema, ThemeSchema, migrateDeck, canonicalJson } from 'plaindeck/core'
 
 export type DirectoryHandle = FileSystemDirectoryHandle
 const baselines = new WeakMap<DirectoryHandle, Map<string, string>>()

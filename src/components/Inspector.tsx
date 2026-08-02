@@ -1,7 +1,6 @@
 import { AlignCenter, AlignLeft, AlignRight, ArrowDownToLine, ArrowLeftToLine, ArrowRightToLine, ArrowUpToLine } from 'lucide-react'
 import { alignmentPatch } from '../core/geometry'
-import { themePresets } from '../core/presets'
-import type { SlideElement } from '../core/schema'
+import { themePresets, type SlideElement } from 'plaindeck/core'
 import { useEditor } from '../store'
 
 const Numeric = ({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) => <label className="field compact"><span>{label}</span><input type="number" value={value} onChange={e => onChange(Number(e.target.value))} /></label>

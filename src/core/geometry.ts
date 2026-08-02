@@ -1,4 +1,4 @@
-import type { Frame } from './schema'
+import type { Frame } from 'plaindeck/core'
 
 export const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 export const snap = (value: number, grid = 8) => Math.round(value / grid) * grid

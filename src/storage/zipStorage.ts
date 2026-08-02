@@ -1,8 +1,7 @@
 import JSZip from 'jszip'
 import { saveBlob } from '../export/download'
-import type { DeckDocument } from '../core/schema'
-import { DeckSchema, SlideSchema, ThemeSchema } from '../core/schema'
-import { canonicalJson } from '../core/serializer'
+import type { DeckDocument } from 'plaindeck/core'
+import { DeckSchema, SlideSchema, ThemeSchema, canonicalJson } from 'plaindeck/core'
 import { themeCss } from './browserStorage'
 
 export async function importZip(file: File): Promise<DeckDocument> {

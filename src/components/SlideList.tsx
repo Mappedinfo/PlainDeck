@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronUp, Copy, LayoutTemplate, Plus, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
-import { layoutPresets, type LayoutPresetId } from '../core/presets'
+import { layoutPresets, type LayoutPresetId } from 'plaindeck/core'
 import { useEditor } from '../store'
 import { SlideSurface } from './SlideSurface'
 

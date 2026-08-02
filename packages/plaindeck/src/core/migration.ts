@@ -1,4 +1,4 @@
-import { DeckSchema, type Deck } from './schema'
+import { DeckSchema, type Deck } from './schema.js'
 
 export interface Migration { from: string; to: string; migrate: (input: unknown) => unknown }
 export const migrations: Migration[] = []

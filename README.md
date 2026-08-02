@@ -94,6 +94,27 @@ npm run build
 npm run test:e2e
 ```
 
+## Agent API 与 CLI
+
+PlainDeck 的 npm 包提供 TypeScript API、`plaindeck` 命令和 HTML/PNG/PDF 渲染器。AI Agent 可以先检查项目，再以稳定的页面路径与元素 ID 提交结构化操作：
+
+```bash
+npm install plaindeck
+npx plaindeck inspect ./examples/starter --json
+npx plaindeck apply ./examples/starter --ops changes.json --dry-run --json
+npx plaindeck apply ./examples/starter --ops changes.json
+npx plaindeck render ./examples/starter --format html --output deck.html
+```
+
+推荐闭环是 `inspect → operations → validate → dry-run → apply → render`。HTML 默认嵌入本地图片；外部图片默认不联网。PNG/PDF 渲染需要 Playwright Chromium：
+
+```bash
+npm install playwright
+npx playwright install chromium
+```
+
+公共 API 与操作格式见 [`docs/agent-api.md`](./docs/agent-api.md)，npm 包说明见 [`packages/plaindeck/README.md`](./packages/plaindeck/README.md)。v0.1 不包含 HTTP API、MCP、serve/watch 或 PPTX 导入导出。
+
 ## 已实现的 MVP 能力
 
 - Zod schema、`0.1` schema version、迁移入口和 canonical JSON serializer；
@@ -119,3 +140,7 @@ PlainDeck 默认不加载统计脚本。若需要统计公开网站的页面访�
 配置后重新运行 Pages 工作流即可生效。统计代码只在生产构建中启用；PlainDeck 不会上报幻灯片内容、编辑操作、文件名或本地目录信息。删除变量并重新部署即可关闭。
 
 完整格式说明见 [`docs/project-format.md`](./docs/project-format.md)，项目目标与设计背景见 [`PlainDeck_项目计划书_v0.1.md`](./PlainDeck_项目计划书_v0.1.md)。
+
+## License
+
+PlainDeck 采用 [MIT License](./LICENSE)。

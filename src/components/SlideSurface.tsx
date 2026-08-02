@@ -1,6 +1,6 @@
 import { Image as ImageIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import type { Frame, Slide, SlideElement } from '../core/schema'
+import type { Frame, Slide, SlideElement } from 'plaindeck/core'
 import { resizeFrame, snap } from '../core/geometry'
 import { useEditor } from '../store'
 

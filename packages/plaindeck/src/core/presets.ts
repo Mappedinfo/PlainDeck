@@ -1,4 +1,4 @@
-import type { SlideElement, Theme } from './schema'
+import type { SlideElement, Theme } from './schema.js'
 
 export type LayoutPresetId = 'blank' | 'title-body' | 'section' | 'two-column' | 'image-right' | 'three-cards'
 
