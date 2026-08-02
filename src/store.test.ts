@@ -21,6 +21,13 @@ describe('editor command history', () => {
     const store = useEditor.getState(); store.updateElement('title', { text: 'Changed' })
     expect([...useEditor.getState().dirtyPaths]).toEqual(['./slides/001-intro.json'])
   })
+  it('renames only the active slide and records history', () => {
+    const store = useEditor.getState(); store.renameSlide('研究结论')
+    const state = useEditor.getState()
+    expect(state.document.slides[state.activeSlidePath].name).toBe('研究结论')
+    expect([...state.dirtyPaths]).toEqual([state.activeSlidePath])
+    expect(state.past.at(-1)?.label).toBe('重命名页面')
+  })
   it('creates a new page from a readable layout preset', () => {
     useEditor.getState().addSlide('image-right')
     const state = useEditor.getState(); const slide = state.document.slides[state.activeSlidePath]

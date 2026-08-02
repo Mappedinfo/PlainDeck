@@ -20,6 +20,7 @@ interface EditorState {
   future: Snapshot[]
   setDocument(document: DeckDocument, directory?: DirectoryHandle | null): void
   setActiveSlide(path: string): void
+  renameSlide(name: string): void
   select(ids: string[]): void
   setZoom(zoom: number): void
   setSaveState(state: SaveState, error?: string | null): void
@@ -48,6 +49,12 @@ export const useEditor = create<EditorState>((set, get) => ({
   saveState: 'demo', error: null, directory: null, dirtyPaths: new Set(), past: [], future: [],
   setDocument: (document, directory = null) => set({ document, directory, activeSlidePath: document.deck.slides[0], selectedIds: [], past: [], future: [], dirtyPaths: new Set(), saveState: directory ? 'saved' : 'demo', error: null }),
   setActiveSlide: activeSlidePath => set({ activeSlidePath, selectedIds: [] }),
+  renameSlide: name => {
+    const state = get(); const next = name.trim(); const slide = state.document.slides[state.activeSlidePath]
+    if (!next || next === (slide.name ?? slide.id)) return
+    const document = clone(state.document); document.slides[state.activeSlidePath].name = next
+    state.commitDocument(document, '重命名页面', [state.activeSlidePath])
+  },
   select: selectedIds => set({ selectedIds }),
   setZoom: zoom => set({ zoom: Math.min(1.25, Math.max(.2, zoom)) }),
   setSaveState: (saveState, error = null) => set({ saveState, error }),

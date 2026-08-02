@@ -5,6 +5,7 @@ import { SlideList } from './components/SlideList'
 import { SlideSurface } from './components/SlideSurface'
 import { Inspector } from './components/Inspector'
 import { StatusBar } from './components/StatusBar'
+import { SlideNameEditor } from './components/SlideNameEditor'
 import { createSampleDocument } from './core/sample'
 import { useEditor } from './store'
 import { exportHtml } from './export/html'
@@ -76,7 +77,7 @@ export default function App() {
   return <div className="app-shell">
     <Toolbar onOpen={openDirectory} onNew={newProject} onImportZip={() => fileRef.current?.click()} onExport={() => setExporting(true)} onPresent={() => setPresent(true)} onSave={save} />
     <input ref={fileRef} hidden type="file" accept=".zip,application/zip" onChange={e => loadZip(e.target.files?.[0])} />
-    <main className="workspace"><SlideList /><section ref={canvasRef} className="canvas-workspace" onDoubleClick={e => { if (e.currentTarget === e.target) fitCanvas() }}><div className="canvas-label"><span>ARTBOARD</span><strong>{activeSlide.name ?? activeSlide.id}</strong></div><div className="canvas-scroller"><div className="canvas-sized" style={{ width: state.document.deck.canvas.width * state.zoom, height: state.document.deck.canvas.height * state.zoom }}><SlideSurface slide={activeSlide} zoom={state.zoom} /></div></div><div className="canvas-coordinate">X 0000&nbsp;&nbsp; Y 0000</div></section><Inspector /></main>
+    <main className="workspace"><SlideList /><section ref={canvasRef} className="canvas-workspace" onDoubleClick={e => { if (e.currentTarget === e.target) fitCanvas() }}><div className="canvas-label"><span>ARTBOARD</span><SlideNameEditor key={state.activeSlidePath} name={activeSlide.name ?? activeSlide.id} onCommit={state.renameSlide} /></div><div className="canvas-scroller"><div className="canvas-sized" style={{ width: state.document.deck.canvas.width * state.zoom, height: state.document.deck.canvas.height * state.zoom }}><SlideSurface slide={activeSlide} zoom={state.zoom} /></div></div><div className="canvas-coordinate">X 0000&nbsp;&nbsp; Y 0000</div></section><Inspector /></main>
     <StatusBar />
     <div className="print-deck">{state.document.deck.slides.map(path => <div className="print-page" key={path}><SlideSurface slide={state.document.slides[path]} interactive={false} zoom={1} /></div>)}</div>
     {present && <Presentation onClose={() => setPresent(false)} />}{exporting && <ExportDialog onClose={() => setExporting(false)} />}

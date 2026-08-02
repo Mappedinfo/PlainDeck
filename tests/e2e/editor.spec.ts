@@ -28,6 +28,21 @@ test('opens presentation and export surfaces', async ({ page }) => {
   await expect(page.getByText('Take the deck with you.')).toBeVisible()
 })
 
+test('renames the active artboard and updates the page list', async ({ page }) => {
+  await page.goto('./')
+  await page.locator('.canvas-name').dblclick()
+  const input = page.getByRole('textbox', { name: '页面名称' })
+  await input.fill('研究结论')
+  await page.screenshot({ path: '/tmp/plaindeck-rename-artboard.png', fullPage: true })
+  await input.press('Enter')
+
+  await expect(page.locator('.canvas-name')).toHaveText('研究结论')
+  await expect(page.locator('.slide-thumb.active .slide-name')).toHaveText('研究结论')
+  await page.getByRole('button', { name: '撤销' }).click()
+  await expect(page.locator('.canvas-name')).toHaveText('一句话看懂')
+  await expect(page.locator('.slide-thumb.active .slide-name')).toHaveText('一句话看懂')
+})
+
 test('activates a waiting service worker before refreshing', async ({ page }) => {
   await page.goto('./')
   await page.evaluate(() => {
