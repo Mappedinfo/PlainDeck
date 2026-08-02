@@ -16,7 +16,7 @@
     "test:render": "npm run build:package && PLAINDECK_BROWSER_TESTS=1 vitest run packages/plaindeck/test/render.test.ts",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "typecheck": "npm run typecheck -w plaindeck && tsc -b --pretty false"
+    "typecheck": "npm run build:package && tsc -b --pretty false"
   },
   "dependencies": {
     "jszip": "^3.10.1",
