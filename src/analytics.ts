@@ -18,18 +18,19 @@ function appendScript(id: string, src: string) {
 
 function initializeGoogleAnalytics(measurementId: string) {
   const analyticsWindow = window as typeof window & {
-    dataLayer?: unknown[][]
+    dataLayer?: unknown[]
     gtag?: (...args: unknown[]) => void
   }
 
+  appendScript('plaindeck-google-analytics', `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`)
   analyticsWindow.dataLayer = analyticsWindow.dataLayer ?? []
-  analyticsWindow.gtag = (...args: unknown[]) => analyticsWindow.dataLayer?.push(args)
+  analyticsWindow.gtag = function gtag() { analyticsWindow.dataLayer?.push(arguments) }
   analyticsWindow.gtag('js', new Date())
   analyticsWindow.gtag('config', measurementId, {
+    send_page_view: true,
     allow_google_signals: false,
     allow_ad_personalization_signals: false,
   })
-  appendScript('plaindeck-google-analytics', `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`)
 }
 
 function initializeBaiduAnalytics(siteId: string) {
