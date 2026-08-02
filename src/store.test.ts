@@ -23,6 +23,30 @@ describe('editor command history', () => {
     const store = useEditor.getState(); store.updateElement('title', { text: 'Changed' })
     expect([...useEditor.getState().dirtyPaths]).toEqual([useEditor.getState().activeSlidePath])
   })
+  it('does not clear a newer edit when an older save completes', () => {
+    const path = useEditor.getState().activeSlidePath
+    useEditor.getState().updateElement('title', { text: 'v1' })
+    const captured = new Map(useEditor.getState().dirtyRevisions)
+    useEditor.getState().updateElement('title', { text: 'v2' })
+    useEditor.getState().clearDirty(captured)
+    const state = useEditor.getState()
+    expect(state.dirtyPaths.has(path)).toBe(true)
+    expect(state.dirtyRevisions.get(path)).toBeGreaterThan(captured.get(path)!)
+    expect(state.saveState).toBe('dirty')
+  })
+
+  it('clears only paths whose captured revisions still match', () => {
+    const path = useEditor.getState().activeSlidePath
+    useEditor.getState().updateElement('title', { text: 'captured' })
+    const captured = new Map(useEditor.getState().dirtyRevisions)
+    useEditor.getState().addSlide('blank')
+    const addedPath = useEditor.getState().activeSlidePath
+    useEditor.getState().clearDirty(captured)
+    const state = useEditor.getState()
+    expect(state.dirtyPaths.has(path)).toBe(false)
+    expect(state.dirtyPaths.has('deck.json')).toBe(true)
+    expect(state.dirtyPaths.has(addedPath)).toBe(true)
+  })
   it('produces the same document as the public operation kernel', () => {
     const before = createSampleDocument(); const path = before.deck.slides[0]
     const expected = applyOperations(before, [{ op: 'set-element', slide: path, element: 'title', patch: { text: 'One kernel' } }])

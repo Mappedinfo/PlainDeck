@@ -1,6 +1,6 @@
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { dirname, isAbsolute, relative, resolve } from 'node:path'
-import { canonicalJson } from '../core/serializer.js'
+import { createSavePlan } from '../core/save-plan.js'
 import { migrateDeck } from '../core/migration.js'
 import { DeckSchema, SlideSchema, ThemeSchema, assertDocument, type DeckDocument, type Slide } from '../core/schema.js'
 
@@ -36,17 +36,8 @@ async function atomicWrite(path: string, content: string) {
 export async function saveDeck(projectPath: string, input: DeckDocument, changedPaths?: Iterable<string>): Promise<string[]> {
   const document = assertDocument(input)
   const root = resolve(projectPath)
-  const targets = [...new Set(changedPaths ?? ['deck.json', document.deck.theme, ...document.deck.slides])]
-  const allowed = new Set(['deck.json', document.deck.theme, ...document.deck.slides])
-
-  for (const target of targets) {
-    if (target.startsWith('./slides/') && !document.slides[target]) continue
-    if (!allowed.has(target)) throw new Error(`不允许写入未知项目路径：${target}`)
-    const value = target === 'deck.json' ? document.deck : target === document.deck.theme ? document.theme : document.slides[target]
-    await atomicWrite(projectFile(root, target), canonicalJson(value))
-  }
-  for (const target of targets) {
-    if (target.startsWith('./slides/') && !document.slides[target]) await rm(projectFile(root, target), { force: true })
-  }
-  return targets
+  const plan = createSavePlan(document, changedPaths)
+  for (const write of plan.writes) await atomicWrite(projectFile(root, write.path), write.content)
+  for (const target of plan.deletions) await rm(projectFile(root, target), { force: true })
+  return plan.targets
 }

@@ -1,5 +1,5 @@
 import type { DeckDocument, Slide, Theme } from 'plaindeck/core'
-import { DeckSchema, SlideSchema, ThemeSchema, assertDocument, migrateDeck, canonicalJson } from 'plaindeck/core'
+import { DeckSchema, SlideSchema, ThemeSchema, assertDocument, canonicalJson, createSavePlan, migrateDeck } from 'plaindeck/core'
 
 export type DirectoryHandle = FileSystemDirectoryHandle
 const baselines = new WeakMap<DirectoryHandle, Map<string, string>>()
@@ -23,6 +23,22 @@ async function fileHandle(root: DirectoryHandle, path: string, create = false): 
 async function readText(root: DirectoryHandle, path: string): Promise<string> {
   const handle = await fileHandle(root, path)
   return (await handle.getFile()).text()
+}
+
+async function pathExists(root: DirectoryHandle, path: string): Promise<boolean> {
+  try { await fileHandle(root, path); return true } catch (error) {
+    if ((error as DOMException).name === 'NotFoundError') return false
+    throw error
+  }
+}
+
+async function removePath(root: DirectoryHandle, path: string): Promise<void> {
+  const parts = path.replace(/^\.\//, '').split('/')
+  const name = parts.pop()
+  if (!name) throw new Error(`无效路径：${path}`)
+  let directory = root
+  for (const part of parts) directory = await directory.getDirectoryHandle(part)
+  await directory.removeEntry(name)
 }
 
 export async function readAsset(root: DirectoryHandle, path: string): Promise<Blob> {
@@ -77,22 +93,45 @@ async function writeChecked(root: DirectoryHandle, path: string, content: string
     let current = ''
     try { current = await readText(root, path) } catch { throw new Error(`文件在外部被删除，已停止覆盖：${path}`) }
     if (current !== expected) throw new Error(`检测到外部修改，已停止自动保存：${path}`)
-  }
+  } else if (await pathExists(root, path)) throw new Error(`目标文件已存在，已停止覆盖：${path}`)
   await writeText(root, path, content)
   const next = baselines.get(root) ?? new Map<string, string>(); next.set(path, content); baselines.set(root, next)
 }
 
+async function removeChecked(root: DirectoryHandle, path: string): Promise<void> {
+  const baseline = baselines.get(root)
+  const expected = baseline?.get(path)
+  if (!await pathExists(root, path)) { baseline?.delete(path); return }
+  if (expected === undefined) throw new Error(`目标文件不属于当前项目基线，已停止删除：${path}`)
+  const current = await readText(root, path)
+  if (current !== expected) throw new Error(`检测到外部修改，已停止删除：${path}`)
+  await removePath(root, path)
+  baseline?.delete(path)
+}
+
 export async function writeProject(root: DirectoryHandle, document: DeckDocument, paths?: Set<string>): Promise<void> {
-  const targets = paths ?? new Set(['deck.json', document.deck.theme, ...document.deck.slides])
-  if (targets.has('deck.json')) await writeChecked(root, 'deck.json', canonicalJson(document.deck))
-  if (targets.has(document.deck.theme)) await writeChecked(root, document.deck.theme, canonicalJson(document.theme))
-  for (const path of document.deck.slides) if (targets.has(path)) await writeChecked(root, path, canonicalJson(document.slides[path]))
+  const plan = createSavePlan(document, paths)
+  for (const write of plan.writes) await writeChecked(root, write.path, write.content)
+  for (const path of plan.deletions) await removeChecked(root, path)
   if (!paths) {
     await root.getDirectoryHandle('assets', { create: true })
     await root.getDirectoryHandle('exports', { create: true })
-    await writeText(root, 'theme.css', themeCss(document.theme))
-    await writeText(root, '.gitignore', 'exports/*\n!exports/.gitkeep\n.DS_Store\n')
+    await writeChecked(root, 'theme.css', themeCss(document.theme))
+    await writeChecked(root, '.gitignore', 'exports/*\n!exports/.gitkeep\n.DS_Store\n')
   }
+}
+
+export function projectInitializationPaths(document: DeckDocument): string[] {
+  const checked = assertDocument(document)
+  return ['deck.json', checked.deck.theme, ...checked.deck.slides, 'theme.css', '.gitignore']
+}
+
+export async function initializeProject(root: DirectoryHandle, document: DeckDocument): Promise<void> {
+  const collisions: string[] = []
+  for (const path of projectInitializationPaths(document)) if (await pathExists(root, path)) collisions.push(path)
+  if (collisions.length) throw new Error(`所选目录包含 PlainDeck 将创建的文件：${collisions.join('、')}。请选择空目录。`)
+  baselines.set(root, new Map())
+  await writeProject(root, document)
 }
 
 export function themeCss(theme: Theme): string {
@@ -111,21 +150,43 @@ export async function verifyPermission(handle: DirectoryHandle, request = false)
   return request && await writable.requestPermission(options) === 'granted'
 }
 
-export async function snapshotToOpfs(document: DeckDocument): Promise<void> {
+export interface RecoverySnapshot {
+  savedAt: string
+  projectFingerprint: string
+  revision: number
+  persistedRevision: number
+  document: DeckDocument
+}
+
+export function projectFingerprint(document: DeckDocument, directory: DirectoryHandle | null = null): string {
+  return `${directory?.name ?? 'demo'}:${document.deck.id}`
+}
+
+export async function snapshotToOpfs(snapshot: Omit<RecoverySnapshot, 'savedAt'>): Promise<void> {
   if (!navigator.storage?.getDirectory) return
   const root = await navigator.storage.getDirectory()
   const handle = await root.getFileHandle('plaindeck-recovery.json', { create: true })
   const writable = await handle.createWritable()
-  await writable.write(canonicalJson({ savedAt: new Date().toISOString(), document }))
+  await writable.write(canonicalJson({ ...snapshot, savedAt: new Date().toISOString() }))
   await writable.close()
 }
 
-export async function restoreFromOpfs(): Promise<{ savedAt: string; document: DeckDocument } | null> {
+export async function clearRecoveryFromOpfs(): Promise<void> {
+  if (!navigator.storage?.getDirectory) return
+  const root = await navigator.storage.getDirectory()
+  try { await root.removeEntry('plaindeck-recovery.json') } catch (error) {
+    if ((error as DOMException).name !== 'NotFoundError') throw error
+  }
+}
+
+export async function restoreFromOpfs(expectedFingerprint?: string): Promise<RecoverySnapshot | null> {
   try {
     const root = await navigator.storage.getDirectory()
     const handle = await root.getFileHandle('plaindeck-recovery.json')
-    const parsed = JSON.parse(await (await handle.getFile()).text())
-    return { savedAt: parsed.savedAt, document: parsed.document as DeckDocument }
+    const parsed = JSON.parse(await (await handle.getFile()).text()) as Partial<RecoverySnapshot>
+    if (!parsed.savedAt || !parsed.projectFingerprint || typeof parsed.revision !== 'number' || typeof parsed.persistedRevision !== 'number') return null
+    if (parsed.revision <= parsed.persistedRevision || expectedFingerprint && parsed.projectFingerprint !== expectedFingerprint) return null
+    return { ...parsed, document: assertDocument(parsed.document) } as RecoverySnapshot
   } catch { return null }
 }
 

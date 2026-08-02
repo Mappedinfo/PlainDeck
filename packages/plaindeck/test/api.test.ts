@@ -2,7 +2,7 @@ import { cp, mkdtemp, readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { applyOperations, canonicalJson, createDeckTemplate, deckTemplatePresets, inspectDeck, loadDeck, saveDeck, themePresets, validateDeck } from '../src/index.js'
+import { applyOperations, canonicalJson, createDeckTemplate, createSavePlan, deckTemplatePresets, inspectDeck, loadDeck, saveDeck, themePresets, validateDeck } from '../src/index.js'
 
 const starter = resolve('examples/starter')
 
@@ -79,5 +79,23 @@ describe('PlainDeck public API', () => {
     await saveDeck(root, result.document, result.changedPaths)
     expect(await readFile(join(root, 'slides/001-intro.json'), 'utf8')).toContain('Renamed by Agent')
     expect(await readFile(join(root, 'slides/002-three-ways.json'), 'utf8')).toBe(originalOtherSlide)
+  })
+
+  it('writes content before deck.json and deletes removed slides after the commit point', async () => {
+    const original = await loadDeck(starter)
+    const added = applyOperations(original, [{ op: 'add-slide', id: 'safe-commit', layout: 'blank' }])
+    const addPlan = createSavePlan(added.document, added.changedPaths)
+    expect(addPlan.writes.map(write => write.path)).toEqual(['./slides/006-safe-commit.json', 'deck.json'])
+
+    const removedPath = original.deck.slides[0]
+    const removed = applyOperations(original, [{ op: 'remove-slide', slide: removedPath }])
+    const removePlan = createSavePlan(removed.document, removed.changedPaths)
+    expect(removePlan.writes.map(write => write.path)).toEqual(['deck.json'])
+    expect(removePlan.deletions).toEqual([removedPath])
+
+    const root = await mkdtemp(join(tmpdir(), 'plaindeck-api-delete-'))
+    await cp(starter, root, { recursive: true })
+    await saveDeck(root, removed.document, removed.changedPaths)
+    await expect(readFile(join(root, removedPath.replace(/^\.\//, '')), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
   })
 })

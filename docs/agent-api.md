@@ -1,6 +1,6 @@
 # PlainDeck Agent API 与 CLI
 
-PlainDeck v0.2 面向 Agent 的推荐工作流是：
+PlainDeck v0.2.3 面向 Agent 的推荐工作流是：
 
 ```text
 init → inspect → operations → validate → dry-run → apply → render
@@ -19,7 +19,7 @@ plaindeck add-slide <project> --layout <id> [--name <name>]
 plaindeck render <project> --format html|png|pdf --output <path> [--slide <index|path>] [--allow-network]
 ```
 
-`init` 让 Agent 无需先编写 TypeScript 即可创建完整项目。默认生成五页 `showcase` 模板与 `studio-cobalt` 配色；若目标目录已经有 `deck.json`，命令会以退出码 `2` 拒绝覆盖。内置模板为 `showcase`、`pitch`、`blank`，内置主题为 `studio-cobalt`、`night-citrus`、`ink-rose`、`paper-signal`、`night-blue`、`field-notes`、`editorial-blue`、`poster-red`。
+`init` 让 Agent 无需先编写 TypeScript 即可创建完整项目。默认生成五页 `showcase` 模板与 `studio-cobalt` 配色；创建前会检查 `deck.json`、主题、所有计划页面和 `.gitignore`，任何目标文件已存在都会以退出码 `2` 拒绝初始化，且不会先写入其他文件。内置模板为 `showcase`、`pitch`、`blank`，内置主题为 `studio-cobalt`、`night-citrus`、`ink-rose`、`paper-signal`、`night-blue`、`field-notes`、`editorial-blue`、`poster-red`。
 
 `--json` 时 stdout 只包含 JSON，错误诊断写入 stderr。成功退出码为 `0`，校验或执行失败为 `1`，参数错误为 `2`。`apply --dry-run` 会返回 `changedPaths` 与 validation 结果，但不会写入文件。
 

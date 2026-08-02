@@ -2,7 +2,7 @@
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { stdin, stderr, stdout } from 'node:process'
-import { applyOperations, createDeckTemplate, deckTemplatePresets, inspectDeck, layoutPresets, themePresets, validateDeck, type DeckTemplateId } from './core/index.js'
+import { applyOperations, createDeckTemplate, createSavePlan, deckTemplatePresets, inspectDeck, layoutPresets, themePresets, validateDeck, type DeckTemplateId } from './core/index.js'
 import { loadDeck, prepareDocumentAssets, renderPdf, renderPng, saveDeck } from './node/index.js'
 import { renderHtml } from './render/index.js'
 import packageMetadata from '../package.json' with { type: 'json' }
@@ -71,8 +71,11 @@ async function run() {
     const theme = option('--theme') ?? 'studio-cobalt'
     if (!deckTemplatePresets.some(item => item.id === template)) throw new UsageError(`未知模板 ${template}。可用模板：${deckTemplatePresets.map(item => item.id).join(', ')}`)
     if (!themePresets.some(item => item.id === theme)) throw new UsageError(`未知主题 ${theme}。可用主题：${themePresets.map(item => item.id).join(', ')}`)
-    if (await exists(join(root, 'deck.json'))) throw new UsageError(`项目已存在：${join(root, 'deck.json')}。init 不会覆盖现有项目。`)
     const document = createDeckTemplate(template as DeckTemplateId, { title: option('--title'), id: option('--id'), theme })
+    const plannedPaths = [...createSavePlan(document).targets, '.gitignore']
+    const collisions: string[] = []
+    for (const path of plannedPaths) if (await exists(join(root, path.replace(/^\.\//, '')))) collisions.push(path)
+    if (collisions.length) throw new UsageError(`目标目录包含将被创建的文件：${collisions.join('、')}。init 已停止，请使用空目录。`)
     const changedPaths = await saveDeck(root, document)
     const ignore = join(root, '.gitignore')
     if (!await exists(ignore)) {

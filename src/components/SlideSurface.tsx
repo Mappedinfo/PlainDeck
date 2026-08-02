@@ -1,7 +1,7 @@
 import { Image as ImageIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { Frame, Slide, SlideElement } from 'plaindeck/core'
-import { resizeFrame, snap } from '../core/geometry'
+import { moveFrame, resizeFrame } from '../core/geometry'
 import { useEditor } from '../store'
 import { resolveAssetUrl } from '../storage/browserStorage'
 
@@ -35,7 +35,7 @@ function ElementView({ element, interactive, zoom }: { element: SlideElement; in
   const move = (event: React.PointerEvent) => {
     if (!start.current) return
     const dx = (event.clientX - start.current.x) / zoom; const dy = (event.clientY - start.current.y) / zoom
-    if (start.current.mode === 'move') setDraft({ ...start.current.frame, x: snap(start.current.frame.x + dx), y: snap(start.current.frame.y + dy) })
+    if (start.current.mode === 'move') setDraft(moveFrame(start.current.frame, dx, dy, document.deck.canvas))
     else setDraft(resizeFrame(start.current.frame, dx, dy, document.deck.canvas))
   }
   const end = () => {

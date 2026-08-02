@@ -16,9 +16,13 @@ interface EditorState {
   error: string | null
   directory: DirectoryHandle | null
   dirtyPaths: Set<string>
+  dirtyRevisions: Map<string, number>
+  revision: number
+  persistedRevision: number
   past: Snapshot[]
   future: Snapshot[]
   setDocument(document: DeckDocument, directory?: DirectoryHandle | null): void
+  restoreDocument(document: DeckDocument, revision?: number): void
   setActiveSlide(path: string): void
   renameSlide(name: string): void
   select(ids: string[]): void
@@ -40,7 +44,7 @@ interface EditorState {
   commitDocument(document: DeckDocument, label: string, dirtyPaths: string[]): void
   undo(): void
   redo(): void
-  clearDirty(paths: Set<string>): void
+  clearDirty(revisions: Map<string, number>): void
 }
 
 const clone = <T,>(value: T): T => structuredClone(value)
@@ -55,8 +59,12 @@ function commitOperations(state: EditorState, operations: DeckOperation[], label
 
 export const useEditor = create<EditorState>((set, get) => ({
   document: initialDocument, activeSlidePath: initialDocument.deck.slides[0], selectedIds: [], zoom: .58,
-  saveState: 'demo', error: null, directory: null, dirtyPaths: new Set(), past: [], future: [],
-  setDocument: (document, directory = null) => set({ document, directory, activeSlidePath: document.deck.slides[0], selectedIds: [], past: [], future: [], dirtyPaths: new Set(), saveState: directory ? 'saved' : 'demo', error: null }),
+  saveState: 'demo', error: null, directory: null, dirtyPaths: new Set(), dirtyRevisions: new Map(), revision: 0, persistedRevision: 0, past: [], future: [],
+  setDocument: (document, directory = null) => set({ document, directory, activeSlidePath: document.deck.slides[0], selectedIds: [], past: [], future: [], dirtyPaths: new Set(), dirtyRevisions: new Map(), revision: 0, persistedRevision: 0, saveState: directory ? 'saved' : 'demo', error: null }),
+  restoreDocument: (document, revision = 1) => {
+    const paths = ['deck.json', document.deck.theme, ...document.deck.slides]
+    set({ document, directory: null, activeSlidePath: document.deck.slides[0], selectedIds: [], past: [], future: [], dirtyPaths: new Set(paths), dirtyRevisions: new Map(paths.map(path => [path, revision])), revision, persistedRevision: 0, saveState: 'dirty', error: null })
+  },
   setActiveSlide: activeSlidePath => set({ activeSlidePath, selectedIds: [] }),
   renameSlide: name => {
     const state = get(); const next = name.trim(); const slide = state.document.slides[state.activeSlidePath]
@@ -66,11 +74,15 @@ export const useEditor = create<EditorState>((set, get) => ({
   select: selectedIds => set({ selectedIds }),
   setZoom: zoom => set({ zoom: Math.min(1.25, Math.max(.2, zoom)) }),
   setSaveState: (saveState, error = null) => set({ saveState, error }),
-  commitDocument: (document, label, paths) => set(state => ({
-    document, saveState: 'dirty', future: [],
-    past: [...state.past, { document: clone(state.document), label }].slice(-100),
-    dirtyPaths: new Set([...state.dirtyPaths, ...paths]),
-  })),
+  commitDocument: (document, label, paths) => set(state => {
+    const revision = state.revision + 1
+    const dirtyRevisions = new Map(state.dirtyRevisions); paths.forEach(path => dirtyRevisions.set(path, revision))
+    return {
+      document, revision, saveState: 'dirty', future: [],
+      past: [...state.past, { document: clone(state.document), label }].slice(-100),
+      dirtyPaths: new Set(dirtyRevisions.keys()), dirtyRevisions,
+    }
+  }),
   updateElement: (id, patch, label = '修改元素') => {
     const state = get(); const slide = state.document.slides[state.activeSlidePath]
     if (!slide.elements.some(element => element.id === id)) return
@@ -137,7 +149,22 @@ export const useEditor = create<EditorState>((set, get) => ({
   },
   updateTheme: patch => { const state = get(); commitOperations(state, [{ op: 'set-theme', patch }], '修改主题') },
   applyTheme: theme => { const state = get(); commitOperations(state, [{ op: 'set-theme', theme }], '应用主题') },
-  undo: () => set(state => { const entry = state.past.at(-1); if (!entry) return state; return { document: clone(entry.document), past: state.past.slice(0, -1), future: [{ document: clone(state.document), label: entry.label }, ...state.future].slice(0, 100), dirtyPaths: new Set(['deck.json', state.document.deck.theme, ...state.document.deck.slides]), saveState: 'dirty' } }),
-  redo: () => set(state => { const entry = state.future[0]; if (!entry) return state; return { document: clone(entry.document), future: state.future.slice(1), past: [...state.past, { document: clone(state.document), label: entry.label }].slice(-100), dirtyPaths: new Set(['deck.json', state.document.deck.theme, ...state.document.deck.slides]), saveState: 'dirty' } }),
-  clearDirty: paths => set(state => { const dirtyPaths = new Set(state.dirtyPaths); paths.forEach(path => dirtyPaths.delete(path)); return { dirtyPaths, saveState: dirtyPaths.size ? 'dirty' : state.directory ? 'saved' : 'demo' } }),
+  undo: () => set(state => {
+    const entry = state.past.at(-1); if (!entry) return state
+    const revision = state.revision + 1; const paths = ['deck.json', entry.document.deck.theme, ...new Set([...state.document.deck.slides, ...entry.document.deck.slides])]
+    const dirtyRevisions = new Map(state.dirtyRevisions); paths.forEach(path => dirtyRevisions.set(path, revision))
+    return { document: clone(entry.document), revision, past: state.past.slice(0, -1), future: [{ document: clone(state.document), label: entry.label }, ...state.future].slice(0, 100), dirtyPaths: new Set(dirtyRevisions.keys()), dirtyRevisions, saveState: 'dirty' }
+  }),
+  redo: () => set(state => {
+    const entry = state.future[0]; if (!entry) return state
+    const revision = state.revision + 1; const paths = ['deck.json', entry.document.deck.theme, ...new Set([...state.document.deck.slides, ...entry.document.deck.slides])]
+    const dirtyRevisions = new Map(state.dirtyRevisions); paths.forEach(path => dirtyRevisions.set(path, revision))
+    return { document: clone(entry.document), revision, future: state.future.slice(1), past: [...state.past, { document: clone(state.document), label: entry.label }].slice(-100), dirtyPaths: new Set(dirtyRevisions.keys()), dirtyRevisions, saveState: 'dirty' }
+  }),
+  clearDirty: captured => set(state => {
+    const dirtyRevisions = new Map(state.dirtyRevisions)
+    captured.forEach((revision, path) => { if (dirtyRevisions.get(path) === revision) dirtyRevisions.delete(path) })
+    const dirtyPaths = new Set(dirtyRevisions.keys()); const saved = dirtyPaths.size === 0
+    return { dirtyPaths, dirtyRevisions, persistedRevision: saved ? state.revision : state.persistedRevision, saveState: saved ? state.directory ? 'saved' : 'demo' : 'dirty' }
+  }),
 }))

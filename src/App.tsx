@@ -8,10 +8,12 @@ import { StatusBar } from './components/StatusBar'
 import { SlideNameEditor } from './components/SlideNameEditor'
 import { createSampleDocument } from './core/sample'
 import { blobToDataUrl, fitImageFrame, hasTransferredImages, imageDimensions, imageFiles, transferredImageFiles, validateImageFile } from './core/imageImport'
+import { createSaveLoop } from './core/saveLoop'
 import { useEditor } from './store'
 import { exportHtml } from './export/html'
+import { waitForPrintResources } from './export/print'
 import { exportZip, importZip } from './storage/zipStorage'
-import { pickDirectory, readProject, restoreFromOpfs, snapshotToOpfs, verifyPermission, writeImageAsset, writeProject } from './storage/browserStorage'
+import { clearRecoveryFromOpfs, initializeProject, pickDirectory, projectFingerprint, readProject, restoreFromOpfs, snapshotToOpfs, verifyPermission, writeImageAsset, writeProject } from './storage/browserStorage'
 
 type ApplyUpdate = (reloadPage?: boolean) => Promise<void>
 
@@ -25,14 +27,14 @@ function Presentation({ onClose }: { onClose: () => void }) {
 function ExportDialog({ onClose }: { onClose: () => void }) {
   const editor = useEditor(); const { document, directory } = editor
   const action = async (type: 'html' | 'zip' | 'pdf') => {
-    try { if (type === 'html') await exportHtml(document, directory); if (type === 'zip') await exportZip(document, directory); if (type === 'pdf') setTimeout(() => window.print(), 100); onClose() }
+    try { if (type === 'html') await exportHtml(document, directory); if (type === 'zip') await exportZip(document, directory); if (type === 'pdf') { await waitForPrintResources(globalThis.document.querySelector('.print-deck') ?? globalThis.document); window.print() } onClose() }
     catch (error) { editor.setSaveState('error', error instanceof Error ? error.message : String(error)) }
   }
   return <div className="modal-backdrop" onMouseDown={onClose}><div className="export-dialog" onMouseDown={e => e.stopPropagation()}><div><span className="eyebrow">PORTABLE OUTPUT</span><button onClick={onClose}><X /></button></div><h2>Take the deck with you.</h2><p>原始项目始终留在本地。导出不会改变源文件。</p><button className="export-choice" onClick={() => action('html')}><FileCode2 /><span><strong>Standalone HTML</strong><small>浏览器播放与分享</small></span><Download /></button><button className="export-choice" onClick={() => action('pdf')}><Printer /><span><strong>Print / PDF</strong><small>使用浏览器分页打印</small></span><Download /></button><button className="export-choice" onClick={() => action('zip')}><FileArchive /><span><strong>Project ZIP</strong><small>Firefox / Safari 回退与迁移</small></span><Download /></button></div></div>
 }
 
 export default function App() {
-  const state = useEditor(); const [present, setPresent] = useState(false); const [exporting, setExporting] = useState(false); const [updateReady, setUpdateReady] = useState(false); const [draggingImage, setDraggingImage] = useState(false); const [imageNotice, setImageNotice] = useState(''); const [recovery, setRecovery] = useState<Awaited<ReturnType<typeof restoreFromOpfs>>>(null); const zipRef = useRef<HTMLInputElement>(null); const imageRef = useRef<HTMLInputElement>(null); const canvasRef = useRef<HTMLElement>(null); const applyUpdateRef = useRef<ApplyUpdate>(null)
+  const state = useEditor(); const [present, setPresent] = useState(false); const [exporting, setExporting] = useState(false); const [updateReady, setUpdateReady] = useState(false); const [draggingImage, setDraggingImage] = useState(false); const [imageNotice, setImageNotice] = useState(''); const [recovery, setRecovery] = useState<Awaited<ReturnType<typeof restoreFromOpfs>>>(null); const zipRef = useRef<HTMLInputElement>(null); const imageRef = useRef<HTMLInputElement>(null); const canvasRef = useRef<HTMLElement>(null); const applyUpdateRef = useRef<ApplyUpdate>(null); const saveLoopRef = useRef<ReturnType<typeof createSaveLoop> | null>(null)
   const fitCanvas = useCallback(() => {
     const workspace = canvasRef.current
     if (!workspace) return
@@ -63,15 +65,22 @@ export default function App() {
     const rect = surface.getBoundingClientRect(); const canvas = useEditor.getState().document.deck.canvas
     return { x: (clientX - rect.left) * canvas.width / rect.width, y: (clientY - rect.top) * canvas.height / rect.height }
   }, [])
-  const save = useCallback(async () => {
-    const current = useEditor.getState(); if (!current.dirtyPaths.size && current.saveState !== 'demo') return
-    const paths = new Set(current.dirtyPaths); current.setSaveState('saving')
-    try {
-      await snapshotToOpfs(current.document)
-      if (current.directory) { if (!await verifyPermission(current.directory)) throw new Error('目录写入权限已失效，请重新打开目录。'); await writeProject(current.directory, current.document, paths) }
-      current.clearDirty(paths)
-    } catch (error) { current.setSaveState('error', error instanceof Error ? error.message : String(error)) }
-  }, [])
+  if (!saveLoopRef.current) saveLoopRef.current = createSaveLoop({
+    hasPending: () => useEditor.getState().dirtyRevisions.size > 0,
+    saveOnce: async () => {
+      const current = useEditor.getState(); const captured = new Map(current.dirtyRevisions); const paths = new Set(captured.keys()); const document = structuredClone(current.document); const directory = current.directory
+      current.setSaveState('saving')
+      await snapshotToOpfs({ document, projectFingerprint: projectFingerprint(document, directory), revision: current.revision, persistedRevision: current.persistedRevision })
+      if (directory) {
+        if (!await verifyPermission(directory)) throw new Error('目录写入权限已失效，请重新打开目录。')
+        await writeProject(directory, document, paths)
+      }
+      useEditor.getState().clearDirty(captured)
+      if (directory && !useEditor.getState().dirtyRevisions.size) await clearRecoveryFromOpfs()
+    },
+    onError: error => { useEditor.getState().setSaveState('error', error instanceof Error ? error.message : String(error)) },
+  })
+  const save = useCallback(() => saveLoopRef.current!.request(), [])
 
   useEffect(() => { if (state.saveState !== 'dirty') return; const timer = setTimeout(save, 700); return () => clearTimeout(timer) }, [state.document, state.saveState, save])
   useEffect(() => { const update = (event: Event) => { const applyUpdate = (event as CustomEvent<ApplyUpdate>).detail; if (typeof applyUpdate !== 'function') return; applyUpdateRef.current = applyUpdate; setUpdateReady(true) }; addEventListener('plaindeck-update', update); return () => removeEventListener('plaindeck-update', update) }, [])
@@ -102,11 +111,11 @@ export default function App() {
   }, [save])
 
   const openDirectory = async () => {
-    try { const handle = await pickDirectory(); if (!await verifyPermission(handle, true)) throw new Error('未授予目录写入权限。'); state.setSaveState('saving'); state.setDocument(await readProject(handle), handle) }
+    try { const handle = await pickDirectory(); if (!await verifyPermission(handle, true)) throw new Error('未授予目录写入权限。'); state.setSaveState('saving'); const document = await readProject(handle); state.setDocument(document, handle); setRecovery(await restoreFromOpfs(projectFingerprint(document, handle))) }
     catch (error) { if ((error as DOMException).name !== 'AbortError') state.setSaveState('error', error instanceof Error ? error.message : String(error)) }
   }
   const newProject = async () => {
-    try { const handle = await pickDirectory(); if (!await verifyPermission(handle, true)) throw new Error('未授予目录写入权限。'); const document = createSampleDocument(); await writeProject(handle, document); state.setDocument(document, handle) }
+    try { const handle = await pickDirectory(); if (!await verifyPermission(handle, true)) throw new Error('未授予目录写入权限。'); const document = createSampleDocument(); await initializeProject(handle, document); await clearRecoveryFromOpfs(); setRecovery(null); state.setDocument(document, handle) }
     catch (error) { if ((error as DOMException).name !== 'AbortError') state.setSaveState('error', error instanceof Error ? error.message : String(error)) }
   }
   const loadZip = async (file?: File) => { if (!file) return; try { state.setDocument(await importZip(file), null) } catch (error) { state.setSaveState('error', error instanceof Error ? error.message : String(error)) } }
@@ -119,7 +128,7 @@ export default function App() {
     <StatusBar />
     <div className="print-deck">{state.document.deck.slides.map(path => <div className="print-page" key={path}><SlideSurface slide={state.document.slides[path]} interactive={false} zoom={1} /></div>)}</div>
     {present && <Presentation onClose={() => setPresent(false)} />}{exporting && <ExportDialog onClose={() => setExporting(false)} />}
-    {recovery && <div className="recovery-toast"><strong>发现恢复快照</strong><span>{new Date(recovery.savedAt).toLocaleString()}</span><div><button onClick={() => setRecovery(null)}>忽略</button><button onClick={() => { state.setDocument(recovery.document); setRecovery(null) }}>恢复</button></div></div>}
+    {recovery && <div className="recovery-toast"><strong>发现未保存的恢复快照</strong><span>{new Date(recovery.savedAt).toLocaleString()}</span><div><button onClick={() => { setRecovery(null); void clearRecoveryFromOpfs() }}>丢弃</button><button onClick={() => { state.restoreDocument(recovery.document, recovery.revision); setRecovery(null) }}>恢复</button></div></div>}
     {imageNotice && <div className="image-toast" role="status">{imageNotice}</div>}
     {updateReady && <div className="update-toast">新版本已就绪。保存后刷新以更新。<button onClick={() => { const applyUpdate = applyUpdateRef.current; if (!applyUpdate) return; setUpdateReady(false); void applyUpdate(true).catch(() => setUpdateReady(true)) }}>刷新</button></div>}
   </div>

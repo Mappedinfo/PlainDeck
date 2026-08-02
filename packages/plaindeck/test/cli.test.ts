@@ -1,4 +1,4 @@
-import { cp, mkdtemp, readFile } from 'node:fs/promises'
+import { cp, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { spawn } from 'node:child_process'
@@ -39,6 +39,23 @@ describe('PlainDeck CLI', () => {
     const repeated = await run(['init', root, '--json'])
     expect(repeated.code).toBe(2)
     expect(await readFile(join(root, 'deck.json'), 'utf8')).toBe(before)
+  })
+
+  it('refuses init before writing when any planned file already exists', async () => {
+    const parent = await mkdtemp(join(tmpdir(), 'plaindeck-cli-collision-'))
+    const themeRoot = join(parent, 'theme-collision'); await mkdir(themeRoot); await writeFile(join(themeRoot, 'theme.json'), 'keep-theme', 'utf8')
+    const themeResult = await run(['init', themeRoot, '--json'])
+    expect(themeResult.code).toBe(2)
+    expect(JSON.parse(themeResult.stdout).error.message).toContain('./theme.json')
+    expect(await readFile(join(themeRoot, 'theme.json'), 'utf8')).toBe('keep-theme')
+    await expect(readFile(join(themeRoot, 'deck.json'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
+
+    const slideRoot = join(parent, 'slide-collision'); await mkdir(join(slideRoot, 'slides'), { recursive: true }); await writeFile(join(slideRoot, 'slides/001-cover.json'), 'keep-slide', 'utf8')
+    const slideResult = await run(['init', slideRoot, '--json'])
+    expect(slideResult.code).toBe(2)
+    expect(JSON.parse(slideResult.stdout).error.message).toContain('./slides/001-cover.json')
+    expect(await readFile(join(slideRoot, 'slides/001-cover.json'), 'utf8')).toBe('keep-slide')
+    await expect(readFile(join(slideRoot, 'deck.json'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
   })
 
   it('validates and inspects a project as JSON', async () => {
