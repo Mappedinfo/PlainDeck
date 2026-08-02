@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  base: '/PlainDeck/',
   plugins: [
     react(),
     VitePWA({
@@ -15,6 +16,8 @@ export default defineConfig({
         theme_color: '#171714',
         background_color: '#171714',
         display: 'standalone',
+        start_url: '/PlainDeck/',
+        scope: '/PlainDeck/',
         icons: [{ src: 'plaindeck-mark.svg', sizes: 'any', type: 'image/svg+xml' }]
       },
       workbox: { globPatterns: ['**/*.{js,css,html,svg,woff2}'] }

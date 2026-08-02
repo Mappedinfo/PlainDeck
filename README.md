@@ -2,6 +2,8 @@
 
 PlainDeck 是一个 Pure Web、Local-first、Git-native 的可视化幻灯片编辑器。它像轻量版 PowerPoint 一样提供逐页画布、拖放、缩放、文字编辑与主题调整，但使用稳定、可读的一页一 JSON 文件作为源格式。
 
+在线体验：[https://mappedinfo.github.io/PlainDeck/](https://mappedinfo.github.io/PlainDeck/)
+
 ## 本地运行
 
 要求 Node.js 22 或更新版本。
@@ -43,6 +45,10 @@ npm test
 npm run build
 npm run test:e2e
 ```
+
+## GitHub Pages
+
+推送到 `main` 后，`.github/workflows/deploy-pages.yml` 会安装锁定依赖、执行类型检查和单元测试、构建 PWA，并将 `dist/` 部署到 GitHub Pages。项目使用 `/PlainDeck/` 作为生产基础路径。
 
 ## 项目格式
 
