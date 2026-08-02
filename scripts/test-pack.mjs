@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
 const root = resolve(import.meta.dirname, '..')
+const expectedVersion = JSON.parse(readFileSync(join(root, 'packages/plaindeck/package.json'), 'utf8')).version
 const work = mkdtempSync(join(tmpdir(), 'plaindeck-pack-test-'))
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 
@@ -22,7 +23,7 @@ try {
   run(npm, ['install', '--ignore-scripts', '--no-audit', '--no-fund', tarball], { cwd: installRoot })
   const cli = join(installRoot, 'node_modules', '.bin', process.platform === 'win32' ? 'plaindeck.cmd' : 'plaindeck')
   const version = run(cli, ['--version'], { cwd: installRoot })
-  if (version !== '0.2.0') throw new Error(`unexpected CLI version: ${version}`)
+  if (version !== expectedVersion) throw new Error(`unexpected CLI version: ${version}; expected ${expectedVersion}`)
   const exportsCheck = run(process.execPath, ['--input-type=module', '-e', "import { createDeckTemplate, validateDeck } from 'plaindeck'; import { DeckSchema } from 'plaindeck/core'; import { renderHtml } from 'plaindeck/render'; console.log([typeof createDeckTemplate, typeof validateDeck, typeof DeckSchema.parse, typeof renderHtml].join(','))"], { cwd: installRoot })
   if (exportsCheck !== 'function,function,function,function') throw new Error(`unexpected package exports: ${exportsCheck}`)
   const created = join(work, 'created-deck')

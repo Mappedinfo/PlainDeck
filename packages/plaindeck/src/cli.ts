@@ -5,8 +5,9 @@ import { stdin, stderr, stdout } from 'node:process'
 import { applyOperations, createDeckTemplate, deckTemplatePresets, inspectDeck, layoutPresets, themePresets, validateDeck, type DeckTemplateId } from './core/index.js'
 import { loadDeck, prepareDocumentAssets, renderPdf, renderPng, saveDeck } from './node/index.js'
 import { renderHtml } from './render/index.js'
+import packageMetadata from '../package.json' with { type: 'json' }
 
-const VERSION = '0.2.0'
+const VERSION = packageMetadata.version
 const args = process.argv.slice(2)
 const command = args[0]
 const jsonMode = args.includes('--json')
