@@ -4,16 +4,21 @@ import { useEditor } from './store'
 
 describe('editor command history', () => {
   beforeEach(() => useEditor.getState().setDocument(createSampleDocument()))
+  it('always opens the first page from deck order', () => {
+    const state = useEditor.getState()
+    expect(state.activeSlidePath).toBe(state.document.deck.slides[0])
+    expect(state.document.slides[state.activeSlidePath]).toBeDefined()
+  })
   it('undoes and redoes one stable element update', () => {
     const store = useEditor.getState(); store.updateElement('title', { text: 'Changed' }, 'edit')
-    expect(useEditor.getState().document.slides['./slides/001-title.json'].elements.find(item => item.id === 'title')).toMatchObject({ text: 'Changed' })
+    expect(useEditor.getState().document.slides['./slides/001-intro.json'].elements.find(item => item.id === 'title')).toMatchObject({ text: 'Changed' })
     useEditor.getState().undo()
-    expect(useEditor.getState().document.slides['./slides/001-title.json'].elements.find(item => item.id === 'title')).not.toMatchObject({ text: 'Changed' })
+    expect(useEditor.getState().document.slides['./slides/001-intro.json'].elements.find(item => item.id === 'title')).not.toMatchObject({ text: 'Changed' })
     useEditor.getState().redo()
-    expect(useEditor.getState().document.slides['./slides/001-title.json'].elements.find(item => item.id === 'title')).toMatchObject({ text: 'Changed' })
+    expect(useEditor.getState().document.slides['./slides/001-intro.json'].elements.find(item => item.id === 'title')).toMatchObject({ text: 'Changed' })
   })
   it('marks only active slide dirty for an element update', () => {
     const store = useEditor.getState(); store.updateElement('title', { text: 'Changed' })
-    expect([...useEditor.getState().dirtyPaths]).toEqual(['./slides/001-title.json'])
+    expect([...useEditor.getState().dirtyPaths]).toEqual(['./slides/001-intro.json'])
   })
 })

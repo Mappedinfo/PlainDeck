@@ -1,0 +1,26 @@
+{
+  "id": "workflow",
+  "name": "四步开始",
+  "elements": [
+    { "id": "heading", "type": "text", "styleRef": "slide-title", "frame": { "x": 80, "y": 60, "w": 1100, "h": 82 }, "text": "第一次使用，只要四步", "fontSize": 56, "fontWeight": 700 },
+    { "id": "subheading", "type": "text", "frame": { "x": 82, "y": 155, "w": 1300, "h": 48 }, "text": "在线先试，喜欢再把项目保存到自己的文件夹。", "fontSize": 26, "color": "#706F67" },
+    { "id": "rail", "type": "shape", "frame": { "x": 190, "y": 390, "w": 1200, "h": 8 }, "shape": "rectangle", "fill": "#DDD7C9" },
+    { "id": "step-1", "type": "shape", "frame": { "x": 130, "y": 330, "w": 128, "h": 128 }, "shape": "ellipse", "fill": "#E85538" },
+    { "id": "step-1-number", "type": "text", "frame": { "x": 130, "y": 355, "w": 128, "h": 72 }, "text": "1", "fontSize": 56, "fontWeight": 700, "align": "center", "color": "#FFF8E9" },
+    { "id": "step-1-title", "type": "text", "frame": { "x": 70, "y": 500, "w": 250, "h": 55 }, "text": "打开页面", "fontSize": 32, "fontWeight": 700, "align": "center" },
+    { "id": "step-1-copy", "type": "text", "frame": { "x": 70, "y": 570, "w": 250, "h": 100 }, "text": "直接体验默认模板", "fontSize": 24, "align": "center", "color": "#706F67" },
+    { "id": "step-2", "type": "shape", "frame": { "x": 510, "y": 330, "w": 128, "h": 128 }, "shape": "ellipse", "fill": "#20211D" },
+    { "id": "step-2-number", "type": "text", "frame": { "x": 510, "y": 355, "w": 128, "h": 72 }, "text": "2", "fontSize": 56, "fontWeight": 700, "align": "center", "color": "#FFF8E9" },
+    { "id": "step-2-title", "type": "text", "frame": { "x": 450, "y": 500, "w": 250, "h": 55 }, "text": "新建项目", "fontSize": 32, "fontWeight": 700, "align": "center" },
+    { "id": "step-2-copy", "type": "text", "frame": { "x": 450, "y": 570, "w": 250, "h": 100 }, "text": "选择本地空文件夹", "fontSize": 24, "align": "center", "color": "#706F67" },
+    { "id": "step-3", "type": "shape", "frame": { "x": 890, "y": 330, "w": 128, "h": 128 }, "shape": "ellipse", "fill": "#E85538" },
+    { "id": "step-3-number", "type": "text", "frame": { "x": 890, "y": 355, "w": 128, "h": 72 }, "text": "3", "fontSize": 56, "fontWeight": 700, "align": "center", "color": "#FFF8E9" },
+    { "id": "step-3-title", "type": "text", "frame": { "x": 830, "y": 500, "w": 250, "h": 55 }, "text": "拖拽编辑", "fontSize": 32, "fontWeight": 700, "align": "center" },
+    { "id": "step-3-copy", "type": "text", "frame": { "x": 830, "y": 570, "w": 250, "h": 100 }, "text": "自动保存为 JSON", "fontSize": 24, "align": "center", "color": "#706F67" },
+    { "id": "step-4", "type": "shape", "frame": { "x": 1270, "y": 330, "w": 128, "h": 128 }, "shape": "ellipse", "fill": "#20211D" },
+    { "id": "step-4-number", "type": "text", "frame": { "x": 1270, "y": 355, "w": 128, "h": 72 }, "text": "4", "fontSize": 56, "fontWeight": 700, "align": "center", "color": "#FFF8E9" },
+    { "id": "step-4-title", "type": "text", "frame": { "x": 1210, "y": 500, "w": 250, "h": 55 }, "text": "交给 Git", "fontSize": 32, "fontWeight": 700, "align": "center" },
+    { "id": "step-4-copy", "type": "text", "frame": { "x": 1210, "y": 570, "w": 250, "h": 100 }, "text": "比较、提交、回滚", "fontSize": 24, "align": "center", "color": "#706F67" },
+    { "id": "browser-note", "type": "text", "frame": { "x": 80, "y": 775, "w": 1440, "h": 44 }, "text": "原位保存目前优先支持桌面 Chrome / Edge", "fontSize": 22, "fontWeight": 700, "align": "center", "color": "#E85538" }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "boundaries",
+  "name": "适合与边界",
+  "background": { "color": "#20211D" },
+  "elements": [
+    { "id": "kicker", "type": "text", "frame": { "x": 80, "y": 62, "w": 700, "h": 42 }, "text": "CHOOSE THE RIGHT TOOL", "fontSize": 20, "fontWeight": 700, "color": "#E85538" },
+    { "id": "heading", "type": "text", "frame": { "x": 80, "y": 125, "w": 1200, "h": 85 }, "text": "PlainDeck 适合你吗？", "fontSize": 58, "fontWeight": 700, "color": "#FFF8E9" },
+    { "id": "fit-card", "type": "shape", "frame": { "x": 80, "y": 260, "w": 680, "h": 420 }, "shape": "rounded-rectangle", "fill": "#E85538", "radius": 24 },
+    { "id": "fit-title", "type": "text", "frame": { "x": 125, "y": 302, "w": 580, "h": 56 }, "text": "适合", "fontSize": 40, "fontWeight": 700, "color": "#FFF8E9" },
+    { "id": "fit-copy", "type": "text", "frame": { "x": 125, "y": 390, "w": 570, "h": 220 }, "text": "科研汇报与课程展示\nAI 生成初稿，人工精调\n重视本地文件与版本历史\n想比 Markdown 更自由", "fontSize": 29, "fontWeight": 500, "color": "#FFF8E9" },
+    { "id": "limit-card", "type": "shape", "frame": { "x": 840, "y": 260, "w": 680, "h": 420 }, "shape": "rounded-rectangle", "fill": "#31322D", "stroke": "#706F67", "strokeWidth": 3, "radius": 24 },
+    { "id": "limit-title", "type": "text", "frame": { "x": 885, "y": 302, "w": 580, "h": 56 }, "text": "暂不适合", "fontSize": 40, "fontWeight": 700, "color": "#FFF8E9" },
+    { "id": "limit-copy", "type": "text", "frame": { "x": 885, "y": 390, "w": 570, "h": 220 }, "text": "复杂动画与 SmartArt\n无损导入任意 PPTX\n多人实时云端协作\n完整 Office 兼容", "fontSize": 29, "fontWeight": 500, "color": "#C8C4B9" },
+    { "id": "cta", "type": "text", "frame": { "x": 80, "y": 755, "w": 1440, "h": 72 }, "text": "先在线试试。喜欢，再保存到自己的文件夹。", "fontSize": 32, "fontWeight": 700, "align": "center", "color": "#FFF8E9" }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "three-ways",
+  "name": "人、AI 与 Git",
+  "elements": [
+    { "id": "heading", "type": "text", "styleRef": "slide-title", "frame": { "x": 80, "y": 60, "w": 1120, "h": 82 }, "text": "给人、AI 和 Git 各一份友好", "fontSize": 54, "fontWeight": 700 },
+    { "id": "subheading", "type": "text", "frame": { "x": 82, "y": 155, "w": 1200, "h": 50 }, "text": "用户交互优先，底层文件保持开放。", "fontSize": 26, "color": "#706F67" },
+    { "id": "human-card", "type": "shape", "frame": { "x": 80, "y": 250, "w": 420, "h": 450 }, "shape": "rounded-rectangle", "fill": "#E85538", "radius": 24 },
+    { "id": "human-number", "type": "text", "frame": { "x": 120, "y": 288, "w": 90, "h": 55 }, "text": "01", "fontSize": 28, "fontWeight": 700, "color": "#FFF8E9" },
+    { "id": "human-title", "type": "text", "frame": { "x": 120, "y": 370, "w": 330, "h": 65 }, "text": "给人", "fontSize": 44, "fontWeight": 700, "color": "#FFF8E9" },
+    { "id": "human-copy", "type": "text", "frame": { "x": 120, "y": 470, "w": 330, "h": 150 }, "text": "打开浏览器直接拖拽，\n不需要手写代码。", "fontSize": 28, "fontWeight": 500, "color": "#FFF8E9" },
+    { "id": "ai-card", "type": "shape", "frame": { "x": 590, "y": 250, "w": 420, "h": 450 }, "shape": "rounded-rectangle", "fill": "#20211D", "radius": 24 },
+    { "id": "ai-number", "type": "text", "frame": { "x": 630, "y": 288, "w": 90, "h": 55 }, "text": "02", "fontSize": 28, "fontWeight": 700, "color": "#FFF8E9" },
+    { "id": "ai-title", "type": "text", "frame": { "x": 630, "y": 370, "w": 330, "h": 65 }, "text": "给 AI", "fontSize": 44, "fontWeight": 700, "color": "#FFF8E9" },
+    { "id": "ai-copy", "type": "text", "frame": { "x": 630, "y": 470, "w": 330, "h": 150 }, "text": "内容与布局都是\n结构清楚的 JSON。", "fontSize": 28, "fontWeight": 500, "color": "#FFF8E9" },
+    { "id": "git-card", "type": "shape", "frame": { "x": 1100, "y": 250, "w": 420, "h": 450 }, "shape": "rounded-rectangle", "fill": "#DDD7C9", "radius": 24 },
+    { "id": "git-number", "type": "text", "frame": { "x": 1140, "y": 288, "w": 90, "h": 55 }, "text": "03", "fontSize": 28, "fontWeight": 700 },
+    { "id": "git-title", "type": "text", "frame": { "x": 1140, "y": 370, "w": 330, "h": 65 }, "text": "给 Git", "fontSize": 44, "fontWeight": 700 },
+    { "id": "git-copy", "type": "text", "frame": { "x": 1140, "y": 470, "w": 330, "h": 150 }, "text": "一页一个文件，\n每次修改清清楚楚。", "fontSize": 28, "fontWeight": 500 },
+    { "id": "footer", "type": "text", "frame": { "x": 80, "y": 770, "w": 1440, "h": 50 }, "text": "人决定怎么讲 · AI 协助怎么写 · Git 负责记住历史", "fontSize": 24, "fontWeight": 700, "align": "center", "color": "#E85538" }
+  ]
+}

@@ -25,7 +25,14 @@ function ExportDialog({ onClose }: { onClose: () => void }) {
 }
 
 export default function App() {
-  const state = useEditor(); const [present, setPresent] = useState(false); const [exporting, setExporting] = useState(false); const [updateReady, setUpdateReady] = useState(false); const [recovery, setRecovery] = useState<Awaited<ReturnType<typeof restoreFromOpfs>>>(null); const fileRef = useRef<HTMLInputElement>(null)
+  const state = useEditor(); const [present, setPresent] = useState(false); const [exporting, setExporting] = useState(false); const [updateReady, setUpdateReady] = useState(false); const [recovery, setRecovery] = useState<Awaited<ReturnType<typeof restoreFromOpfs>>>(null); const fileRef = useRef<HTMLInputElement>(null); const canvasRef = useRef<HTMLElement>(null)
+  const fitCanvas = useCallback(() => {
+    const workspace = canvasRef.current
+    if (!workspace) return
+    const { width, height } = useEditor.getState().document.deck.canvas
+    const zoom = Math.min((workspace.clientWidth - 116) / width, (workspace.clientHeight - 140) / height, .9)
+    useEditor.getState().setZoom(zoom)
+  }, [])
   const save = useCallback(async () => {
     const current = useEditor.getState(); if (!current.dirtyPaths.size && current.saveState !== 'demo') return
     const paths = new Set(current.dirtyPaths); current.setSaveState('saving')
@@ -39,6 +46,7 @@ export default function App() {
   useEffect(() => { if (state.saveState !== 'dirty') return; const timer = setTimeout(save, 700); return () => clearTimeout(timer) }, [state.document, state.saveState, save])
   useEffect(() => { const update = () => setUpdateReady(true); addEventListener('plaindeck-update', update); return () => removeEventListener('plaindeck-update', update) }, [])
   useEffect(() => { restoreFromOpfs().then(setRecovery).catch(() => undefined) }, [])
+  useEffect(() => { const observer = new ResizeObserver(fitCanvas); if (canvasRef.current) observer.observe(canvasRef.current); fitCanvas(); return () => observer.disconnect() }, [fitCanvas, state.document.deck.canvas.width, state.document.deck.canvas.height])
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
       if ((event.target as HTMLElement).isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes((event.target as HTMLElement).tagName)) return
@@ -66,7 +74,7 @@ export default function App() {
   return <div className="app-shell">
     <Toolbar onOpen={openDirectory} onNew={newProject} onImportZip={() => fileRef.current?.click()} onExport={() => setExporting(true)} onPresent={() => setPresent(true)} onSave={save} />
     <input ref={fileRef} hidden type="file" accept=".zip,application/zip" onChange={e => loadZip(e.target.files?.[0])} />
-    <main className="workspace"><SlideList /><section className="canvas-workspace" onDoubleClick={e => { if (e.currentTarget === e.target) state.setZoom(.58) }}><div className="canvas-label"><span>ARTBOARD</span><strong>{activeSlide.name ?? activeSlide.id}</strong></div><div className="canvas-scroller"><div className="canvas-sized" style={{ width: state.document.deck.canvas.width * state.zoom, height: state.document.deck.canvas.height * state.zoom }}><SlideSurface slide={activeSlide} zoom={state.zoom} /></div></div><div className="canvas-coordinate">X 0000&nbsp;&nbsp; Y 0000</div></section><Inspector /></main>
+    <main className="workspace"><SlideList /><section ref={canvasRef} className="canvas-workspace" onDoubleClick={e => { if (e.currentTarget === e.target) fitCanvas() }}><div className="canvas-label"><span>ARTBOARD</span><strong>{activeSlide.name ?? activeSlide.id}</strong></div><div className="canvas-scroller"><div className="canvas-sized" style={{ width: state.document.deck.canvas.width * state.zoom, height: state.document.deck.canvas.height * state.zoom }}><SlideSurface slide={activeSlide} zoom={state.zoom} /></div></div><div className="canvas-coordinate">X 0000&nbsp;&nbsp; Y 0000</div></section><Inspector /></main>
     <StatusBar />
     <div className="print-deck">{state.document.deck.slides.map(path => <div className="print-page" key={path}><SlideSurface slide={state.document.slides[path]} interactive={false} zoom={1} /></div>)}</div>
     {present && <Presentation onClose={() => setPresent(false)} />}{exporting && <ExportDialog onClose={() => setExporting(false)} />}

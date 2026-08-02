@@ -40,9 +40,10 @@ interface EditorState {
 
 const clone = <T,>(value: T): T => structuredClone(value)
 const uid = (prefix: string) => `${prefix}-${crypto.randomUUID().slice(0, 8)}`
+const initialDocument = createSampleDocument()
 
 export const useEditor = create<EditorState>((set, get) => ({
-  document: createSampleDocument(), activeSlidePath: './slides/001-title.json', selectedIds: [], zoom: .58,
+  document: initialDocument, activeSlidePath: initialDocument.deck.slides[0], selectedIds: [], zoom: .58,
   saveState: 'demo', error: null, directory: null, dirtyPaths: new Set(), past: [], future: [],
   setDocument: (document, directory = null) => set({ document, directory, activeSlidePath: document.deck.slides[0], selectedIds: [], past: [], future: [], dirtyPaths: new Set(), saveState: directory ? 'saved' : 'demo', error: null }),
   setActiveSlide: activeSlidePath => set({ activeSlidePath, selectedIds: [] }),

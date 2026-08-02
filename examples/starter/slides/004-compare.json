@@ -1,0 +1,30 @@
+{
+  "id": "compare",
+  "name": "优缺点对比",
+  "elements": [
+    { "id": "heading", "type": "text", "styleRef": "slide-title", "frame": { "x": 70, "y": 55, "w": 1300, "h": 82 }, "text": "为什么不直接用 PPTX 或 PDF？", "fontSize": 54, "fontWeight": 700 },
+    { "id": "subheading", "type": "text", "frame": { "x": 72, "y": 145, "w": 1380, "h": 54 }, "text": "不是谁取代谁，而是为不同工作流选择合适的源格式。", "fontSize": 25, "color": "#706F67" },
+    { "id": "plain-highlight", "type": "shape", "frame": { "x": 395, "y": 220, "w": 380, "h": 550 }, "shape": "rounded-rectangle", "fill": "#F4CABB", "radius": 20 },
+    { "id": "label-head", "type": "text", "frame": { "x": 70, "y": 245, "w": 300, "h": 45 }, "text": "能力", "fontSize": 24, "fontWeight": 700, "color": "#706F67" },
+    { "id": "plain-head", "type": "text", "frame": { "x": 425, "y": 245, "w": 320, "h": 45 }, "text": "PlainDeck", "fontSize": 28, "fontWeight": 700, "color": "#B93923" },
+    { "id": "ppt-head", "type": "text", "frame": { "x": 815, "y": 245, "w": 320, "h": 45 }, "text": "PowerPoint", "fontSize": 28, "fontWeight": 700 },
+    { "id": "pdf-head", "type": "text", "frame": { "x": 1190, "y": 245, "w": 320, "h": 45 }, "text": "PDF", "fontSize": 28, "fontWeight": 700 },
+    { "id": "row-1-label", "type": "text", "frame": { "x": 70, "y": 340, "w": 300, "h": 52 }, "text": "拖拽排版", "fontSize": 25, "fontWeight": 700 },
+    { "id": "row-1-plain", "type": "text", "frame": { "x": 425, "y": 340, "w": 320, "h": 52 }, "text": "✓ 支持", "fontSize": 25, "fontWeight": 700 },
+    { "id": "row-1-ppt", "type": "text", "frame": { "x": 815, "y": 340, "w": 320, "h": 52 }, "text": "✓ 最强", "fontSize": 25, "fontWeight": 700 },
+    { "id": "row-1-pdf", "type": "text", "frame": { "x": 1190, "y": 340, "w": 320, "h": 52 }, "text": "× 不适合编辑", "fontSize": 25 },
+    { "id": "row-2-label", "type": "text", "frame": { "x": 70, "y": 445, "w": 300, "h": 52 }, "text": "AI 直接读写", "fontSize": 25, "fontWeight": 700 },
+    { "id": "row-2-plain", "type": "text", "frame": { "x": 425, "y": 445, "w": 320, "h": 52 }, "text": "✓ 结构化 JSON", "fontSize": 25, "fontWeight": 700 },
+    { "id": "row-2-ppt", "type": "text", "frame": { "x": 815, "y": 445, "w": 320, "h": 72 }, "text": "△ 需要专用解析", "fontSize": 25 },
+    { "id": "row-2-pdf", "type": "text", "frame": { "x": 1190, "y": 445, "w": 320, "h": 72 }, "text": "△ 容易丢失结构", "fontSize": 25 },
+    { "id": "row-3-label", "type": "text", "frame": { "x": 70, "y": 550, "w": 300, "h": 52 }, "text": "普通 Git 差异", "fontSize": 25, "fontWeight": 700 },
+    { "id": "row-3-plain", "type": "text", "frame": { "x": 425, "y": 550, "w": 320, "h": 72 }, "text": "✓ 精确到元素", "fontSize": 25, "fontWeight": 700 },
+    { "id": "row-3-ppt", "type": "text", "frame": { "x": 815, "y": 550, "w": 320, "h": 72 }, "text": "× 压缩容器", "fontSize": 25 },
+    { "id": "row-3-pdf", "type": "text", "frame": { "x": 1190, "y": 550, "w": 320, "h": 72 }, "text": "× 面向最终交付", "fontSize": 25 },
+    { "id": "row-4-label", "type": "text", "frame": { "x": 70, "y": 655, "w": 300, "h": 72 }, "text": "复杂动画与兼容", "fontSize": 25, "fontWeight": 700 },
+    { "id": "row-4-plain", "type": "text", "frame": { "x": 425, "y": 655, "w": 320, "h": 72 }, "text": "△ 基础能力", "fontSize": 25, "fontWeight": 700 },
+    { "id": "row-4-ppt", "type": "text", "frame": { "x": 815, "y": 655, "w": 320, "h": 72 }, "text": "✓ 最强", "fontSize": 25, "fontWeight": 700 },
+    { "id": "row-4-pdf", "type": "text", "frame": { "x": 1190, "y": 655, "w": 320, "h": 72 }, "text": "× 只保留结果", "fontSize": 25 },
+    { "id": "footer", "type": "text", "frame": { "x": 70, "y": 805, "w": 1440, "h": 38 }, "text": "PlainDeck 的取舍：少一点 Office 功能，换来更透明的内容与版本。", "fontSize": 23, "fontWeight": 700, "color": "#E85538" }
+  ]
+}
