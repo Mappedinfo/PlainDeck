@@ -7,6 +7,7 @@ import { Inspector } from './components/Inspector'
 import { StatusBar } from './components/StatusBar'
 import { SlideNameEditor } from './components/SlideNameEditor'
 import { createSampleDocument } from './core/sample'
+import { moveFrame } from './core/geometry'
 import { blobToDataUrl, fitImageFrame, hasTransferredImages, imageDimensions, imageFiles, transferredImageFiles, validateImageFile } from './core/imageImport'
 import { createSaveLoop } from './core/saveLoop'
 import { useEditor } from './store'
@@ -105,7 +106,7 @@ export default function App() {
       if (mod && event.key.toLowerCase() === 'd') { event.preventDefault(); editor.duplicateSelected() }
       if (mod && event.key.toLowerCase() === 's') { event.preventDefault(); save() }
       if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); editor.removeSelected() }
-      if (event.key.startsWith('Arrow') && editor.selectedIds.length === 1) { event.preventDefault(); const slide = editor.document.slides[editor.activeSlidePath]; const element = slide.elements.find(item => item.id === editor.selectedIds[0]); if (!element) return; const amount = event.shiftKey ? 8 : 1; editor.updateElement(element.id, { frame: { ...element.frame, x: element.frame.x + (event.key === 'ArrowRight' ? amount : event.key === 'ArrowLeft' ? -amount : 0), y: element.frame.y + (event.key === 'ArrowDown' ? amount : event.key === 'ArrowUp' ? -amount : 0) } } as never, '键盘微调') }
+      if (event.key.startsWith('Arrow') && editor.selectedIds.length === 1) { event.preventDefault(); const slide = editor.document.slides[editor.activeSlidePath]; const element = slide.elements.find(item => item.id === editor.selectedIds[0]); if (!element) return; const amount = event.shiftKey ? 8 : 1; const dx = event.key === 'ArrowRight' ? amount : event.key === 'ArrowLeft' ? -amount : 0; const dy = event.key === 'ArrowDown' ? amount : event.key === 'ArrowUp' ? -amount : 0; editor.updateElement(element.id, { frame: moveFrame(element.frame, dx, dy, editor.document.deck.canvas, 1) } as never, '键盘微调') }
     }
     addEventListener('keydown', key); return () => removeEventListener('keydown', key)
   }, [save])

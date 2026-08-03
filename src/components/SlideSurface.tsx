@@ -1,7 +1,7 @@
 import { Image as ImageIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { Frame, Slide, SlideElement } from 'plaindeck/core'
-import { moveFrame, resizeFrame } from '../core/geometry'
+import { framePlacement, moveFrame, resizeFrame } from '../core/geometry'
 import { useEditor } from '../store'
 import { resolveAssetUrl } from '../storage/browserStorage'
 
@@ -16,6 +16,8 @@ function ElementView({ element, interactive, zoom }: { element: SlideElement; in
   const sourcePath = element.type === 'image' ? element.src : ''
   const start = useRef<{ x: number; y: number; frame: Frame; mode: 'move' | 'resize' } | null>(null)
   const frame = draft ?? element.frame
+  const canvas = document.deck.canvas
+  const placement = framePlacement(frame, canvas)
 
   useEffect(() => setDraft(null), [element.frame.x, element.frame.y, element.frame.w, element.frame.h])
   useEffect(() => {
@@ -35,8 +37,8 @@ function ElementView({ element, interactive, zoom }: { element: SlideElement; in
   const move = (event: React.PointerEvent) => {
     if (!start.current) return
     const dx = (event.clientX - start.current.x) / zoom; const dy = (event.clientY - start.current.y) / zoom
-    if (start.current.mode === 'move') setDraft(moveFrame(start.current.frame, dx, dy, document.deck.canvas))
-    else setDraft(resizeFrame(start.current.frame, dx, dy, document.deck.canvas))
+    if (start.current.mode === 'move') setDraft(moveFrame(start.current.frame, dx, dy, canvas))
+    else setDraft(resizeFrame(start.current.frame, dx, dy, canvas))
   }
   const end = () => {
     if (!start.current || !draft) { start.current = null; return }
@@ -45,6 +47,22 @@ function ElementView({ element, interactive, zoom }: { element: SlideElement; in
   }
 
   const style: React.CSSProperties = { left: frame.x, top: frame.y, width: frame.w, height: frame.h, opacity: element.opacity ?? 1, transform: `rotate(${element.rotation ?? 0}deg)`, zIndex: element.zIndex }
+  const outsideFragments: React.CSSProperties[] = []
+  if (interactive && placement !== 'inside') {
+    const leftWidth = Math.min(frame.w, Math.max(0, -frame.x))
+    const rightStart = Math.max(0, canvas.width - frame.x)
+    const rightWidth = Math.max(0, frame.w - rightStart)
+    const middleLeft = Math.max(0, -frame.x)
+    const middleRight = Math.min(frame.w, canvas.width - frame.x)
+    const middleWidth = Math.max(0, middleRight - middleLeft)
+    const topHeight = Math.min(frame.h, Math.max(0, -frame.y))
+    const bottomStart = Math.max(0, canvas.height - frame.y)
+    const bottomHeight = Math.max(0, frame.h - bottomStart)
+    if (leftWidth) outsideFragments.push({ left: 0, top: 0, width: leftWidth, height: frame.h })
+    if (rightWidth) outsideFragments.push({ left: rightStart, top: 0, width: rightWidth, height: frame.h })
+    if (middleWidth && topHeight) outsideFragments.push({ left: middleLeft, top: 0, width: middleWidth, height: topHeight })
+    if (middleWidth && bottomHeight) outsideFragments.push({ left: middleLeft, top: bottomStart, width: middleWidth, height: bottomHeight })
+  }
   const finishTextEditing = (event: React.FocusEvent<HTMLElement>, text: string) => {
     setEditing(false)
     if (event.currentTarget.innerText !== text) updateElement(element.id, { text: event.currentTarget.innerText } as Partial<SlideElement>, element.type === 'shape' ? '编辑形状文字' : '编辑文字')
@@ -55,8 +73,9 @@ function ElementView({ element, interactive, zoom }: { element: SlideElement; in
     : element.type === 'shape' ? <div className="shape-content" style={{ background: element.fill, borderColor: element.stroke, borderWidth: element.strokeWidth, borderRadius: element.shape === 'ellipse' ? '50%' : element.radius }}><div className="shape-label editable-content" style={{ fontSize: element.fontSize, fontWeight: element.fontWeight, color: element.textColor, textAlign: element.align, justifyContent: element.align === 'center' ? 'center' : element.align === 'right' ? 'flex-end' : 'flex-start', alignItems: element.verticalAlign === 'top' ? 'flex-start' : element.verticalAlign === 'bottom' ? 'flex-end' : 'center' }} contentEditable={interactive && editing} suppressContentEditableWarning onBlur={e => finishTextEditing(e, element.text ?? '')}><span>{element.text ?? ''}</span></div></div>
     : <div className={`line-content ${element.dash ? 'dashed' : ''} ${element.arrowEnd ? 'arrow' : ''}`} style={{ borderColor: element.color, borderTopWidth: element.strokeWidth }} />
 
-  return <div className={`slide-element ${selected && interactive ? 'selected' : ''}`} style={style} data-element-id={element.id} onPointerDown={e => begin(e, 'move')} onPointerMove={move} onPointerUp={end} onDoubleClick={e => { if (interactive && (element.type === 'text' || element.type === 'shape')) { e.stopPropagation(); setEditing(true); requestAnimationFrame(() => (e.currentTarget.querySelector('.editable-content') as HTMLElement)?.focus()) } }}>
+  return <div className={`slide-element ${selected && interactive ? 'selected' : ''} ${interactive && placement !== 'inside' ? 'off-canvas' : ''}`} style={style} data-element-id={element.id} data-canvas-placement={placement} onPointerDown={e => begin(e, 'move')} onPointerMove={move} onPointerUp={end} onPointerCancel={end} onDoubleClick={e => { if (interactive && (element.type === 'text' || element.type === 'shape')) { e.stopPropagation(); setEditing(true); requestAnimationFrame(() => (e.currentTarget.querySelector('.editable-content') as HTMLElement)?.focus()) } }}>
     {content}
+    {outsideFragments.map((fragment, index) => <i className="off-canvas-fragment" style={fragment} key={index} />)}
     {selected && interactive && !editing && <button className="resize-handle" aria-label="缩放元素" onPointerDown={e => begin(e, 'resize')} onPointerMove={move} onPointerUp={end} />}
   </div>
 }
@@ -65,7 +84,7 @@ export function SlideSurface({ slide, interactive = true, zoom }: SurfaceProps) 
   const { document, select } = useEditor()
   const background = slide.background?.color ?? document.theme.colors.background
   const cssVars = { '--deck-font-title': document.theme.fonts.title, '--deck-font-body': document.theme.fonts.body, '--deck-title-size': `${document.theme.fontSizes.title}px`, '--deck-text': document.theme.colors.text } as React.CSSProperties
-  return <div className="slide-surface" style={{ width: document.deck.canvas.width, height: document.deck.canvas.height, background, transform: `scale(${zoom})`, ...cssVars }} onPointerDown={() => interactive && select([])}>
+  return <div className={`slide-surface ${interactive ? 'editor-surface' : 'output-surface'}`} style={{ width: document.deck.canvas.width, height: document.deck.canvas.height, background, transform: `scale(${zoom})`, ...cssVars }} onPointerDown={() => interactive && select([])}>
     {slide.elements.map(element => <ElementView key={element.id} element={element} interactive={interactive} zoom={zoom} />)}
   </div>
 }

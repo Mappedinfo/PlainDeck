@@ -82,6 +82,35 @@ test('renames the active artboard and updates the page list', async ({ page }) =
   await expect(page.locator('.slide-thumb.active .slide-name')).toHaveText('Cover')
 })
 
+test('stages elements outside the canvas and recovers them from the element index', async ({ page }) => {
+  await page.goto('./')
+  const surface = page.locator('.canvas-workspace .editor-surface')
+  const element = surface.locator('[data-element-id="accent-panel"]')
+  const surfaceBox = await surface.boundingBox(); const elementBox = await element.boundingBox()
+  if (!surfaceBox || !elementBox) throw new Error('Canvas or element bounds missing')
+
+  await page.mouse.move(elementBox.x + elementBox.width / 2, elementBox.y + elementBox.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(surfaceBox.x - elementBox.width / 2 - 20, elementBox.y + elementBox.height / 2, { steps: 8 })
+  await page.mouse.up()
+
+  await expect(element).toHaveAttribute('data-canvas-placement', 'outside')
+  await expect(element.locator('.off-canvas-fragment')).not.toHaveCount(0)
+  await expect(page.locator('.element-row').filter({ hasText: 'accent-panel' })).toContainText('画布外')
+  await expect(page.locator('.thumb-crop .output-surface').first()).toHaveCSS('overflow', 'hidden')
+
+  await surface.click({ position: { x: surfaceBox.width * .65, y: surfaceBox.height * .5 } })
+  await expect(element).not.toHaveClass(/selected/)
+  await page.mouse.click(surfaceBox.x - 30, elementBox.y + elementBox.height / 2)
+  await expect(element).toHaveClass(/selected/)
+  await page.screenshot({ path: '/tmp/plaindeck-off-canvas-staging.png', fullPage: true })
+
+  await page.getByRole('button', { name: '将 形状 · accent-panel 移回画布中心' }).click()
+  await expect(element).toHaveAttribute('data-canvas-placement', 'inside')
+  await expect(element.locator('.off-canvas-fragment')).toHaveCount(0)
+  await expect(page.locator('.element-row').filter({ hasText: 'accent-panel' })).toContainText('画布内')
+})
+
 test('duplicates and reorders pages and layers through the shared operation kernel', async ({ page }) => {
   await page.goto('./')
   await page.getByTitle('复制页面').click()
