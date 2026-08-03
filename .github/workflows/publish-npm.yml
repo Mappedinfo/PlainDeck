@@ -50,10 +50,28 @@ jobs:
         run: npm run test:pack
       - name: Publish core with provenance
         if: github.ref_type == 'tag'
-        run: npm publish -w plaindeck --access public --provenance
+        run: |
+          VERSION=$(node -p "require('./packages/plaindeck/package.json').version")
+          if npm view "plaindeck@${VERSION}" version >/dev/null 2>&1; then
+            echo "plaindeck@${VERSION} is already published; skipping"
+          else
+            npm publish -w plaindeck --access public --provenance
+          fi
       - name: Publish React renderer with provenance
         if: github.ref_type == 'tag'
-        run: npm publish -w @mappedinfo/plaindeck-react --access public --provenance
+        run: |
+          VERSION=$(node -p "require('./packages/react/package.json').version")
+          if npm view "@mappedinfo/plaindeck-react@${VERSION}" version >/dev/null 2>&1; then
+            echo "@mappedinfo/plaindeck-react@${VERSION} is already published; skipping"
+          else
+            npm publish -w @mappedinfo/plaindeck-react --access public --provenance
+          fi
       - name: Publish Remotion adapter with provenance
         if: github.ref_type == 'tag'
-        run: npm publish -w @mappedinfo/plaindeck-remotion --access public --provenance
+        run: |
+          VERSION=$(node -p "require('./packages/remotion/package.json').version")
+          if npm view "@mappedinfo/plaindeck-remotion@${VERSION}" version >/dev/null 2>&1; then
+            echo "@mappedinfo/plaindeck-remotion@${VERSION} is already published; skipping"
+          else
+            npm publish -w @mappedinfo/plaindeck-remotion --access public --provenance
+          fi
