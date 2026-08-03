@@ -1,6 +1,6 @@
 import { Image as ImageIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { PlainDeckElementContent, PlainDeckFooter } from '@plaindeck/react'
+import { PlainDeckElementContent, PlainDeckFooter } from '@mappedinfo/plaindeck-react'
 import { type Frame, type Slide, type SlideElement } from 'plaindeck/core'
 import { elementFrameStyle, slideStyle } from 'plaindeck/render'
 import { framePlacement, moveFrame, resizeFrame } from '../core/geometry'

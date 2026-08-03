@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { PlainDeckSlide, type PlainDeckSlideProps } from '@plaindeck/react'
+import { PlainDeckSlide, type PlainDeckSlideProps } from '@mappedinfo/plaindeck-react'
 import type { DeckDocument, ElementAnimation, SlideElement } from 'plaindeck/core'
 import { AbsoluteFill, Easing, Series, interpolate, useCurrentFrame, useVideoConfig } from 'remotion'
 

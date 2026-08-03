@@ -1,5 +1,5 @@
 {
-  "name": "@plaindeck/remotion",
+  "name": "@mappedinfo/plaindeck-remotion",
   "version": "0.3.0",
   "description": "Remotion timeline adapter for PlainDeck React slides",
   "type": "module",
@@ -30,7 +30,7 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@plaindeck/react": "0.3.0",
+    "@mappedinfo/plaindeck-react": "0.3.0",
     "plaindeck": "0.3.0"
   },
   "peerDependencies": {

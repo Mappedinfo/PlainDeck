@@ -42,7 +42,7 @@ exports/
 
 `enter` 支持 `none`、`fade`、`fade-up`、`fade-down`、`fade-left`、`fade-right` 和 `scale`。页面可通过 `motion.camera` 设置 `fromScale`、`toScale`、`delayFrames` 与 `durationFrames`。所有时间均使用帧数，避免依赖浏览器 CSS 动画时钟并保证视频重复渲染结果一致。
 
-这些字段完全可选，因此旧的 `schemaVersion: "0.1"` 项目无需迁移。HTML、PNG、PDF 和普通 React 输出显示动画完成后的静态版式；`@plaindeck/remotion` 使用同一个 React 页面组件，再按帧添加进入与镜头效果。
+这些字段完全可选，因此旧的 `schemaVersion: "0.1"` 项目无需迁移。HTML、PNG、PDF 和普通 React 输出显示动画完成后的静态版式；`@mappedinfo/plaindeck-remotion` 使用同一个 React 页面组件，再按帧添加进入与镜头效果。
 
 ## Schema version 与迁移
 

@@ -53,7 +53,7 @@ jobs:
         run: npm publish -w plaindeck --access public --provenance
       - name: Publish React renderer with provenance
         if: github.ref_type == 'tag'
-        run: npm publish -w @plaindeck/react --access public --provenance
+        run: npm publish -w @mappedinfo/plaindeck-react --access public --provenance
       - name: Publish Remotion adapter with provenance
         if: github.ref_type == 'tag'
-        run: npm publish -w @plaindeck/remotion --access public --provenance
+        run: npm publish -w @mappedinfo/plaindeck-remotion --access public --provenance

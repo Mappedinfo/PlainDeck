@@ -1,9 +1,9 @@
-# @plaindeck/remotion
+# @mappedinfo/plaindeck-remotion
 
-Frame-driven Remotion adapter for PlainDeck. Layout, typography, shapes and images are rendered by `@plaindeck/react`; this package only applies optional element entrances, slide camera motion and timeline sequencing.
+Frame-driven Remotion adapter for PlainDeck. Layout, typography, shapes and images are rendered by `@mappedinfo/plaindeck-react`; this package only applies optional element entrances, slide camera motion and timeline sequencing.
 
 ```tsx
-import { PlainDeckTimeline } from '@plaindeck/remotion'
+import { PlainDeckTimeline } from '@mappedinfo/plaindeck-remotion'
 
 <PlainDeckTimeline
   document={deck}

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { createDeckTemplate, renderHtml } from 'plaindeck'
 import { PlainDeckSlide } from '../src/index.js'
 
-describe('@plaindeck/react', () => {
+describe('@mappedinfo/plaindeck-react', () => {
   it('renders the same presentation geometry and typography as HTML output', () => {
     const document = createDeckTemplate('showcase', { theme: 'studio-cobalt' })
     const slidePath = document.deck.slides[0]

@@ -96,7 +96,7 @@ await renderPng(deck, { projectPath: './my-deck', output: './dist/slides' })
 await renderPdf(deck, { projectPath: './my-deck', output: './dist/deck.pdf' })
 ```
 
-For React and video output, install `@plaindeck/react` and `@plaindeck/remotion`. They use the same layout implementation as HTML/PNG/PDF; Remotion only interprets optional animation and camera metadata.
+For React and video output, install `@mappedinfo/plaindeck-react` and `@mappedinfo/plaindeck-remotion`. They use the same layout implementation as HTML/PNG/PDF; Remotion only interprets optional animation and camera metadata.
 
 See the [Agent API and operation contract](https://github.com/Mappedinfo/PlainDeck/blob/main/docs/agent-api.md) for the complete v0.3 interface, including document-level automatic footers and readable motion. The project schema remains `0.1`.
 

@@ -1,5 +1,5 @@
 {
-  "name": "@plaindeck/react",
+  "name": "@mappedinfo/plaindeck-react",
   "version": "0.3.0",
   "description": "Shared React renderer for PlainDeck JSON slides",
   "type": "module",

@@ -3,18 +3,18 @@
 PlainDeck 的页面内容只有一套实现：
 
 ```text
-PlainDeck JSON → shared presentation model → @plaindeck/react
+PlainDeck JSON → shared presentation model → @mappedinfo/plaindeck-react
                                       ├── Web editor
-                                      └── @plaindeck/remotion → video timeline
+                                      └── @mappedinfo/plaindeck-remotion → video timeline
 PlainDeck JSON → shared presentation model → HTML → PNG / PDF
 ```
 
-`@plaindeck/react` 负责文本、图片、占位、形状文字、线条、背景、字体、主题和页脚。`@plaindeck/remotion` 不重新实现这些元素，只根据 `useCurrentFrame()` 为页面组件添加确定性的逐元素进入和页面缩放。
+`@mappedinfo/plaindeck-react` 负责文本、图片、占位、形状文字、线条、背景、字体、主题和页脚。`@mappedinfo/plaindeck-remotion` 不重新实现这些元素，只根据 `useCurrentFrame()` 为页面组件添加确定性的逐元素进入和页面缩放。
 
 ## React
 
 ```tsx
-import { PlainDeckSlide } from '@plaindeck/react'
+import { PlainDeckSlide } from '@mappedinfo/plaindeck-react'
 
 export const Preview = ({ deck }) => (
   <PlainDeckSlide
@@ -29,7 +29,7 @@ export const Preview = ({ deck }) => (
 
 ```tsx
 import { AbsoluteFill } from 'remotion'
-import { PlainDeckTimeline } from '@plaindeck/remotion'
+import { PlainDeckTimeline } from '@mappedinfo/plaindeck-remotion'
 
 export const Video = ({ deck }) => (
   <AbsoluteFill>

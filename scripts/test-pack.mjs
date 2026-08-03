@@ -6,8 +6,8 @@ import { join, resolve } from 'node:path'
 const root = resolve(import.meta.dirname, '..')
 const packages = [
   { workspace: 'plaindeck', manifest: 'packages/plaindeck/package.json' },
-  { workspace: '@plaindeck/react', manifest: 'packages/react/package.json' },
-  { workspace: '@plaindeck/remotion', manifest: 'packages/remotion/package.json' },
+  { workspace: '@mappedinfo/plaindeck-react', manifest: 'packages/react/package.json' },
+  { workspace: '@mappedinfo/plaindeck-remotion', manifest: 'packages/remotion/package.json' },
 ]
 const expectedVersion = JSON.parse(readFileSync(join(root, packages[0].manifest), 'utf8')).version
 const work = mkdtempSync(join(tmpdir(), 'plaindeck-pack-test-'))
@@ -38,7 +38,7 @@ try {
   const cli = join(installRoot, 'node_modules', '.bin', process.platform === 'win32' ? 'plaindeck.cmd' : 'plaindeck')
   const version = run(cli, ['--version'], { cwd: installRoot })
   if (version !== expectedVersion) throw new Error(`unexpected CLI version: ${version}; expected ${expectedVersion}`)
-  const exportsCheck = run(process.execPath, ['--input-type=module', '-e', "import { createDeckTemplate, validateDeck } from 'plaindeck'; import { DeckSchema } from 'plaindeck/core'; import { renderHtml } from 'plaindeck/render'; import { PlainDeckSlide } from '@plaindeck/react'; import { PlainDeckTimeline, elementAnimationStyle } from '@plaindeck/remotion'; console.log([typeof createDeckTemplate, typeof validateDeck, typeof DeckSchema.parse, typeof renderHtml, typeof PlainDeckSlide, typeof PlainDeckTimeline, typeof elementAnimationStyle].join(','))"], { cwd: installRoot })
+  const exportsCheck = run(process.execPath, ['--input-type=module', '-e', "import { createDeckTemplate, validateDeck } from 'plaindeck'; import { DeckSchema } from 'plaindeck/core'; import { renderHtml } from 'plaindeck/render'; import { PlainDeckSlide } from '@mappedinfo/plaindeck-react'; import { PlainDeckTimeline, elementAnimationStyle } from '@mappedinfo/plaindeck-remotion'; console.log([typeof createDeckTemplate, typeof validateDeck, typeof DeckSchema.parse, typeof renderHtml, typeof PlainDeckSlide, typeof PlainDeckTimeline, typeof elementAnimationStyle].join(','))"], { cwd: installRoot })
   if (exportsCheck !== 'function,function,function,function,function,function,function') throw new Error(`unexpected package exports: ${exportsCheck}`)
   const created = join(work, 'created-deck')
   const initialized = JSON.parse(run(cli, ['init', created, '--title', 'Packed CLI deck', '--template', 'showcase', '--theme', 'studio-cobalt', '--json'], { cwd: installRoot }))

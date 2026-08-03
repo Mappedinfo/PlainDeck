@@ -10,7 +10,7 @@
     "dev": "npm run build:packages && vite",
     "build": "npm run build:packages && tsc -b && vite build",
     "build:package": "npm run build -w plaindeck",
-    "build:packages": "npm run build -w plaindeck && npm run build -w @plaindeck/react && npm run build -w @plaindeck/remotion",
+    "build:packages": "npm run build -w plaindeck && npm run build -w @mappedinfo/plaindeck-react && npm run build -w @mappedinfo/plaindeck-remotion",
     "preview": "vite preview",
     "test": "npm run build:packages && vitest run",
     "test:pack": "node scripts/test-pack.mjs",
@@ -21,7 +21,7 @@
     "typecheck": "npm run build:packages && tsc -b --pretty false"
   },
   "dependencies": {
-    "@plaindeck/react": "0.3.0",
+    "@mappedinfo/plaindeck-react": "0.3.0",
     "jszip": "^3.10.1",
     "lucide-react": "^0.468.0",
     "plaindeck": "0.3.0",
