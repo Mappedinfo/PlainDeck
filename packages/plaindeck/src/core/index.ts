@@ -1,4 +1,5 @@
 export * from './schema.js'
+export * from './footer.js'
 export * from './migration.js'
 export * from './serializer.js'
 export * from './presets.js'

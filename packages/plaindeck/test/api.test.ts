@@ -2,7 +2,7 @@ import { cp, mkdtemp, readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { applyOperations, canonicalJson, createDeckTemplate, createSavePlan, deckTemplatePresets, inspectDeck, loadDeck, saveDeck, themePresets, validateDeck } from '../src/index.js'
+import { applyOperations, canonicalJson, createDeckTemplate, createSavePlan, deckTemplatePresets, inspectDeck, loadDeck, resolveFooterSlot, saveDeck, themePresets, validateDeck } from '../src/index.js'
 
 const starter = resolve('examples/starter')
 
@@ -43,6 +43,19 @@ describe('PlainDeck public API', () => {
     expect(cover.elements.find(element => element.id === 'accent-panel')).toMatchObject({ type: 'shape', fill: '#D8FF52' })
     expect(original.slides['./slides/001-cover.json'].background).toEqual({ color: '#F2F0E8' })
     expect(result.changedPaths).toEqual(['./theme.json', ...result.document.deck.slides])
+  })
+
+  it('sets a document footer through the operation kernel and resolves automatic fields', () => {
+    const original = createDeckTemplate('showcase')
+    const footer = { left: { type: 'deck-title' }, center: { type: 'date' }, right: { type: 'page-of-count' }, fontSize: 16 } as const
+    const result = applyOperations(original, [{ op: 'set-footer', footer }])
+    expect(original.deck.footer).toBeUndefined()
+    expect(result.document.deck.footer).toEqual(footer)
+    expect(result.changedPaths).toEqual(['deck.json'])
+    expect(inspectDeck(result.document).footer).toEqual(footer)
+    expect(resolveFooterSlot(footer.right, { pageNumber: 2, pageCount: 5, deckTitle: 'Deck', slideName: 'Slide' })).toBe('2 / 5')
+    expect(resolveFooterSlot(footer.center, { pageNumber: 2, pageCount: 5, deckTitle: 'Deck', slideName: 'Slide', date: '2026-08-03' })).toBe('2026-08-03')
+    expect(applyOperations(result.document, [{ op: 'set-footer', footer: null }]).document.deck.footer).toBeUndefined()
   })
 
   it('duplicates and reorders slides and elements by stable IDs', async () => {

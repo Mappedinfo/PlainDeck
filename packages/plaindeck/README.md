@@ -58,6 +58,14 @@ const result = applyOperations(deck, [
     element: 'title',
     patch: { text: 'A new title' },
   },
+  {
+    op: 'set-footer',
+    footer: {
+      left: { type: 'slide-name' },
+      center: { type: 'date' },
+      right: { type: 'page-of-count' },
+    },
+  },
 ])
 
 const validation = validateDeck(result.document)
@@ -80,7 +88,7 @@ await renderPng(deck, { projectPath: './my-deck', output: './dist/slides' })
 await renderPdf(deck, { projectPath: './my-deck', output: './dist/deck.pdf' })
 ```
 
-See the [Agent API and operation contract](https://github.com/Mappedinfo/PlainDeck/blob/main/docs/agent-api.md) for the complete v0.2 interface. The project schema remains `0.1`.
+See the [Agent API and operation contract](https://github.com/Mappedinfo/PlainDeck/blob/main/docs/agent-api.md) for the complete v0.2 interface, including document-level automatic footers. The project schema remains `0.1`.
 
 ## License
 

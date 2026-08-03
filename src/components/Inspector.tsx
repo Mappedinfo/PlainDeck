@@ -1,5 +1,5 @@
 import { AlignCenter, AlignLeft, AlignRight, ArrowDownToLine, ArrowLeftToLine, ArrowRightToLine, ArrowUpToLine, Image, LocateFixed, Minus, Search, Square, Type } from 'lucide-react'
-import { themePresets, type SlideElement } from 'plaindeck/core'
+import { themePresets, type DeckFooter, type FooterSlot, type SlideElement } from 'plaindeck/core'
 import { useEffect, useState } from 'react'
 import { centerFrame, framePlacement } from '../core/geometry'
 import { useEditor } from '../store'
@@ -36,6 +36,35 @@ function ElementIcon({ type }: { type: SlideElement['type'] }) {
   return <Minus />
 }
 
+const footerOptions: Array<{ type: FooterSlot['type']; label: string }> = [
+  { type: 'none', label: '不显示' },
+  { type: 'text', label: '自定义文字' },
+  { type: 'date', label: '自动日期' },
+  { type: 'page', label: '当前页码' },
+  { type: 'page-count', label: '总页数' },
+  { type: 'page-of-count', label: '页码 / 总页数' },
+  { type: 'deck-title', label: '文档标题' },
+  { type: 'slide-name', label: '页面名称' },
+]
+
+const defaultFooter: DeckFooter = {
+  left: { type: 'slide-name' },
+  center: { type: 'date' },
+  right: { type: 'page-of-count' },
+}
+
+function slotForType(type: FooterSlot['type'], current: FooterSlot): FooterSlot {
+  return type === 'text' ? { type, text: current.type === 'text' ? current.text : '' } : { type } as FooterSlot
+}
+
+function FooterEditor() {
+  const state = useEditor(); const footer = state.document.deck.footer
+  const updateSlot = (position: 'left' | 'center' | 'right', slot: FooterSlot) => footer && state.updateFooter({ ...footer, [position]: slot })
+  return <section className="footer-editor"><div className="section-heading"><h3>页脚</h3><label className="footer-toggle"><input type="checkbox" checked={Boolean(footer)} onChange={event => state.updateFooter(event.target.checked ? defaultFooter : null)} /><span>{footer ? '已启用' : '关闭'}</span></label></div>
+    {footer ? <><div className="footer-slot-list">{(['left', 'center', 'right'] as const).map(position => { const slot = footer[position]; const label = position === 'left' ? '左' : position === 'center' ? '中' : '右'; return <div className="footer-slot" key={position}><span>{label}</span><select aria-label={`${label}侧页脚`} value={slot.type} onChange={event => updateSlot(position, slotForType(event.target.value as FooterSlot['type'], slot))}>{footerOptions.map(option => <option value={option.type} key={option.type}>{option.label}</option>)}</select>{slot.type === 'text' && <input key={slot.text} aria-label={`${label}侧页脚文字`} defaultValue={slot.text} placeholder="输入页脚文字" onBlur={event => { if (event.target.value !== slot.text) updateSlot(position, { type: 'text', text: event.target.value }) }} />}</div> })}</div><div className="footer-style"><Numeric label="字号" min={1} value={footer.fontSize ?? state.document.theme.fontSizes.caption} onChange={fontSize => state.updateFooter({ ...footer, fontSize })} /><label className="footer-color"><input aria-label="页脚颜色" type="color" value={footer.color ?? state.document.theme.colors.muted} onChange={event => state.updateFooter({ ...footer, color: event.target.value })} /><span>颜色</span></label></div><p className="element-index-hint">自动日期在显示或导出时生成；页码会随页面排序自动更新。</p></> : <p className="element-index-hint">启用后可为左、中、右分别设置文字、日期、页码或页面信息。</p>}
+  </section>
+}
+
 export function Inspector() {
   const state = useEditor(); const slide = state.document.slides[state.activeSlidePath]
   const [elementQuery, setElementQuery] = useState('')
@@ -49,6 +78,7 @@ export function Inspector() {
       {visibleElements.map(item => { const placement = framePlacement(item.frame, state.document.deck.canvas); const name = elementName(item); return <div className={`element-row ${state.selectedIds.includes(item.id) ? 'active' : ''}`} key={item.id}><button className="element-select" onClick={() => state.select([item.id])} title={`选择 ${name}`}><ElementIcon type={item.type} /><span><strong>{name}</strong><small className={placement}>{typeNames[item.type]} · {placementNames[placement]}</small></span></button><button className="element-center" aria-label={`将 ${name} 移回画布中心`} title="移回画布中心" onClick={() => { state.select([item.id]); state.updateElement(item.id, { frame: centerFrame(item.frame, state.document.deck.canvas) } as Partial<SlideElement>, '元素移回画布中心') }}><LocateFixed /></button></div> })}
       {!visibleElements.length && <p className="element-empty">没有匹配的元素</p>}
     </div><p className="element-index-hint">元素可暂放在画布外。点击条目编辑属性，使用定位按钮移回中心。</p></section>
+    <FooterEditor />
     {!element && selected.length === 0 && <>
       <section><h3>DOCUMENT</h3><label className="field"><span>标题</span><input value={state.document.deck.title} readOnly /></label><div className="metric-grid"><div><span>WIDTH</span><strong>{state.document.deck.canvas.width}</strong></div><div><span>HEIGHT</span><strong>{state.document.deck.canvas.height}</strong></div></div></section>
       <section><h3>COLOR STYLES</h3><div className="theme-presets">{themePresets.map(preset => { const active = Object.entries(preset.colors).every(([key, value]) => state.document.theme.colors[key as keyof typeof preset.colors] === value); return <button key={preset.id} className={active ? 'active' : ''} onClick={() => state.applyTheme(preset.theme)} title={preset.description}><span className="theme-swatches">{Object.values(preset.colors).map(color => <i key={color} style={{ background: color }} />)}</span><strong>{preset.name}</strong><small>{preset.description}</small></button> })}</div></section>

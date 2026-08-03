@@ -1,5 +1,5 @@
 const KEY_ORDER = [
-  'schemaVersion', 'id', 'title', 'canvas', 'width', 'height', 'theme', 'slides',
+  'schemaVersion', 'id', 'title', 'canvas', 'width', 'height', 'theme', 'footer', 'left', 'center', 'right', 'slides',
   'name', 'layoutRef', 'background', 'token', 'color', 'elements', 'type', 'styleRef',
   'frame', 'x', 'y', 'w', 'h', 'text', 'textColor', 'align', 'verticalAlign', 'fit', 'fontSize',
   'fontWeight', 'src', 'alt', 'shape', 'fill', 'stroke', 'strokeWidth', 'radius',

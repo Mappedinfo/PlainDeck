@@ -1,9 +1,11 @@
 import type { DeckDocument, SlideElement } from '../core/schema.js'
+import { resolveFooterSlot } from '../core/footer.js'
 
 export interface HtmlRenderOptions {
   slidePaths?: string[]
   resolveAsset?: (src: string) => string
   mode?: 'presentation' | 'document'
+  date?: Date | string
 }
 
 const escapeHtml = (value: string) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
@@ -46,6 +48,25 @@ function slideBackground(document: DeckDocument, path: string) {
   return token && token in document.theme.colors ? document.theme.colors[token] : document.theme.colors.background
 }
 
+function footerHtml(document: DeckDocument, path: string, date?: Date | string) {
+  const footer = document.deck.footer
+  if (!footer) return ''
+  const slide = document.slides[path]
+  const context = {
+    pageNumber: document.deck.slides.indexOf(path) + 1,
+    pageCount: document.deck.slides.length,
+    deckTitle: document.deck.title,
+    slideName: slide.name ?? slide.id,
+    date,
+  }
+  const values = [footer.left, footer.center, footer.right].map(slot => resolveFooterSlot(slot, context))
+  if (values.every(value => !value)) return ''
+  const color = footer.color ?? document.theme.colors.muted
+  const base = `position:absolute;left:${document.theme.spacing.page}px;right:${document.theme.spacing.page}px;bottom:24px;z-index:2147483647;display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;font-family:${escapeAttribute(safeFont(document.theme.fonts.body))};font-size:${footer.fontSize ?? document.theme.fontSizes.caption}px;line-height:1;color:${escapeAttribute(color)};pointer-events:none`
+  const cell = 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap'
+  return `<footer class="slide-footer" style="${base}"><span style="${cell}">${escapeHtml(values[0])}</span><span style="${cell};text-align:center">${escapeHtml(values[1])}</span><span style="${cell};text-align:right">${escapeHtml(values[2])}</span></footer>`
+}
+
 export function renderHtml(document: DeckDocument, options: HtmlRenderOptions = {}): string {
   const { deck, theme } = document
   const paths = options.slidePaths ?? deck.slides
@@ -54,7 +75,7 @@ export function renderHtml(document: DeckDocument, options: HtmlRenderOptions = 
   const slides = paths.map(path => {
     const slide = document.slides[path]
     const background = slideBackground(document, path)
-    return `<section class="slide" data-slide-path="${escapeAttribute(path)}" aria-label="${escapeAttribute(slide.name ?? slide.id)}" style="background:${escapeAttribute(background)}">${slide.elements.map(element => elementHtml(element, theme, resolveAsset)).join('')}</section>`
+    return `<section class="slide" data-slide-path="${escapeAttribute(path)}" aria-label="${escapeAttribute(slide.name ?? slide.id)}" style="background:${escapeAttribute(background)}">${slide.elements.map(element => elementHtml(element, theme, resolveAsset)).join('')}${footerHtml(document, path, options.date)}</section>`
   }).join('\n')
   const font = safeFont(theme.fonts.body)
   const mode = options.mode ?? 'presentation'

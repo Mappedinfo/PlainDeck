@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { createLayoutElements, layoutPresets } from './presets.js'
-import { ElementSchema, ThemeSchema, assertDocument, type DeckDocument, type SlideElement } from './schema.js'
+import { ElementSchema, FooterSchema, ThemeSchema, assertDocument, type DeckDocument, type SlideElement } from './schema.js'
 import { applyDocumentTheme } from './theme.js'
 
 const LayoutIdSchema = z.enum(['blank', 'title-body', 'section', 'statement', 'metric', 'two-column', 'image-right', 'three-cards'])
@@ -19,6 +19,7 @@ export const DeckOperationSchema = z.discriminatedUnion('op', [
   z.object({ op: z.literal('rename-slide'), slide: SlidePathSchema, name: z.string().trim().min(1) }).strict(),
   z.object({ op: z.literal('move-slide'), slide: SlidePathSchema, before: SlidePathSchema.optional(), after: SlidePathSchema.optional() }).strict(),
   z.object({ op: z.literal('remove-slide'), slide: SlidePathSchema }).strict(),
+  z.object({ op: z.literal('set-footer'), footer: FooterSchema.nullable() }).strict(),
   z.object({ op: z.literal('set-theme'), patch: ColorPatchSchema.optional(), theme: ThemeSchema.optional() }).strict(),
 ])
 
@@ -126,6 +127,10 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
       document.deck.slides = document.deck.slides.filter(path => path !== operation.slide)
       delete document.slides[operation.slide]
       changed.add('deck.json'); changed.add(operation.slide)
+    } else if (operation.op === 'set-footer') {
+      if (operation.footer) document.deck.footer = structuredClone(operation.footer)
+      else delete document.deck.footer
+      changed.add('deck.json')
     } else {
       if ((operation.patch && operation.theme) || (!operation.patch && !operation.theme)) throw new Error('set-theme 必须且只能指定 patch 或 theme。')
       const theme = operation.theme ?? { ...document.theme, colors: { ...document.theme.colors, ...operation.patch } }

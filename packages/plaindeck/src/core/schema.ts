@@ -73,12 +73,32 @@ export const ThemeSchema = z.object({
   spacing: z.object({ page: z.number(), small: z.number(), medium: z.number(), large: z.number() }),
 })
 
+export const FooterSlotSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('none') }).strict(),
+  z.object({ type: z.literal('text'), text: z.string() }).strict(),
+  z.object({ type: z.literal('date') }).strict(),
+  z.object({ type: z.literal('page') }).strict(),
+  z.object({ type: z.literal('page-count') }).strict(),
+  z.object({ type: z.literal('page-of-count') }).strict(),
+  z.object({ type: z.literal('deck-title') }).strict(),
+  z.object({ type: z.literal('slide-name') }).strict(),
+])
+
+export const FooterSchema = z.object({
+  left: FooterSlotSchema,
+  center: FooterSlotSchema,
+  right: FooterSlotSchema,
+  fontSize: z.number().positive().optional(),
+  color: z.string().optional(),
+}).strict()
+
 export const DeckSchema = z.object({
   schemaVersion: z.literal('0.1'),
   id: z.string().min(1),
   title: z.string().min(1),
   canvas: z.object({ width: z.number().int().positive(), height: z.number().int().positive() }),
   theme: z.string().default('./theme.json'),
+  footer: FooterSchema.optional(),
   slides: z.array(z.string()).min(1),
 })
 
@@ -86,6 +106,8 @@ export type Frame = z.infer<typeof FrameSchema>
 export type SlideElement = z.infer<typeof ElementSchema>
 export type Slide = z.infer<typeof SlideSchema>
 export type Theme = z.infer<typeof ThemeSchema>
+export type FooterSlot = z.infer<typeof FooterSlotSchema>
+export type DeckFooter = z.infer<typeof FooterSchema>
 export type Deck = z.infer<typeof DeckSchema>
 
 export interface DeckDocument { deck: Deck; slides: Record<string, Slide>; theme: Theme }

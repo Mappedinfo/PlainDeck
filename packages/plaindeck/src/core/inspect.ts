@@ -5,6 +5,7 @@ export interface DeckInspection {
   id: string
   title: string
   canvas: { width: number; height: number }
+  footer?: DeckDocument['deck']['footer']
   theme: DeckDocument['theme']
   slides: Array<{
     index: number
@@ -23,6 +24,7 @@ export function inspectDeck(document: DeckDocument): DeckInspection {
     id: document.deck.id,
     title: document.deck.title,
     canvas: { ...document.deck.canvas },
+    ...(document.deck.footer ? { footer: structuredClone(document.deck.footer) } : {}),
     theme: structuredClone(document.theme),
     slides: document.deck.slides.map((path, index) => {
       const slide = document.slides[path]

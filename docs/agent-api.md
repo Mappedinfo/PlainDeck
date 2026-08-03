@@ -1,6 +1,6 @@
 # PlainDeck Agent API 与 CLI
 
-PlainDeck v0.2.3 面向 Agent 的推荐工作流是：
+PlainDeck v0.2.5 面向 Agent 的推荐工作流是：
 
 ```text
 init → inspect → operations → validate → dry-run → apply → render
@@ -62,9 +62,19 @@ printf '[{"op":"rename-slide","slide":"./slides/001-intro.json","name":"Introduc
   { "op": "rename-slide", "slide": "./slides/002-results.json", "name": "Key results" },
   { "op": "move-slide", "slide": "./slides/002-results.json", "after": "./slides/001-intro.json" },
   { "op": "remove-slide", "slide": "./slides/003-appendix.json" },
-  { "op": "set-theme", "patch": { "accent": "#2563eb", "background": "#ffffff" } }
+  { "op": "set-theme", "patch": { "accent": "#2563eb", "background": "#ffffff" } },
+  {
+    "op": "set-footer",
+    "footer": {
+      "left": { "type": "slide-name" },
+      "center": { "type": "date" },
+      "right": { "type": "page-of-count" }
+    }
+  }
 ]
 ```
+
+`set-footer` 一次设置文档级左、中、右页脚，只修改 `deck.json`；设为 `null` 可关闭页脚。槽位类型为 `none`、`text`、`date`、`page`、`page-count`、`page-of-count`、`deck-title` 或 `slide-name`，其中 `text` 还需要 `text` 字段。日期在显示或导出时生成，页码和页面名称会随页面排序自动更新。
 
 `set-element` 不能修改元素的 `id` 或 `type`。`move-element` 与 `move-slide` 使用稳定 ID/路径及 `before` 或 `after`，不暴露数组索引。不存在的页面或元素、重复元素 ID、非法 patch、删除最后一页等都会使整批操作失败；操作在内存中全部完成并通过全量 schema 校验后，CLI 才会写盘。Web 编辑器也把交互动作转换为同一组 operations 后再更新历史与保存。
 

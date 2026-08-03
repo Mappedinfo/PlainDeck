@@ -1,6 +1,6 @@
 # PlainDeck v0.1 项目格式
 
-项目根目录以 `deck.json` 为入口。`deck.json` 只保存标题、逻辑画布、主题路径和页面顺序；每个页面单独存放在 `slides/`，资源使用相对路径。
+项目根目录以 `deck.json` 为入口。`deck.json` 保存标题、逻辑画布、主题路径、可选的文档级页脚配置和页面顺序；每个页面单独存放在 `slides/`，资源使用相对路径。
 
 ```text
 deck.json
@@ -18,6 +18,8 @@ exports/
 多文件保存先写主题和页面内容，最后写 `deck.json` 作为 commit point；删除页面时会在新的 `deck.json` 落盘后删除旧页面文件。浏览器自动保存按路径 revision 确认写入结果，保存期间产生的新修改不会被旧任务清除。
 
 `layoutRef` 只记录新建页面时采用的布局名称，布局中的占位内容会立即展开为普通 `elements`，之后可以自由编辑，不依赖隐藏模板。图片占位使用可读的 `"src": "placeholder:image"`，设置真实路径或 URL 后即变为普通图片元素。
+
+`footer` 是可选的文档级配置，包含 `left`、`center`、`right` 三个槽位以及可选的 `fontSize`、`color`。自动日期、页码、总页数、文档标题和页面名称保留为语义化类型，不会复制成每页文本元素；Web 与 HTML/PNG/PDF renderer 使用同一套解析逻辑。
 
 形状可以直接包含 `text`，并通过可选的 `textColor`、`fontSize`、`fontWeight`、`align` 与 `verticalAlign` 控制文字。旧项目中的形状没有这些字段时仍按纯形状渲染。
 

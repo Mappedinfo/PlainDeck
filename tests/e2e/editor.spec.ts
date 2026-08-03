@@ -111,6 +111,28 @@ test('stages elements outside the canvas and recovers them from the element inde
   await expect(page.locator('.element-row').filter({ hasText: 'accent-panel' })).toContainText('画布内')
 })
 
+test('configures left, center, and right automatic footers across slides', async ({ page }) => {
+  await page.goto('./')
+  const editor = page.locator('.footer-editor')
+  await editor.getByRole('checkbox').check()
+  const footer = page.locator('.canvas-workspace .slide-footer')
+  await expect(footer.locator('span').nth(0)).toHaveText('Cover')
+  await expect(footer.locator('span').nth(1)).toHaveText(/^\d{4}-\d{2}-\d{2}$/)
+  await expect(footer.locator('span').nth(2)).toHaveText('1 / 5')
+
+  await editor.getByLabel('左侧页脚').selectOption('text')
+  const custom = editor.getByLabel('左侧页脚文字')
+  await custom.fill('Mappedinfo · PlainDeck')
+  await custom.blur()
+  await expect(footer.locator('span').nth(0)).toHaveText('Mappedinfo · PlainDeck')
+
+  await page.locator('.slide-thumb').nth(1).click()
+  await expect(page.locator('.canvas-workspace .slide-footer span').nth(2)).toHaveText('2 / 5')
+  await page.getByRole('button', { name: '演示' }).click()
+  await expect(page.locator('.presentation .slide-footer')).toContainText('Mappedinfo · PlainDeck')
+  await page.screenshot({ path: '/tmp/plaindeck-footer-editor.png', fullPage: true })
+})
+
 test('duplicates and reorders pages and layers through the shared operation kernel', async ({ page }) => {
   await page.goto('./')
   await page.getByTitle('复制页面').click()

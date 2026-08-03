@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { applyOperations, layoutPresets, type DeckDocument, type DeckOperation, type LayoutPresetId, type SlideElement, type Theme } from 'plaindeck/core'
+import { applyOperations, layoutPresets, type DeckDocument, type DeckFooter, type DeckOperation, type LayoutPresetId, type SlideElement, type Theme } from 'plaindeck/core'
 import { createSampleDocument } from './core/sample'
 import { alignmentPatch } from './core/geometry'
 import type { DirectoryHandle } from './storage/browserStorage'
@@ -41,6 +41,7 @@ interface EditorState {
   alignSelected(mode: Parameters<typeof alignmentPatch>[1]): void
   updateTheme(patch: Partial<Theme['colors']>): void
   applyTheme(theme: Theme): void
+  updateFooter(footer: DeckFooter | null): void
   commitDocument(document: DeckDocument, label: string, dirtyPaths: string[]): void
   undo(): void
   redo(): void
@@ -149,6 +150,7 @@ export const useEditor = create<EditorState>((set, get) => ({
   },
   updateTheme: patch => { const state = get(); commitOperations(state, [{ op: 'set-theme', patch }], '修改主题') },
   applyTheme: theme => { const state = get(); commitOperations(state, [{ op: 'set-theme', theme }], '应用主题') },
+  updateFooter: footer => { const state = get(); commitOperations(state, [{ op: 'set-footer', footer }], '修改页脚') },
   undo: () => set(state => {
     const entry = state.past.at(-1); if (!entry) return state
     const revision = state.revision + 1; const paths = ['deck.json', entry.document.deck.theme, ...new Set([...state.document.deck.slides, ...entry.document.deck.slides])]

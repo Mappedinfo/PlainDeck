@@ -1,6 +1,6 @@
 import { Image as ImageIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import type { Frame, Slide, SlideElement } from 'plaindeck/core'
+import { resolveFooterSlot, type Frame, type Slide, type SlideElement } from 'plaindeck/core'
 import { framePlacement, moveFrame, resizeFrame } from '../core/geometry'
 import { useEditor } from '../store'
 import { resolveAssetUrl } from '../storage/browserStorage'
@@ -83,8 +83,13 @@ function ElementView({ element, interactive, zoom }: { element: SlideElement; in
 export function SlideSurface({ slide, interactive = true, zoom }: SurfaceProps) {
   const { document, select } = useEditor()
   const background = slide.background?.color ?? document.theme.colors.background
+  const slidePath = document.deck.slides.find(path => document.slides[path].id === slide.id)
+  const pageNumber = slidePath ? document.deck.slides.indexOf(slidePath) + 1 : 1
+  const footer = document.deck.footer
+  const footerContext = { pageNumber, pageCount: document.deck.slides.length, deckTitle: document.deck.title, slideName: slide.name ?? slide.id }
   const cssVars = { '--deck-font-title': document.theme.fonts.title, '--deck-font-body': document.theme.fonts.body, '--deck-title-size': `${document.theme.fontSizes.title}px`, '--deck-text': document.theme.colors.text } as React.CSSProperties
   return <div className={`slide-surface ${interactive ? 'editor-surface' : 'output-surface'}`} style={{ width: document.deck.canvas.width, height: document.deck.canvas.height, background, transform: `scale(${zoom})`, ...cssVars }} onPointerDown={() => interactive && select([])}>
     {slide.elements.map(element => <ElementView key={element.id} element={element} interactive={interactive} zoom={zoom} />)}
+    {footer && <footer className="slide-footer" style={{ left: document.theme.spacing.page, right: document.theme.spacing.page, color: footer.color ?? document.theme.colors.muted, fontSize: footer.fontSize ?? document.theme.fontSizes.caption }}><span>{resolveFooterSlot(footer.left, footerContext)}</span><span>{resolveFooterSlot(footer.center, footerContext)}</span><span>{resolveFooterSlot(footer.right, footerContext)}</span></footer>}
   </div>
 }
