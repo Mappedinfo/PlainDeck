@@ -24,6 +24,19 @@ describe('PlainDeck public API', () => {
     expect(canonicalJson(document.deck)).toContain('"schemaVersion": "0.1"')
   })
 
+  it('keeps optional element animation and camera motion human-readable and schema-valid', () => {
+    const document = createDeckTemplate('showcase')
+    const slidePath = document.deck.slides[0]
+    const element = document.slides[slidePath].elements[0]
+    element.animation = { enter: 'fade-up', delayFrames: 12, durationFrames: 20 }
+    document.slides[slidePath].motion = { camera: { fromScale: 1, toScale: 1.045, durationFrames: 180 } }
+    expect(validateDeck(document)).toMatchObject({ valid: true, issues: [] })
+    const serialized = canonicalJson(document.slides[slidePath])
+    expect(serialized).toContain('"motion"')
+    expect(serialized).toContain('"animation"')
+    expect(serialized.indexOf('"enter"')).toBeLessThan(serialized.indexOf('"delayFrames"'))
+  })
+
   it('applies stable element and slide operations without mutating input', async () => {
     const original = await loadDeck(starter)
     const result = applyOperations(original, [

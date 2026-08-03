@@ -1,9 +1,15 @@
+import { existsSync, readdirSync } from 'node:fs'
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { homedir, tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { applyOperations, loadDeck, prepareDocumentAssets, renderPdf, renderPng } from '../src/index.js'
 import { renderHtml } from '../src/render/index.js'
+
+const cache = join(homedir(), 'Library', 'Caches', 'ms-playwright')
+const cachedBrowser = existsSync(cache)
+  ? readdirSync(cache).filter(name => name.startsWith('chromium_headless_shell-')).sort().reverse().map(name => join(cache, name, 'chrome-headless-shell-mac-arm64', 'chrome-headless-shell')).find(existsSync)
+  : undefined
 
 describe('PlainDeck renderer', () => {
   it('renders shape text, image placeholders, backgrounds, and escaped text', async () => {
@@ -23,7 +29,7 @@ describe('PlainDeck renderer', () => {
     expect(html).toContain('图片占位')
     expect(html).toContain('Render &lt;check&gt;')
     expect(html).toContain('#FFF8E9')
-    expect(html).toContain('style="background:#E85538"')
+    expect(html).toContain('background:#E85538;border-color:transparent')
     expect(html).toContain('border-left:16px solid #123456')
     expect(html).toContain('class="slide-footer"')
     expect(html).toContain('Lab &lt;notes&gt;')
@@ -58,7 +64,7 @@ describe.runIf(process.env.PLAINDECK_BROWSER_TESTS === '1')('Playwright renderer
     firstText.color = '#58E6C2'
     firstText.fontSize = 37
     const { chromium } = await import('playwright')
-    const browser = await chromium.launch({ headless: true })
+    const browser = await chromium.launch({ headless: true, executablePath: cachedBrowser })
     const page = await browser.newPage()
     await page.setContent(renderHtml(document))
     expect(await page.locator('.slide.is-active').count()).toBe(1)
@@ -68,7 +74,7 @@ describe.runIf(process.env.PLAINDECK_BROWSER_TESTS === '1')('Playwright renderer
     expect(await page.locator('.slide.is-active').getAttribute('data-slide-path')).toBe(document.deck.slides[1])
     await page.setContent(renderHtml(document, { mode: 'document' }))
     const computed = await page.evaluate(() => {
-      const element = document.querySelector('.slide > div[style*="font-family"]')
+      const element = document.querySelector('.slide .text-content[style*="font-family"]')
       if (!(element instanceof HTMLElement)) throw new Error('Rendered text element missing.')
       return { color: getComputedStyle(element).color, fontSize: getComputedStyle(element).fontSize, style: element.getAttribute('style') }
     })
@@ -77,8 +83,8 @@ describe.runIf(process.env.PLAINDECK_BROWSER_TESTS === '1')('Playwright renderer
     expect(computed.style).toContain('color:#58E6C2')
     const png = join(root, 'slide.png')
     const pdf = join(root, 'deck.pdf')
-    await renderPng(document, { output: png, projectPath: resolve('examples/starter'), slide: 1 })
-    await renderPdf(document, { output: pdf, projectPath: resolve('examples/starter') })
+    await renderPng(document, { output: png, projectPath: resolve('examples/starter'), slide: 1, browserExecutable: cachedBrowser })
+    await renderPdf(document, { output: pdf, projectPath: resolve('examples/starter'), browserExecutable: cachedBrowser })
     const pngBytes = await readFile(png)
     expect(pngBytes.subarray(1, 4).toString()).toBe('PNG')
     expect(pngBytes.readUInt32BE(16)).toBe(1600)

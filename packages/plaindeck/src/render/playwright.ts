@@ -6,6 +6,7 @@ import { renderHtml } from './html.js'
 
 export interface BrowserRenderOptions extends PrepareAssetsOptions {
   output: string
+  browserExecutable?: string
 }
 
 export interface PngRenderOptions extends BrowserRenderOptions {
@@ -13,10 +14,10 @@ export interface PngRenderOptions extends BrowserRenderOptions {
   scale?: number
 }
 
-async function launchChromium() {
+async function launchChromium(executablePath?: string) {
   try {
     const { chromium } = await import('playwright')
-    return await chromium.launch({ headless: true })
+    return await chromium.launch({ headless: true, executablePath })
   } catch (error) {
     throw new Error(`PNG/PDF 渲染需要 Playwright Chromium。请运行：npm install playwright && npx playwright install chromium\n${error instanceof Error ? error.message : String(error)}`)
   }
@@ -38,7 +39,7 @@ const slug = (value: string) => value.trim().toLowerCase().replace(/[^\p{L}\p{N}
 
 export async function renderPng(input: DeckDocument, options: PngRenderOptions) {
   const prepared = await prepareDocumentAssets(input, options)
-  const browser = await launchChromium()
+  const browser = await launchChromium(options.browserExecutable)
   const scale = Math.max(0.25, Math.min(4, options.scale ?? 1))
   const targets = options.slide === undefined
     ? prepared.document.deck.slides.map((path, index) => ({ path, index }))
@@ -66,7 +67,7 @@ export async function renderPng(input: DeckDocument, options: PngRenderOptions) 
 
 export async function renderPdf(input: DeckDocument, options: BrowserRenderOptions) {
   const prepared = await prepareDocumentAssets(input, options)
-  const browser = await launchChromium()
+  const browser = await launchChromium(options.browserExecutable)
   try {
     const page = await browser.newPage({ viewport: { ...prepared.document.deck.canvas } })
     if (!options.allowNetwork) await page.route(/^https?:/, route => route.abort())

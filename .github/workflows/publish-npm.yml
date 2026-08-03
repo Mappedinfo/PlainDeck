@@ -1,4 +1,4 @@
-name: Publish plaindeck to npm
+name: Publish PlainDeck packages to npm
 
 on:
   push:
@@ -28,8 +28,12 @@ jobs:
       - name: Check tag matches package version
         if: github.ref_type == 'tag'
         run: |
-          PACKAGE_VERSION=$(node -p "require('./packages/plaindeck/package.json').version")
-          test "${GITHUB_REF_NAME}" = "v${PACKAGE_VERSION}"
+          CORE_VERSION=$(node -p "require('./packages/plaindeck/package.json').version")
+          REACT_VERSION=$(node -p "require('./packages/react/package.json').version")
+          REMOTION_VERSION=$(node -p "require('./packages/remotion/package.json').version")
+          test "${GITHUB_REF_NAME}" = "v${CORE_VERSION}"
+          test "${CORE_VERSION}" = "${REACT_VERSION}"
+          test "${CORE_VERSION}" = "${REMOTION_VERSION}"
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Typecheck
@@ -44,6 +48,12 @@ jobs:
         run: npm run test:e2e
       - name: Inspect package contents
         run: npm run test:pack
-      - name: Publish with provenance
+      - name: Publish core with provenance
         if: github.ref_type == 'tag'
-        run: npm publish -w plaindeck --access public
+        run: npm publish -w plaindeck --access public --provenance
+      - name: Publish React renderer with provenance
+        if: github.ref_type == 'tag'
+        run: npm publish -w @plaindeck/react --access public --provenance
+      - name: Publish Remotion adapter with provenance
+        if: github.ref_type == 'tag'
+        run: npm publish -w @plaindeck/remotion --access public --provenance

@@ -1,5 +1,5 @@
 import type { DeckDocument, SlideElement } from '../core/schema.js'
-import { resolveFooterSlot } from '../core/footer.js'
+import { elementFrameStyle, footerPresentation, imageContentStyle, lineContentStyle, shapeContentStyle, shapeLabelStyle, slideStyle, textContentStyle, type PresentationStyle } from './presentation.js'
 
 export interface HtmlRenderOptions {
   slidePaths?: string[]
@@ -11,60 +11,34 @@ export interface HtmlRenderOptions {
 const escapeHtml = (value: string) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 const escapeAttribute = (value: string) => escapeHtml(value).replaceAll('"', '&quot;').replaceAll("'", '&#39;')
 const safeFont = (value: string) => value.replace(/[<>{};]/g, '')
-
-function flexAlignment(align?: 'left' | 'center' | 'right') {
-  return align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'
-}
-
-function verticalAlignment(align?: 'top' | 'middle' | 'bottom') {
-  return align === 'bottom' ? 'flex-end' : align === 'middle' ? 'center' : 'flex-start'
-}
+const unitless = new Set(['fontWeight', 'lineHeight', 'opacity', 'zIndex', 'flex'])
+const cssName = (value: string) => value.replace(/[A-Z]/g, match => `-${match.toLowerCase()}`)
+const styleHtml = (style: PresentationStyle) => Object.entries(style).filter(([, value]) => value !== undefined).map(([key, value]) => `${cssName(key)}:${typeof value === 'number' && !unitless.has(key) ? `${value}px` : String(value)}`).join(';')
 
 function elementHtml(element: SlideElement, theme: DeckDocument['theme'], resolveAsset: (src: string) => string): string {
-  const frame = element.frame
-  const base = `position:absolute;left:${frame.x}px;top:${frame.y}px;width:${frame.w}px;height:${frame.h}px;opacity:${element.opacity ?? 1};transform:rotate(${element.rotation ?? 0}deg);z-index:${element.zIndex ?? 'auto'};box-sizing:border-box;`
+  const outer = styleHtml(elementFrameStyle(element))
+  const attributes = `class="slide-element" data-element-id="${escapeAttribute(element.id)}" style="${outer}"`
   if (element.type === 'text') {
-    const titleStyle = element.styleRef === 'slide-title'
-    return `<div style="${base}display:flex;font-family:${escapeAttribute(safeFont(titleStyle ? theme.fonts.title : theme.fonts.body))};font-size:${element.fontSize ?? (titleStyle ? theme.fontSizes.title : theme.fontSizes.body)}px;font-weight:${element.fontWeight ?? (titleStyle ? 700 : 400)};color:${escapeAttribute(element.color ?? theme.colors.text)};text-align:${element.align ?? 'left'};justify-content:${flexAlignment(element.align)};align-items:${verticalAlignment(element.verticalAlign)};white-space:pre-wrap;line-height:1.12;overflow:hidden">${escapeHtml(element.text)}</div>`
+    return `<div ${attributes}><div class="text-content ${escapeAttribute(element.styleRef ?? '')}" style="${escapeAttribute(styleHtml(textContentStyle(element, theme)))}"><span>${escapeHtml(element.text)}</span></div></div>`
   }
   if (element.type === 'image') {
-    if (element.src === 'placeholder:image') return `<div class="image-placeholder" style="${base}"><strong>IMAGE</strong><span>图片占位</span></div>`
+    if (element.src === 'placeholder:image') return `<div ${attributes}><div class="image-placeholder" style="width:100%;height:100%"><strong>IMAGE</strong><span>图片占位</span></div></div>`
     const src = resolveAsset(element.src)
-    return `<img alt="${escapeAttribute(element.alt ?? '')}" src="${escapeAttribute(src)}" style="${base}object-fit:${element.fit === 'stretch' ? 'fill' : element.fit}"/>`
+    return `<div ${attributes}><img alt="${escapeAttribute(element.alt ?? '')}" src="${escapeAttribute(src)}" style="${escapeAttribute(styleHtml(imageContentStyle(element)))}"/></div>`
   }
   if (element.type === 'shape') {
-    const radius = element.shape === 'ellipse' ? '50%' : `${element.radius ?? 0}px`
-    const label = element.text ? `<span style="display:flex;width:100%;height:100%;padding:24px;align-items:${verticalAlignment(element.verticalAlign ?? 'middle')};justify-content:${flexAlignment(element.align)};font-size:${element.fontSize ?? theme.fontSizes.body}px;font-weight:${element.fontWeight ?? 400};color:${escapeAttribute(element.textColor ?? theme.colors.text)};text-align:${element.align ?? 'left'};white-space:pre-wrap;line-height:1.16;overflow:hidden">${escapeHtml(element.text)}</span>` : ''
-    return `<div style="${base}background:${escapeAttribute(element.fill)};border:${element.strokeWidth ?? 0}px solid ${escapeAttribute(element.stroke ?? 'transparent')};border-radius:${radius};overflow:hidden">${label}</div>`
+    const label = `<div class="shape-label" style="${escapeAttribute(styleHtml(shapeLabelStyle(element, theme)))}"><span>${escapeHtml(element.text ?? '')}</span></div>`
+    return `<div ${attributes}><div class="shape-content" style="${escapeAttribute(styleHtml(shapeContentStyle(element)))}">${label}</div></div>`
   }
   const arrow = element.arrowEnd ? `<span style="position:absolute;right:-1px;top:${-element.strokeWidth * 2 - 3}px;width:0;height:0;border-left:${element.strokeWidth * 4}px solid ${escapeAttribute(element.color)};border-top:${element.strokeWidth * 2 + 3}px solid transparent;border-bottom:${element.strokeWidth * 2 + 3}px solid transparent"></span>` : ''
-  return `<div style="position:absolute;left:${frame.x}px;top:${frame.y + frame.h / 2}px;width:${frame.w}px;height:0;opacity:${element.opacity ?? 1};transform:rotate(${element.rotation ?? 0}deg);z-index:${element.zIndex ?? 'auto'};border-top:${element.strokeWidth}px ${element.dash ? 'dashed' : 'solid'} ${escapeAttribute(element.color)}">${arrow}</div>`
-}
-
-function slideBackground(document: DeckDocument, path: string) {
-  const background = document.slides[path].background
-  if (background?.color) return background.color
-  const token = background?.token?.replace(/^color\./, '') as keyof DeckDocument['theme']['colors'] | undefined
-  return token && token in document.theme.colors ? document.theme.colors[token] : document.theme.colors.background
+  return `<div ${attributes}><div class="line-content" style="${escapeAttribute(styleHtml(lineContentStyle(element)))}">${arrow}</div></div>`
 }
 
 function footerHtml(document: DeckDocument, path: string, date?: Date | string) {
-  const footer = document.deck.footer
+  const footer = footerPresentation(document, path, date)
   if (!footer) return ''
-  const slide = document.slides[path]
-  const context = {
-    pageNumber: document.deck.slides.indexOf(path) + 1,
-    pageCount: document.deck.slides.length,
-    deckTitle: document.deck.title,
-    slideName: slide.name ?? slide.id,
-    date,
-  }
-  const values = [footer.left, footer.center, footer.right].map(slot => resolveFooterSlot(slot, context))
-  if (values.every(value => !value)) return ''
-  const color = footer.color ?? document.theme.colors.muted
-  const base = `position:absolute;left:${document.theme.spacing.page}px;right:${document.theme.spacing.page}px;bottom:24px;z-index:2147483647;display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;font-family:${escapeAttribute(safeFont(document.theme.fonts.body))};font-size:${footer.fontSize ?? document.theme.fontSizes.caption}px;line-height:1;color:${escapeAttribute(color)};pointer-events:none`
   const cell = 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap'
-  return `<footer class="slide-footer" style="${base}"><span style="${cell}">${escapeHtml(values[0])}</span><span style="${cell};text-align:center">${escapeHtml(values[1])}</span><span style="${cell};text-align:right">${escapeHtml(values[2])}</span></footer>`
+  return `<footer class="slide-footer" style="${escapeAttribute(styleHtml(footer.style))}"><span style="${cell}">${escapeHtml(footer.values[0])}</span><span style="${cell};text-align:center">${escapeHtml(footer.values[1])}</span><span style="${cell};text-align:right">${escapeHtml(footer.values[2])}</span></footer>`
 }
 
 export function renderHtml(document: DeckDocument, options: HtmlRenderOptions = {}): string {
@@ -74,8 +48,7 @@ export function renderHtml(document: DeckDocument, options: HtmlRenderOptions = 
   for (const path of paths) if (!document.slides[path]) throw new Error(`页面不存在：${path}`)
   const slides = paths.map(path => {
     const slide = document.slides[path]
-    const background = slideBackground(document, path)
-    return `<section class="slide" data-slide-path="${escapeAttribute(path)}" aria-label="${escapeAttribute(slide.name ?? slide.id)}" style="background:${escapeAttribute(background)}">${slide.elements.map(element => elementHtml(element, theme, resolveAsset)).join('')}${footerHtml(document, path, options.date)}</section>`
+    return `<section class="slide" data-slide-path="${escapeAttribute(path)}" aria-label="${escapeAttribute(slide.name ?? slide.id)}" style="${escapeAttribute(styleHtml(slideStyle(document, path)))}">${slide.elements.map(element => elementHtml(element, theme, resolveAsset)).join('')}${footerHtml(document, path, options.date)}</section>`
   }).join('\n')
   const font = safeFont(theme.fonts.body)
   const mode = options.mode ?? 'presentation'

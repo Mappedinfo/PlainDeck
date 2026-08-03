@@ -1,9 +1,9 @@
 const KEY_ORDER = [
   'schemaVersion', 'id', 'title', 'canvas', 'width', 'height', 'theme', 'footer', 'left', 'center', 'right', 'slides',
-  'name', 'layoutRef', 'background', 'token', 'color', 'elements', 'type', 'styleRef',
+  'name', 'layoutRef', 'background', 'token', 'color', 'motion', 'camera', 'fromScale', 'toScale', 'elements', 'type', 'styleRef',
   'frame', 'x', 'y', 'w', 'h', 'text', 'textColor', 'align', 'verticalAlign', 'fit', 'fontSize',
   'fontWeight', 'src', 'alt', 'shape', 'fill', 'stroke', 'strokeWidth', 'radius',
-  'dash', 'arrowEnd', 'opacity', 'rotation', 'zIndex', 'fonts', 'fontSizes', 'colors',
+  'dash', 'arrowEnd', 'opacity', 'rotation', 'zIndex', 'animation', 'enter', 'delayFrames', 'durationFrames', 'fonts', 'fontSizes', 'colors',
   'spacing', 'body', 'mono', 'heading', 'caption', 'muted', 'accent', 'page', 'small',
   'medium', 'large',
 ]

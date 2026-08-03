@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { createLayoutElements, layoutPresets } from './presets.js'
-import { ElementSchema, FooterSchema, ThemeSchema, assertDocument, type DeckDocument, type SlideElement } from './schema.js'
+import { ElementSchema, FooterSchema, SlideMotionSchema, ThemeSchema, assertDocument, type DeckDocument, type SlideElement } from './schema.js'
 import { applyDocumentTheme } from './theme.js'
 
 const LayoutIdSchema = z.enum(['blank', 'title-body', 'section', 'statement', 'metric', 'two-column', 'image-right', 'three-cards'])
@@ -10,13 +10,14 @@ const ColorPatchSchema = z.object({
 }).strict()
 
 export const DeckOperationSchema = z.discriminatedUnion('op', [
-  z.object({ op: z.literal('set-element'), slide: SlidePathSchema, element: z.string().min(1), patch: z.record(z.unknown()) }).strict(),
+  z.object({ op: z.literal('set-element'), slide: SlidePathSchema, element: z.string().min(1), patch: z.record(z.string(), z.unknown()) }).strict(),
   z.object({ op: z.literal('add-element'), slide: SlidePathSchema, element: ElementSchema }).strict(),
   z.object({ op: z.literal('remove-element'), slide: SlidePathSchema, element: z.string().min(1) }).strict(),
   z.object({ op: z.literal('move-element'), slide: SlidePathSchema, element: z.string().min(1), before: z.string().min(1).optional(), after: z.string().min(1).optional() }).strict(),
   z.object({ op: z.literal('add-slide'), layout: LayoutIdSchema.default('blank'), name: z.string().min(1).optional(), after: SlidePathSchema.optional(), id: z.string().regex(/^[a-zA-Z0-9_-]+$/).optional() }).strict(),
   z.object({ op: z.literal('duplicate-slide'), slide: SlidePathSchema, id: z.string().regex(/^[a-zA-Z0-9_-]+$/).optional(), name: z.string().min(1).optional() }).strict(),
   z.object({ op: z.literal('rename-slide'), slide: SlidePathSchema, name: z.string().trim().min(1) }).strict(),
+  z.object({ op: z.literal('set-slide-motion'), slide: SlidePathSchema, motion: SlideMotionSchema.nullable() }).strict(),
   z.object({ op: z.literal('move-slide'), slide: SlidePathSchema, before: SlidePathSchema.optional(), after: SlidePathSchema.optional() }).strict(),
   z.object({ op: z.literal('remove-slide'), slide: SlidePathSchema }).strict(),
   z.object({ op: z.literal('set-footer'), footer: FooterSchema.nullable() }).strict(),
@@ -114,6 +115,11 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
       changed.add('deck.json'); changed.add(path)
     } else if (operation.op === 'rename-slide') {
       requireSlide(document, operation.slide).name = operation.name.trim()
+      changed.add(operation.slide)
+    } else if (operation.op === 'set-slide-motion') {
+      const slide = requireSlide(document, operation.slide)
+      if (operation.motion) slide.motion = structuredClone(operation.motion)
+      else delete slide.motion
       changed.add(operation.slide)
     } else if (operation.op === 'move-slide') {
       requireSlide(document, operation.slide)

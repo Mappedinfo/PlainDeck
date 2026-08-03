@@ -1,6 +1,6 @@
 # PlainDeck Agent API 与 CLI
 
-PlainDeck v0.2.5 面向 Agent 的推荐工作流是：
+PlainDeck v0.3.0 面向 Agent 的推荐工作流是：
 
 ```text
 init → inspect → operations → validate → dry-run → apply → render
@@ -40,7 +40,11 @@ printf '[{"op":"rename-slide","slide":"./slides/001-intro.json","name":"Introduc
     "op": "set-element",
     "slide": "./slides/001-intro.json",
     "element": "title",
-    "patch": { "text": "New title", "frame": { "x": 96 } }
+    "patch": {
+      "text": "New title",
+      "frame": { "x": 96 },
+      "animation": { "enter": "fade-up", "delayFrames": 12, "durationFrames": 20 }
+    }
   },
   {
     "op": "add-element",
@@ -64,6 +68,11 @@ printf '[{"op":"rename-slide","slide":"./slides/001-intro.json","name":"Introduc
   { "op": "remove-slide", "slide": "./slides/003-appendix.json" },
   { "op": "set-theme", "patch": { "accent": "#2563eb", "background": "#ffffff" } },
   {
+    "op": "set-slide-motion",
+    "slide": "./slides/001-intro.json",
+    "motion": { "camera": { "fromScale": 1, "toScale": 1.04, "durationFrames": 150 } }
+  },
+  {
     "op": "set-footer",
     "footer": {
       "left": { "type": "slide-name" },
@@ -75,6 +84,8 @@ printf '[{"op":"rename-slide","slide":"./slides/001-intro.json","name":"Introduc
 ```
 
 `set-footer` 一次设置文档级左、中、右页脚，只修改 `deck.json`；设为 `null` 可关闭页脚。槽位类型为 `none`、`text`、`date`、`page`、`page-count`、`page-of-count`、`deck-title` 或 `slide-name`，其中 `text` 还需要 `text` 字段。日期在显示或导出时生成，页码和页面名称会随页面排序自动更新。
+
+`set-element` 可设置可选的 `animation`；`set-slide-motion` 设置页面级镜头，传入 `null` 可移除。HTML/PNG/PDF 与普通 React 渲染保留最终版式但忽略动画，`@plaindeck/remotion` 才按帧解释这些字段。
 
 `set-element` 不能修改元素的 `id` 或 `type`。`move-element` 与 `move-slide` 使用稳定 ID/路径及 `before` 或 `after`，不暴露数组索引。不存在的页面或元素、重复元素 ID、非法 patch、删除最后一页等都会使整批操作失败；操作在内存中全部完成并通过全量 schema 校验后，CLI 才会写盘。Web 编辑器也把交互动作转换为同一组 operations 后再更新历史与保存。
 
@@ -109,7 +120,7 @@ await renderPdf(result.document, { projectPath: './my-deck', output: './dist/dec
 
 `createDeckTemplate('showcase', { title: 'My story', theme: 'studio-cobalt' })` 与 CLI `init` 使用同一个模板工厂，因此 Web 默认项目、Agent API 与命令行不会产生三套不同的设计。
 
-`plaindeck/core` 公开 schema、类型、migration、canonical serializer、布局和主题预设。`plaindeck/render` 只包含浏览器安全的纯 HTML renderer；文件系统、资源嵌入和 Playwright 渲染能力从包根入口 `plaindeck` 导出。
+`plaindeck/core` 公开 schema、类型、migration、canonical serializer、布局和主题预设。`plaindeck/render` 包含浏览器安全的纯 HTML renderer 与所有输出共用的 presentation model；文件系统、资源嵌入和 Playwright 渲染能力从包根入口 `plaindeck` 导出。React 页面组件由 `@plaindeck/react` 导出，Remotion 时间轴由 `@plaindeck/remotion` 导出。
 
 ## 渲染安全与输出
 
@@ -118,3 +129,4 @@ await renderPdf(result.document, { projectPath: './my-deck', output: './dist/dec
 - PNG 默认输出全部页面到目录，以 `001-name.png` 命名；`--slide` 可接受从 1 开始的页码或完整页面路径。
 - PDF 每张幻灯片对应一页，页面尺寸来自 deck canvas。
 - PNG/PDF 使用 Playwright Chromium。若未安装，按照错误提示运行 `npm install playwright && npx playwright install chromium`。
+- TypeScript API 可通过 `browserExecutable` 指定已有 Chromium 路径，适合容器或离线服务器。

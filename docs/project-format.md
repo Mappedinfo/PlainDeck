@@ -23,6 +23,27 @@ exports/
 
 形状可以直接包含 `text`，并通过可选的 `textColor`、`fontSize`、`fontWeight`、`align` 与 `verticalAlign` 控制文字。旧项目中的形状没有这些字段时仍按纯形状渲染。
 
+## 可选动画与镜头
+
+动画是元素上的可选数据，不改变静态布局：
+
+```json
+{
+  "id": "main-title",
+  "type": "text",
+  "text": "生成式 AI 如何工作？",
+  "animation": {
+    "enter": "fade-up",
+    "delayFrames": 12,
+    "durationFrames": 20
+  }
+}
+```
+
+`enter` 支持 `none`、`fade`、`fade-up`、`fade-down`、`fade-left`、`fade-right` 和 `scale`。页面可通过 `motion.camera` 设置 `fromScale`、`toScale`、`delayFrames` 与 `durationFrames`。所有时间均使用帧数，避免依赖浏览器 CSS 动画时钟并保证视频重复渲染结果一致。
+
+这些字段完全可选，因此旧的 `schemaVersion: "0.1"` 项目无需迁移。HTML、PNG、PDF 和普通 React 输出显示动画完成后的静态版式；`@plaindeck/remotion` 使用同一个 React 页面组件，再按帧添加进入与镜头效果。
+
 ## Schema version 与迁移
 
 `deck.json` 必须包含 `"schemaVersion": "0.1"`。迁移接口位于 `src/core/migration.ts`；未知版本会明确失败，不会静默改写源项目。未来迁移必须新增纯函数映射，并保留恢复快照后再落盘。

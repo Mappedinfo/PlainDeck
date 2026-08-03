@@ -18,7 +18,7 @@ export function validateDeck(input: unknown): ValidationResult {
     if (error instanceof ZodError) {
       return {
         valid: false,
-        issues: error.issues.map(issue => ({ code: issue.code, path: issue.path, message: issue.message })),
+        issues: error.issues.map(issue => ({ code: issue.code, path: issue.path.map(segment => typeof segment === 'symbol' ? String(segment) : segment), message: issue.message })),
       }
     }
     return {

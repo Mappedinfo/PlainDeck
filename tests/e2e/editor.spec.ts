@@ -133,6 +133,28 @@ test('configures left, center, and right automatic footers across slides', async
   await page.screenshot({ path: '/tmp/plaindeck-footer-editor.png', fullPage: true })
 })
 
+test('edits readable element animation and page camera metadata', async ({ page }) => {
+  await page.goto('./')
+  const title = page.locator('.canvas-workspace [data-element-id="title"]')
+  await title.click()
+  await page.getByLabel('元素进入动画').selectOption('fade-up')
+  const motionSection = page.locator('.inspector section').filter({ hasText: '进入动画' })
+  await expect(motionSection.getByLabel('延迟帧')).toHaveValue('0')
+  await motionSection.getByLabel('延迟帧').fill('12')
+  await motionSection.getByLabel('延迟帧').blur()
+  await motionSection.getByLabel('持续帧').fill('20')
+  await motionSection.getByLabel('持续帧').blur()
+
+  await page.locator('.slide-surface.editor-surface').dispatchEvent('pointerdown')
+  const cameraSection = page.locator('.inspector section').filter({ hasText: '页面镜头' })
+  await cameraSection.getByRole('checkbox').check()
+  await expect(cameraSection.getByLabel('结束缩放')).toHaveValue('1.045')
+  await cameraSection.getByLabel('结束缩放').fill('1.06')
+  await cameraSection.getByLabel('结束缩放').blur()
+  await expect(page.locator('.save-pill')).toContainText('未保存')
+  await page.screenshot({ path: '/tmp/plaindeck-motion-editor.png', fullPage: true })
+})
+
 test('duplicates and reorders pages and layers through the shared operation kernel', async ({ page }) => {
   await page.goto('./')
   await page.getByTitle('复制页面').click()

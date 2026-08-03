@@ -89,7 +89,8 @@ PlainDeck 使用开放、稳定的文本源文件：
 | 源文件可读 | **JSON，一页一文件** | OOXML 压缩容器 | 面向呈现 | Markdown / Quarto |
 | 普通 Git 差异 | **清楚到元素属性** | 通常只能看到文件变化 | 通常只能看到文件变化 | **清楚** |
 | AI 生成后人工精调 | **适合** | 需要专用工具链 | 不适合 | 适合生成，精调偏代码 |
-| 复杂动画与 Office 兼容 | 有限 | **最强** | 只保留结果 | 有限 |
+| 可读的基础动画 | **支持，可选 JSON + Remotion** | 支持，但难做 Git diff | 只保留结果 | 依工具而定 |
+| Office 兼容 | 有限 | **最强** | 只保留结果 | 有限 |
 | 本地与离线 | **支持** | 支持 | 支持 | 支持 |
 
 ## 适合与不适合
@@ -124,6 +125,9 @@ npm run typecheck
 npm test
 npm run build
 npm run test:e2e
+npm run test:render
+npm run test:remotion
+npm run test:pack
 ```
 
 ## Agent API 与 CLI
@@ -146,7 +150,26 @@ npm install playwright
 npx playwright install chromium
 ```
 
-公共 API 与操作格式见 [`docs/agent-api.md`](./docs/agent-api.md)，npm 包说明见 [`packages/plaindeck/README.md`](./packages/plaindeck/README.md)。v0.2 不包含 HTTP API、MCP、serve/watch 或 PPTX 导入导出；项目 schema 仍保持 `0.1` 兼容。
+公共 API 与操作格式见 [`docs/agent-api.md`](./docs/agent-api.md)，npm 包说明见 [`packages/plaindeck/README.md`](./packages/plaindeck/README.md)。v0.3 不包含 HTTP API、MCP、serve/watch 或 PPTX 导入导出；项目 schema 仍保持 `0.1` 兼容。
+
+## React 与 Remotion：一页内容，所有输出
+
+PlainDeck 不把视频做成第二套幻灯片。`@plaindeck/react` 把同一份页面 JSON 渲染为 React 组件，Web 编辑器直接使用它；`@plaindeck/remotion` 只在组件外增加逐元素入场与页面镜头。HTML、PNG、PDF、Web 和视频共同使用 `plaindeck/render` 中的布局、字体、主题、形状和页脚解析。
+
+```bash
+npm install plaindeck @plaindeck/react
+npm install @plaindeck/remotion remotion
+```
+
+```tsx
+import { PlainDeckSlide } from '@plaindeck/react'
+import { PlainDeckTimeline } from '@plaindeck/remotion'
+
+<PlainDeckSlide document={deck} slidePath="./slides/001-intro.json" />
+<PlainDeckTimeline document={deck} framesPerSlide={150} />
+```
+
+动画仍是可审查的普通 JSON；静态渲染器忽略动画字段并保持完全相同的最终版式，Remotion 按帧解释它。字幕与音频继续由视频项目作为独立时间轴图层叠加，不会复制页面内容。完整说明和 paper-to-Bilibili 接入方式见 [`docs/remotion.md`](./docs/remotion.md)。
 
 Web 工具栏显示的版本号直接读取 `packages/plaindeck/package.json`。发布时只需更新 npm 包版本，Web 构建会自动同步，无需再修改界面源码。
 
@@ -158,6 +181,8 @@ Web 工具栏显示的版本号直接读取 `packages/plaindeck/package.json`。
 - 8 种页面布局骨架、图片占位、8 套默认配色与自定义主题颜色；
 - 形状内文字、双击编辑、字号、颜色与对齐方式；
 - 文档级左、中、右页脚编辑器，支持自定义文字、自动日期、页码、总页数、文档标题与页面名称；
+- 可选的逐元素进入动画与页面镜头 JSON，Web 属性面板可视化编辑；
+- `@plaindeck/react` 共享页面组件与 `@plaindeck/remotion` 帧驱动时间轴适配器；
 - 选择、Shift 多选、拖动、缩放、属性编辑、图层、对齐和网格吸附；元素可暂放在画布外，并通过本页元素清单检索或一键移回中心；
 - 100 步 Undo/Redo、复制、删除和键盘微调；
 - 本地目录读写、防抖最小写入、外部修改保护和 OPFS 恢复快照；

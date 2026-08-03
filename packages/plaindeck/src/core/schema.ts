@@ -4,12 +4,28 @@ export const FrameSchema = z.object({
   x: z.number().int(), y: z.number().int(), w: z.number().int().positive(), h: z.number().int().positive(),
 })
 
+export const ElementAnimationSchema = z.object({
+  enter: z.enum(['none', 'fade', 'fade-up', 'fade-down', 'fade-left', 'fade-right', 'scale']),
+  delayFrames: z.number().int().nonnegative().optional(),
+  durationFrames: z.number().int().positive().optional(),
+}).strict()
+
+export const CameraMotionSchema = z.object({
+  fromScale: z.number().positive(),
+  toScale: z.number().positive(),
+  delayFrames: z.number().int().nonnegative().optional(),
+  durationFrames: z.number().int().positive().optional(),
+}).strict()
+
+export const SlideMotionSchema = z.object({ camera: CameraMotionSchema.optional() }).strict()
+
 const ElementBase = z.object({
   id: z.string().min(1),
   frame: FrameSchema,
   opacity: z.number().min(0).max(1).optional(),
   rotation: z.number().optional(),
   zIndex: z.number().int().optional(),
+  animation: ElementAnimationSchema.optional(),
 })
 
 export const TextElementSchema = ElementBase.extend({
@@ -63,6 +79,7 @@ export const SlideSchema = z.object({
   name: z.string().optional(),
   layoutRef: z.string().optional(),
   background: z.object({ token: z.string().optional(), color: z.string().optional() }).optional(),
+  motion: SlideMotionSchema.optional(),
   elements: z.array(ElementSchema),
 })
 
@@ -103,6 +120,9 @@ export const DeckSchema = z.object({
 })
 
 export type Frame = z.infer<typeof FrameSchema>
+export type ElementAnimation = z.infer<typeof ElementAnimationSchema>
+export type CameraMotion = z.infer<typeof CameraMotionSchema>
+export type SlideMotion = z.infer<typeof SlideMotionSchema>
 export type SlideElement = z.infer<typeof ElementSchema>
 export type Slide = z.infer<typeof SlideSchema>
 export type Theme = z.infer<typeof ThemeSchema>
