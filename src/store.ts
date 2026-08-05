@@ -34,7 +34,7 @@ interface EditorState {
   removeSelected(): void
   duplicateSelected(): void
   addSlide(layoutId?: LayoutPresetId): void
-  addSummarySlide(content: SummaryCardContent): void
+  addSummarySlide(content: SummaryCardContent, style?: string): void
   duplicateSlide(): void
   deleteSlide(): void
   moveSlide(direction: -1 | 1): void
@@ -123,9 +123,9 @@ export const useEditor = create<EditorState>((set, get) => ({
     const result = commitOperations(state, [{ op: 'add-slide', id, layout: layoutId, name: presetName }], `新建页面 · ${presetName}`)
     const path = result.changedPaths.find(item => item.startsWith('./slides/')); if (path) set({ activeSlidePath: path, selectedIds: [] })
   },
-  addSummarySlide: content => {
+  addSummarySlide: (content, style) => {
     const state = get(); const id = uid('summary')
-    const result = commitOperations(state, [{ op: 'add-summary-slide', id, content, name: content.title, after: state.activeSlidePath }], '从结构化内容生成卡片页')
+    const result = commitOperations(state, [{ op: 'add-summary-slide', id, content, style, name: content.title, after: state.activeSlidePath }], '从结构化内容生成卡片页')
     const path = result.changedPaths.find(item => item.startsWith('./slides/')); if (path) set({ activeSlidePath: path, selectedIds: [] })
   },
   duplicateSlide: () => {

@@ -26,7 +26,8 @@ Each example below is a real five-slide PlainDeck project generated through `ini
 plaindeck init ./pitch --template pitch --theme night-citrus
 plaindeck apply ./my-deck --ops changes.json --dry-run --json
 plaindeck add-slide ./my-deck --layout image-right --name "Results"
-cat brief.md | plaindeck add-cards ./my-deck --content - --name "Weekly brief"
+plaindeck styles --search editorial
+cat brief.md | plaindeck add-cards ./my-deck --content - --style editorialMagazine --name "Weekly brief"
 plaindeck render ./my-deck --format html --output dist/deck.html
 plaindeck render ./my-deck --format png --output dist/slides
 plaindeck render ./my-deck --format pdf --output dist/deck.pdf
@@ -34,7 +35,7 @@ plaindeck render ./my-deck --format pdf --output dist/deck.pdf
 
 `init` defaults to the five-slide `showcase` template and the `studio-cobalt` theme. Templates are `showcase`, `pitch`, and `blank`; color systems include `studio-cobalt`, `night-citrus`, `ink-rose`, `paper-signal`, `night-blue`, `field-notes`, `editorial-blue`, and `poster-red`.
 
-`add-cards` turns Juya-style Markdown or JSON into a responsive 1–8 card slide. Parsing and layout live in the public core, so CLI-created cards are the same editable elements shown by the Web editor and every renderer.
+`add-cards` turns Juya-style Markdown or JSON into a responsive 1–8 card slide. `styles` exposes 174 native recipes batch-compiled from the MIT-licensed Juya template catalog into 27 categories and 10 PlainDeck composition variants. Parsing, recipes, and layout live in the public core, so CLI-created cards are the same editable elements shown by the Web editor and every renderer.
 
 HTML output is a standalone Web presentation with keyboard navigation, progress, slide names, and fullscreen. PNG/PDF use the same layout renderer in document mode.
 

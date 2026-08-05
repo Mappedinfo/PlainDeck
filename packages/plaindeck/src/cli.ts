@@ -2,7 +2,7 @@
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { stdin, stderr, stdout } from 'node:process'
-import { applyOperations, createDeckTemplate, createSavePlan, deckTemplatePresets, inspectDeck, layoutPresets, parseSummaryCards, themePresets, validateDeck, type DeckTemplateId } from './core/index.js'
+import { applyOperations, createDeckTemplate, createSavePlan, deckTemplatePresets, designRecipes, inspectDeck, layoutPresets, parseSummaryCards, searchDesignRecipes, themePresets, validateDeck, type DeckTemplateId } from './core/index.js'
 import { loadDeck, prepareDocumentAssets, renderPdf, renderPng, saveDeck } from './node/index.js'
 import { renderHtml } from './render/index.js'
 import packageMetadata from '../package.json' with { type: 'json' }
@@ -20,7 +20,8 @@ Usage:
   plaindeck inspect <project> [--json]
   plaindeck apply <project> --ops <file|-> [--dry-run] [--json]
   plaindeck add-slide <project> --layout <id> [--name <name>] [--json]
-  plaindeck add-cards <project> --content <file|-> [--name <name>] [--after <slide-path>] [--json]
+  plaindeck add-cards <project> --content <file|-> [--style <id>] [--name <name>] [--after <slide-path>] [--json]
+  plaindeck styles [--search <query>] [--json]
   plaindeck render <project> --format html|png|pdf --output <path> [--slide <index|path>] [--allow-network] [--json]
 `
 
@@ -64,6 +65,11 @@ async function run() {
   }
   if (command === '--version' || command === '-v') {
     stdout.write(`${VERSION}\n`)
+    return
+  }
+  if (command === 'styles') {
+    const recipes = searchDesignRecipes(option('--search'))
+    emit({ ok: true, count: recipes.length, styles: recipes.map(recipe => ({ id: recipe.id, name: recipe.name, category: recipe.category, description: recipe.description, variant: recipe.card.variant, colors: recipe.theme.colors })) }, recipes.length ? recipes.map(recipe => `${recipe.id.padEnd(28)} ${recipe.name} · ${recipe.category.name}`).join('\n') : '没有匹配的设计配方。')
     return
   }
   if (command === 'init') {
@@ -125,10 +131,12 @@ async function run() {
     const source = requiredOption('--content')
     const raw = source === '-' ? await readStdin() : await readFile(source, 'utf8')
     const content = parseSummaryCards(raw)
-    const result = applyOperations(await loadDeck(root), [{ op: 'add-summary-slide', content, name: option('--name'), after: option('--after') }])
+    const style = option('--style')
+    if (style && !designRecipes.some(recipe => recipe.id === style)) throw new UsageError(`未知设计配方 ${style}。运行 plaindeck styles --search <query> 查找。`)
+    const result = applyOperations(await loadDeck(root), [{ op: 'add-summary-slide', content, style, name: option('--name'), after: option('--after') }])
     await saveDeck(root, result.document, result.changedPaths)
     const addedPath = result.changedPaths.find(path => path.startsWith('./slides/'))
-    emit({ ok: true, changedPaths: result.changedPaths, slide: addedPath, cards: content.cards.length }, `✓ 已添加结构化卡片页 ${addedPath} · ${content.cards.length} 个要点`)
+    emit({ ok: true, changedPaths: result.changedPaths, slide: addedPath, cards: content.cards.length, style: style ?? null }, `✓ 已添加结构化卡片页 ${addedPath} · ${content.cards.length} 个要点${style ? ` · ${style}` : ''}`)
     return
   }
   if (command === 'render') {

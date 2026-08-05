@@ -1,6 +1,6 @@
 # PlainDeck Agent API 与 CLI
 
-PlainDeck v0.3.1 面向 Agent 的推荐工作流是：
+PlainDeck v0.4.0 面向 Agent 的推荐工作流是：
 
 ```text
 init → inspect → operations → validate → dry-run → apply → render
@@ -16,7 +16,8 @@ plaindeck validate <project> [--json]
 plaindeck inspect <project> [--json]
 plaindeck apply <project> --ops <file|-> [--dry-run] [--json]
 plaindeck add-slide <project> --layout <id> [--name <name>]
-plaindeck add-cards <project> --content <file|-> [--name <name>] [--after <slide-path>]
+plaindeck add-cards <project> --content <file|-> [--style <id>] [--name <name>] [--after <slide-path>]
+plaindeck styles [--search <query>] [--json]
 plaindeck render <project> --format html|png|pdf --output <path> [--slide <index|path>] [--allow-network]
 ```
 
@@ -35,9 +36,11 @@ printf '[{"op":"rename-slide","slide":"./slides/001-intro.json","name":"Introduc
 
 ```bash
 cat brief.md | plaindeck add-cards ./my-deck --content - --name "Weekly brief" --json
+plaindeck styles --search "水墨"
+cat brief.md | plaindeck add-cards ./my-deck --content - --style inkLandscape
 ```
 
-Markdown 使用 `# 主标题`、`## 卡片标题`、描述和可选的 `icon_name`；兼容 `{ "mainTitle", "cards": [{ "title", "desc", "icon" }] }` 形式的 Juya News Card JSON。生成后每张卡的背景、编号、标题和正文都是独立 PlainDeck 元素，可以继续在 Web 画布拖动和编辑。
+Markdown 使用 `# 主标题`、`## 卡片标题`、描述和可选的 `icon_name`；兼容 `{ "mainTitle", "cards": [{ "title", "desc", "icon" }] }` 形式的 Juya News Card JSON。`styles` 提供 174 个由 Juya 模板批量迁移的原生设计配方；它们归入 27 个分类和 10 类构图语法，颜色、字体、边框、圆角与装饰最终都转换为 PlainDeck 元素。生成后每张卡的背景、编号、标题和正文都可以继续在 Web 画布拖动和编辑。
 
 ## Operations
 

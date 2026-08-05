@@ -1,7 +1,7 @@
 {
   "name": "plaindeck-web",
   "private": true,
-  "version": "0.3.1",
+  "version": "0.4.0",
   "type": "module",
   "workspaces": [
     "packages/*"
@@ -14,6 +14,8 @@
     "preview": "vite preview",
     "test": "npm run build:packages && vitest run",
     "test:pack": "node scripts/test-pack.mjs",
+    "styles:migrate": "node scripts/migrate-juya-styles.mjs",
+    "styles:check": "node scripts/migrate-juya-styles.mjs --check",
     "test:render": "npm run build:package && PLAINDECK_BROWSER_TESTS=1 vitest run packages/plaindeck/test/render.test.ts",
     "test:remotion": "npm run build:packages && node scripts/render-remotion-demo.mjs",
     "test:watch": "vitest",
@@ -21,10 +23,10 @@
     "typecheck": "npm run build:packages && tsc -b --pretty false"
   },
   "dependencies": {
-    "@mappedinfo/plaindeck-react": "0.3.1",
+    "@mappedinfo/plaindeck-react": "0.4.0",
     "jszip": "^3.10.1",
     "lucide-react": "^0.468.0",
-    "plaindeck": "0.3.1",
+    "plaindeck": "0.4.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zod": "4.4.3",

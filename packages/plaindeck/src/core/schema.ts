@@ -36,6 +36,7 @@ export const TextElementSchema = ElementBase.extend({
   verticalAlign: z.enum(['top', 'middle', 'bottom']).optional(),
   fit: z.enum(['none', 'shrink', 'clip']).optional(),
   fontSize: z.number().positive().optional(),
+  fontFamily: z.string().min(1).optional(),
   color: z.string().optional(),
   fontWeight: z.number().int().min(100).max(900).optional(),
 })
@@ -57,6 +58,7 @@ export const ShapeElementSchema = ElementBase.extend({
   text: z.string().optional(),
   textColor: z.string().optional(),
   fontSize: z.number().positive().optional(),
+  fontFamily: z.string().min(1).optional(),
   fontWeight: z.number().int().min(100).max(900).optional(),
   align: z.enum(['left', 'center', 'right']).optional(),
   verticalAlign: z.enum(['top', 'middle', 'bottom']).optional(),

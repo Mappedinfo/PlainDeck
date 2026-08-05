@@ -2,7 +2,7 @@ import { cp, mkdtemp, readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { applyOperations, canonicalJson, createDeckTemplate, createSavePlan, createSummaryCardElements, deckTemplatePresets, inspectDeck, loadDeck, parseSummaryCards, resolveFooterSlot, saveDeck, summaryCardsToMarkdown, themePresets, validateDeck } from '../src/index.js'
+import { applyOperations, canonicalJson, createDeckTemplate, createSavePlan, createSummaryCardElements, deckTemplatePresets, designRecipeCategories, designRecipes, designRecipeSource, getDesignRecipe, inspectDeck, loadDeck, parseSummaryCards, resolveFooterSlot, saveDeck, searchDesignRecipes, summaryCardsToMarkdown, themePresets, validateDeck } from '../src/index.js'
 
 const starter = resolve('examples/starter')
 
@@ -73,6 +73,30 @@ describe('PlainDeck public API', () => {
     expect(recolored.document.slides['./slides/002-weekly-brief.json'].elements.find(element => element.id === 'summary-card-1')).toMatchObject({ fill: '#D8FF52' })
     expect(recolored.document.slides['./slides/002-weekly-brief.json'].elements.find(element => element.id === 'summary-card-2')).toMatchObject({ fill: '#101714', stroke: '#9FAB9F' })
     expect(() => applyOperations(original, [{ op: 'add-summary-slide', content: { title: 'Too many', cards: Array.from({ length: 9 }, () => ({ title: 'x', description: 'y' })) } }])).toThrow()
+  })
+
+  it('ships all 174 Juya-derived recipes as validated PlainDeck-native styles', () => {
+    expect(designRecipeSource.templateCount).toBe(174)
+    expect(designRecipes).toHaveLength(174)
+    expect(new Set(designRecipes.map(recipe => recipe.id)).size).toBe(174)
+    expect(designRecipeCategories).toHaveLength(27)
+    expect(new Set(designRecipes.map(recipe => recipe.card.variant))).toEqual(new Set(['minimal', 'editorial', 'brutal', 'glass', 'terminal', 'future', 'playful', 'organic', 'art', 'product']))
+    expect(searchDesignRecipes('水墨')).toEqual(expect.arrayContaining([expect.objectContaining({ id: 'inkLandscape' })]))
+    expect(searchDesignRecipes('', 'chinese-painting')).toHaveLength(10)
+    expect(getDesignRecipe('terminalCli')).toMatchObject({ name: '终端风格', card: { variant: 'terminal' } })
+
+    const content = { title: '迁移覆盖率', cards: [{ title: '原生元素', description: '每套配方都通过同一个 operation 生成。', icon: 'verified' }] }
+    for (const recipe of designRecipes) {
+      const original = createDeckTemplate('blank')
+      const result = applyOperations(original, [{ op: 'add-summary-slide', id: `style-${recipe.id}`, content, style: recipe.id }])
+      const slide = result.document.slides[result.document.deck.slides[1]]
+      expect(slide.layoutRef).toBe(`summary-cards/${recipe.id}`)
+      expect(slide.background?.color).toBe(recipe.theme.colors.background)
+      expect(new Set(slide.elements.map(element => element.id)).size).toBe(slide.elements.length)
+      expect(slide.elements.find(element => element.id === 'summary-title')).toMatchObject({ type: 'text', fontFamily: recipe.theme.fonts.title })
+      expect(validateDeck(result.document)).toMatchObject({ valid: true, issues: [] })
+    }
+    expect(() => applyOperations(createDeckTemplate('blank'), [{ op: 'add-summary-slide', content, style: 'missing-style' }])).toThrow('未知设计配方')
   })
 
   it('recolors theme-bound template elements through set-theme', () => {

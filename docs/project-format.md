@@ -21,7 +21,9 @@ exports/
 
 `footer` 是可选的文档级配置，包含 `left`、`center`、`right` 三个槽位以及可选的 `fontSize`、`color`。自动日期、页码、总页数、文档标题和页面名称保留为语义化类型，不会复制成每页文本元素；Web 与 HTML/PNG/PDF renderer 使用同一套解析逻辑。
 
-形状可以直接包含 `text`，并通过可选的 `textColor`、`fontSize`、`fontWeight`、`align` 与 `verticalAlign` 控制文字。旧项目中的形状没有这些字段时仍按纯形状渲染。
+文本和带文字的形状都可通过可选的 `fontFamily` 覆盖文档级字体。形状还可以直接包含 `text`，并通过可选的 `textColor`、`fontSize`、`fontWeight`、`align` 与 `verticalAlign` 控制文字。旧项目没有这些字段时仍使用文档主题并按原样渲染。
+
+结构化卡片页使用 `layoutRef: "summary-cards/<style-id>"` 记录设计配方来源，但配方会在创建时完全展开为普通元素；打开和渲染项目不依赖外部模板仓库。
 
 ## 可选动画与镜头
 

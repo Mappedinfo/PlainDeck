@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { DesignRecipe, DesignVariant } from './design-recipes.js'
 import type { SlideElement, Theme } from './schema.js'
 
 export const SummaryCardSchema = z.object({
@@ -89,38 +90,81 @@ export function summaryCardsToMarkdown(content: SummaryCardContent) {
 
 const frame = (x: number, y: number, w: number, h: number) => ({ x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) })
 
-export function createSummaryCardElements(content: SummaryCardContent, theme: Theme, canvas = { width: 1600, height: 900 }): SlideElement[] {
+function colorLuminance(value: string) {
+  const match = /^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(value)
+  if (!match) return undefined
+  const channels = match.slice(1).map(part => {
+    const channel = Number.parseInt(part, 16) / 255
+    return channel <= .03928 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4
+  })
+  return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722
+}
+
+function contrastRatio(a: string, b: string) {
+  const left = colorLuminance(a); const right = colorLuminance(b)
+  if (left === undefined || right === undefined) return 0
+  return (Math.max(left, right) + .05) / (Math.min(left, right) + .05)
+}
+
+function mostReadable(background: string, candidates: string[]) {
+  return [...candidates].sort((a, b) => contrastRatio(b, background) - contrastRatio(a, background))[0]
+}
+
+export function createSummaryCardElements(content: SummaryCardContent, theme: Theme, canvas = { width: 1600, height: 900 }, recipe?: DesignRecipe): SlideElement[] {
   const valid = SummaryCardContentSchema.parse(content)
   const { width, height } = canvas
+  const variant: DesignVariant = recipe?.card.variant ?? 'product'
   const marginX = Math.round(width * .05); const top = Math.round(height * .06)
   const contentWidth = width - marginX * 2
   const cardsTop = Math.round(height * .275); const cardsBottom = Math.round(height * .885)
   const count = valid.cards.length
   const columns = count === 1 ? 1 : count === 2 ? 2 : count === 3 ? 3 : count === 4 ? 2 : count <= 6 ? 3 : 4
-  const rows = Math.ceil(count / columns); const gap = Math.round(width * .015)
+  const rows = Math.ceil(count / columns); const gap = Math.round(width * .015 * (recipe?.card.gapScale ?? 1))
   const cardWidth = (contentWidth - gap * (columns - 1)) / columns
   const cardHeight = (cardsBottom - cardsTop - gap * (rows - 1)) / rows
   const compact = count >= 5
-  const titleSize = compact ? 27 : count >= 3 ? 31 : 36
-  const bodySize = compact ? 19 : count >= 3 ? 22 : 26
-  const elements: SlideElement[] = [
-    { id: 'summary-kicker', type: 'text', frame: frame(marginX, top, contentWidth, 34), text: 'BRIEF / STRUCTURED SUMMARY', fontSize: 17, fontWeight: 800, color: theme.colors.accent },
-    { id: 'summary-title', type: 'text', styleRef: 'slide-title', frame: frame(marginX, top + 50, contentWidth, 105), text: valid.title, fontSize: 58, fontWeight: 800, color: theme.colors.text, fit: 'shrink' },
-  ]
+  const titleSize = compact ? 27 : count >= 3 ? 31 : 36; const bodySize = compact ? 19 : count >= 3 ? 22 : 26
+  const elements: SlideElement[] = []
+
+  if (variant === 'glass') elements.push(
+    { id: 'style-glow-a', type: 'shape', frame: frame(width * .72, -height * .18, width * .42, width * .42), shape: 'ellipse', fill: theme.colors.accent, opacity: .14 },
+    { id: 'style-glow-b', type: 'shape', frame: frame(-width * .12, height * .68, width * .34, width * .34), shape: 'ellipse', fill: theme.colors.muted, opacity: .12 },
+  )
+  if (variant === 'art') elements.push(
+    { id: 'style-art-block', type: 'shape', frame: frame(width * .77, top - 82, width * .19, 150), shape: 'rectangle', fill: theme.colors.accent, rotation: -7, opacity: .9 },
+    { id: 'style-art-dot', type: 'shape', frame: frame(width * .9, cardsBottom - 18, 90, 90), shape: 'ellipse', fill: theme.colors.text, opacity: .14 },
+  )
+  if (variant === 'future') elements.push(
+    { id: 'style-future-line-top', type: 'line', frame: frame(marginX, top - 20, contentWidth, 3), color: theme.colors.accent, strokeWidth: 2 },
+    { id: 'style-future-line-side', type: 'line', frame: frame(marginX - 22, cardsTop, 3, cardsBottom - cardsTop), color: theme.colors.accent, strokeWidth: 2 },
+  )
+  if (variant === 'brutal') elements.push({ id: 'style-brutal-banner', type: 'shape', frame: frame(0, 0, width, 18), shape: 'rectangle', fill: theme.colors.accent })
+  if (variant === 'terminal') elements.push({ id: 'style-terminal-bar', type: 'shape', frame: frame(marginX, top - 16, contentWidth, 32), shape: 'rectangle', fill: theme.colors.text, text: `●  ●  ●    ${recipe?.id ?? 'plain'} / local`, textColor: theme.colors.background, fontSize: 12, fontFamily: theme.fonts.mono ?? theme.fonts.body, fontWeight: 700, align: 'left', verticalAlign: 'middle' })
+
+  elements.push(
+    { id: 'summary-kicker', type: 'text', frame: frame(marginX, top + (variant === 'terminal' ? 28 : 0), contentWidth, 34), text: recipe ? `${recipe.category.name.toUpperCase()} / ${recipe.name.toUpperCase()}` : 'BRIEF / STRUCTURED SUMMARY', fontSize: 17, fontFamily: theme.fonts.mono ?? theme.fonts.body, fontWeight: 800, color: theme.colors.accent, fit: 'shrink' },
+    { id: 'summary-title', type: 'text', styleRef: 'slide-title', frame: frame(marginX, top + (variant === 'terminal' ? 70 : 50), contentWidth, 105), text: valid.title, fontSize: recipe?.theme.fontSizes.title ? Math.min(72, recipe.theme.fontSizes.title) : 58, fontFamily: theme.fonts.title, fontWeight: variant === 'minimal' ? 600 : 800, color: theme.colors.text, fit: 'shrink' },
+  )
+  if (variant === 'editorial' || variant === 'minimal') elements.push({ id: 'style-title-rule', type: 'line', frame: frame(marginX, cardsTop - 32, contentWidth, 3), color: variant === 'editorial' ? theme.colors.accent : theme.colors.text, strokeWidth: variant === 'editorial' ? 4 : 1 })
 
   valid.cards.forEach((card, index) => {
     const row = Math.floor(index / columns); const column = index % columns
     const x = marginX + column * (cardWidth + gap); const y = cardsTop + row * (cardHeight + gap)
-    const primary = index === 0
+    const primary = index === 0 && !['terminal', 'future', 'minimal', 'editorial'].includes(variant)
     const fill = primary ? theme.colors.accent : theme.colors.background
-    const foreground = primary ? theme.colors.background : theme.colors.text
-    const muted = primary ? theme.colors.background : theme.colors.muted
+    const foreground = primary ? mostReadable(fill, [theme.colors.background, theme.colors.text]) : theme.colors.text
+    const muted = primary ? foreground : contrastRatio(theme.colors.muted, fill) >= 3 ? theme.colors.muted : theme.colors.text
+    const radius = recipe?.card.radius ?? 22; const borderWidth = recipe?.card.borderWidth ?? 2
+    const rotation = variant === 'playful' ? (index % 2 ? 1.2 : -1.2) : variant === 'art' ? (index % 3 - 1) * 1.1 : 0
+    if (variant === 'brutal') elements.push({ id: `summary-card-${index + 1}-shadow`, type: 'shape', frame: frame(x + 10, y + 10, cardWidth, cardHeight), shape: 'rectangle', fill: theme.colors.text })
     elements.push(
-      { id: `summary-card-${index + 1}`, type: 'shape', frame: frame(x, y, cardWidth, cardHeight), shape: 'rounded-rectangle', fill, stroke: primary ? undefined : theme.colors.muted, strokeWidth: primary ? 0 : 2, radius: 22 },
-      { id: `summary-card-${index + 1}-index`, type: 'text', frame: frame(x + 26, y + 22, cardWidth - 52, 28), text: `${String(index + 1).padStart(2, '0')}${card.icon ? ` / ${card.icon.replaceAll('_', ' ').toUpperCase()}` : ''}`, fontSize: compact ? 13 : 15, fontWeight: 800, color: primary ? foreground : theme.colors.accent, fit: 'shrink' },
-      { id: `summary-card-${index + 1}-title`, type: 'text', frame: frame(x + 26, y + 65, cardWidth - 52, compact ? 54 : 62), text: card.title, fontSize: titleSize, fontWeight: 800, color: foreground, fit: 'shrink' },
-      { id: `summary-card-${index + 1}-body`, type: 'text', frame: frame(x + 26, y + (compact ? 124 : 138), cardWidth - 52, cardHeight - (compact ? 146 : 164)), text: card.description, fontSize: bodySize, fontWeight: 500, color: muted, fit: 'shrink' },
+      { id: `summary-card-${index + 1}`, type: 'shape', frame: frame(x, y, cardWidth, cardHeight), shape: radius ? 'rounded-rectangle' : 'rectangle', fill, stroke: primary ? undefined : (variant === 'future' || variant === 'terminal' ? theme.colors.accent : theme.colors.muted), strokeWidth: primary ? 0 : borderWidth, radius, rotation, opacity: variant === 'glass' ? .82 : undefined },
+      { id: `summary-card-${index + 1}-index`, type: 'text', frame: frame(x + 26, y + 22, cardWidth - 52, 28), text: `${String(index + 1).padStart(2, '0')}${card.icon ? ` / ${card.icon.replaceAll('_', ' ').toUpperCase()}` : ''}`, fontSize: compact ? 13 : 15, fontFamily: theme.fonts.mono ?? theme.fonts.body, fontWeight: 800, color: primary ? foreground : theme.colors.accent, fit: 'shrink', rotation },
+      { id: `summary-card-${index + 1}-title`, type: 'text', frame: frame(x + 26, y + 65, cardWidth - 52, compact ? 54 : 62), text: card.title, fontSize: titleSize, fontFamily: theme.fonts.title, fontWeight: variant === 'minimal' ? 600 : 800, color: foreground, fit: 'shrink', rotation },
+      { id: `summary-card-${index + 1}-body`, type: 'text', frame: frame(x + 26, y + (compact ? 124 : 138), cardWidth - 52, cardHeight - (compact ? 146 : 164)), text: card.description, fontSize: bodySize, fontFamily: theme.fonts.body, fontWeight: 500, color: muted, fit: 'shrink', rotation },
     )
+    if (variant === 'editorial') elements.push({ id: `summary-card-${index + 1}-rule`, type: 'shape', frame: frame(x, y, cardWidth, 8), shape: 'rectangle', fill: index % 2 ? theme.colors.text : theme.colors.accent })
+    if (variant === 'future') elements.push({ id: `summary-card-${index + 1}-corner`, type: 'shape', frame: frame(x + cardWidth - 28, y, 28, 7), shape: 'rectangle', fill: theme.colors.accent })
   })
   return elements
 }

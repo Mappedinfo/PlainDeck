@@ -107,6 +107,24 @@ describe('PlainDeck CLI', () => {
     expect(slide).toContain('summary-card-2-body')
   })
 
+  it('discovers all styles and applies a selected native recipe', async () => {
+    const listed = await run(['styles', '--json'])
+    expect(listed.code).toBe(0)
+    expect(JSON.parse(listed.stdout)).toMatchObject({ ok: true, count: 174, styles: expect.arrayContaining([expect.objectContaining({ id: 'terminalCli', variant: 'terminal' })]) })
+    const searched = await run(['styles', '--search', '水墨', '--json'])
+    expect(JSON.parse(searched.stdout)).toMatchObject({ ok: true, styles: expect.arrayContaining([expect.objectContaining({ id: 'inkLandscape' })]) })
+
+    const root = await mkdtemp(join(tmpdir(), 'plaindeck-cli-style-'))
+    await cp(starter, root, { recursive: true })
+    const markdown = '# Terminal brief\n\n## Native\nGenerated as editable PlainDeck elements.\nterminal'
+    const added = await run(['add-cards', root, '--content', '-', '--style', 'terminalCli', '--json'], markdown)
+    expect(JSON.parse(added.stdout)).toMatchObject({ ok: true, cards: 1, style: 'terminalCli' })
+    const slidePath = JSON.parse(added.stdout).slide.replace(/^\.\//, '')
+    const slide = JSON.parse(await readFile(join(root, slidePath), 'utf8'))
+    expect(slide).toMatchObject({ layoutRef: 'summary-cards/terminalCli', background: { color: '#0a0a0a' } })
+    expect(slide.elements).toEqual(expect.arrayContaining([expect.objectContaining({ id: 'style-terminal-bar' })]))
+  })
+
   it('uses a distinct usage error exit code', async () => {
     const result = await run(['render', starter, '--format', 'bad', '--output', 'x', '--json'])
     expect(result.code).toBe(2)

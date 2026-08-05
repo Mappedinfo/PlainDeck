@@ -26,6 +26,9 @@ try {
     if (manifest.version !== expectedVersion) throw new Error(`${manifest.name} version ${manifest.version} does not match ${expectedVersion}`)
     const packed = JSON.parse(run(npm, ['pack', '-w', item.workspace, '--json', '--pack-destination', work]))[0]
     if (!packed.files.some(file => file.path === 'LICENSE')) throw new Error(`${manifest.name} tarball is missing LICENSE`)
+    if (manifest.name === 'plaindeck' && !packed.files.some(file => file.path === 'THIRD_PARTY_NOTICES.md')) {
+      throw new Error('plaindeck tarball is missing THIRD_PARTY_NOTICES.md')
+    }
     const forbidden = packed.files.map(file => file.path).filter(path => /(^|\/)(\.env|test-results|playwright-report|src)(\/|$)/.test(path))
     if (forbidden.length) throw new Error(`${manifest.name} tarball includes forbidden files: ${forbidden.join(', ')}`)
     tarballs.push(join(work, packed.filename))

@@ -37,7 +37,7 @@ export function textContentStyle(element: Extract<SlideElement, { type: 'text' }
   const title = element.styleRef === 'slide-title'
   return {
     width: '100%', height: '100%', display: 'flex',
-    fontFamily: title ? theme.fonts.title : theme.fonts.body,
+    fontFamily: element.fontFamily ?? (title ? theme.fonts.title : theme.fonts.body),
     fontSize: element.fontSize ?? (title ? theme.fontSizes.title : theme.fontSizes.body),
     fontWeight: element.fontWeight ?? (title ? 700 : 400),
     color: element.color ?? theme.colors.text,
@@ -68,7 +68,7 @@ export function shapeLabelStyle(element: Extract<SlideElement, { type: 'shape' }
     display: 'flex', width: '100%', height: '100%', padding: 24, boxSizing: 'border-box',
     alignItems: verticalAlignment(element.verticalAlign ?? 'middle'),
     justifyContent: horizontalAlignment(element.align),
-    fontFamily: theme.fonts.body,
+    fontFamily: element.fontFamily ?? theme.fonts.body,
     fontSize: element.fontSize ?? theme.fontSizes.body,
     fontWeight: element.fontWeight ?? 400,
     color: element.textColor ?? theme.colors.text,
