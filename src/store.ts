@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { applyOperations, layoutPresets, type DeckDocument, type DeckFooter, type DeckOperation, type LayoutPresetId, type SlideElement, type SlideMotion, type Theme } from 'plaindeck/core'
+import { applyOperations, layoutPresets, type DeckDocument, type DeckFooter, type DeckOperation, type LayoutPresetId, type SlideElement, type SlideMotion, type SummaryCardContent, type Theme } from 'plaindeck/core'
 import { createSampleDocument } from './core/sample'
 import { alignmentPatch } from './core/geometry'
 import type { DirectoryHandle } from './storage/browserStorage'
@@ -34,6 +34,7 @@ interface EditorState {
   removeSelected(): void
   duplicateSelected(): void
   addSlide(layoutId?: LayoutPresetId): void
+  addSummarySlide(content: SummaryCardContent): void
   duplicateSlide(): void
   deleteSlide(): void
   moveSlide(direction: -1 | 1): void
@@ -120,6 +121,11 @@ export const useEditor = create<EditorState>((set, get) => ({
     const state = get(); const id = uid('slide')
     const presetName = layoutPresets.find(preset => preset.id === layoutId)?.name ?? '空白页'
     const result = commitOperations(state, [{ op: 'add-slide', id, layout: layoutId, name: presetName }], `新建页面 · ${presetName}`)
+    const path = result.changedPaths.find(item => item.startsWith('./slides/')); if (path) set({ activeSlidePath: path, selectedIds: [] })
+  },
+  addSummarySlide: content => {
+    const state = get(); const id = uid('summary')
+    const result = commitOperations(state, [{ op: 'add-summary-slide', id, content, name: content.title, after: state.activeSlidePath }], '从结构化内容生成卡片页')
     const path = result.changedPaths.find(item => item.startsWith('./slides/')); if (path) set({ activeSlidePath: path, selectedIds: [] })
   },
   duplicateSlide: () => {

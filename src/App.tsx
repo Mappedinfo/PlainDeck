@@ -6,6 +6,7 @@ import { SlideSurface } from './components/SlideSurface'
 import { Inspector } from './components/Inspector'
 import { StatusBar } from './components/StatusBar'
 import { SlideNameEditor } from './components/SlideNameEditor'
+import { SummaryCardsDialog } from './components/SummaryCardsDialog'
 import { createSampleDocument } from './core/sample'
 import { moveFrame } from './core/geometry'
 import { blobToDataUrl, fitImageFrame, hasTransferredImages, imageDimensions, imageFiles, transferredImageFiles, validateImageFile } from './core/imageImport'
@@ -35,7 +36,7 @@ function ExportDialog({ onClose }: { onClose: () => void }) {
 }
 
 export default function App() {
-  const state = useEditor(); const [present, setPresent] = useState(false); const [exporting, setExporting] = useState(false); const [updateReady, setUpdateReady] = useState(false); const [draggingImage, setDraggingImage] = useState(false); const [imageNotice, setImageNotice] = useState(''); const [recovery, setRecovery] = useState<Awaited<ReturnType<typeof restoreFromOpfs>>>(null); const zipRef = useRef<HTMLInputElement>(null); const imageRef = useRef<HTMLInputElement>(null); const canvasRef = useRef<HTMLElement>(null); const applyUpdateRef = useRef<ApplyUpdate>(null); const saveLoopRef = useRef<ReturnType<typeof createSaveLoop> | null>(null)
+  const state = useEditor(); const [present, setPresent] = useState(false); const [exporting, setExporting] = useState(false); const [addingCards, setAddingCards] = useState(false); const [updateReady, setUpdateReady] = useState(false); const [draggingImage, setDraggingImage] = useState(false); const [imageNotice, setImageNotice] = useState(''); const [recovery, setRecovery] = useState<Awaited<ReturnType<typeof restoreFromOpfs>>>(null); const zipRef = useRef<HTMLInputElement>(null); const imageRef = useRef<HTMLInputElement>(null); const canvasRef = useRef<HTMLElement>(null); const applyUpdateRef = useRef<ApplyUpdate>(null); const saveLoopRef = useRef<ReturnType<typeof createSaveLoop> | null>(null)
   const fitCanvas = useCallback(() => {
     const workspace = canvasRef.current
     if (!workspace) return
@@ -122,13 +123,13 @@ export default function App() {
   const loadZip = async (file?: File) => { if (!file) return; try { state.setDocument(await importZip(file), null) } catch (error) { state.setSaveState('error', error instanceof Error ? error.message : String(error)) } }
   const activeSlide = state.document.slides[state.activeSlidePath]
   return <div className="app-shell">
-    <Toolbar onOpen={openDirectory} onNew={newProject} onImportZip={() => zipRef.current?.click()} onAddImage={() => imageRef.current?.click()} onExport={() => setExporting(true)} onPresent={() => setPresent(true)} onSave={save} />
+    <Toolbar onOpen={openDirectory} onNew={newProject} onImportZip={() => zipRef.current?.click()} onAddImage={() => imageRef.current?.click()} onAddCards={() => setAddingCards(true)} onExport={() => setExporting(true)} onPresent={() => setPresent(true)} onSave={save} />
     <input ref={zipRef} hidden type="file" accept=".zip,application/zip" onChange={e => loadZip(e.target.files?.[0])} />
     <input ref={imageRef} hidden type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" multiple onChange={e => { void insertImages(imageFiles(e.target.files ?? [])); e.currentTarget.value = '' }} />
     <main className="workspace"><SlideList /><section ref={canvasRef} className={`canvas-workspace ${draggingImage ? 'image-drop-active' : ''}`} onDragEnter={event => { if (hasTransferredImages(event.dataTransfer)) setDraggingImage(true) }} onDragOver={event => { if (hasTransferredImages(event.dataTransfer)) { event.preventDefault(); event.dataTransfer.dropEffect = 'copy' } }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDraggingImage(false) }} onDrop={event => { const files = transferredImageFiles(event.dataTransfer); setDraggingImage(false); if (!files.length) return; event.preventDefault(); void insertImages(files, canvasPoint(event.clientX, event.clientY)) }} onDoubleClick={e => { if (e.currentTarget === e.target) fitCanvas() }}><div className="canvas-label"><span>ARTBOARD</span><SlideNameEditor key={state.activeSlidePath} name={activeSlide.name ?? activeSlide.id} onCommit={state.renameSlide} /></div><div className="canvas-scroller"><div className="canvas-sized" style={{ width: state.document.deck.canvas.width * state.zoom, height: state.document.deck.canvas.height * state.zoom }}><SlideSurface slide={activeSlide} zoom={state.zoom} /></div></div><div className="image-drop-overlay"><strong>DROP IMAGE</strong><span>释放以放入当前画板</span></div><div className="canvas-coordinate">X 0000&nbsp;&nbsp; Y 0000</div></section><Inspector /></main>
     <StatusBar />
     <div className="print-deck">{state.document.deck.slides.map(path => <div className="print-page" key={path}><SlideSurface slide={state.document.slides[path]} interactive={false} zoom={1} /></div>)}</div>
-    {present && <Presentation onClose={() => setPresent(false)} />}{exporting && <ExportDialog onClose={() => setExporting(false)} />}
+    {present && <Presentation onClose={() => setPresent(false)} />}{exporting && <ExportDialog onClose={() => setExporting(false)} />}{addingCards && <SummaryCardsDialog onClose={() => setAddingCards(false)} />}
     {recovery && <div className="recovery-toast"><strong>发现未保存的恢复快照</strong><span>{new Date(recovery.savedAt).toLocaleString()}</span><div><button onClick={() => { setRecovery(null); void clearRecoveryFromOpfs() }}>丢弃</button><button onClick={() => { state.restoreDocument(recovery.document, recovery.revision); setRecovery(null) }}>恢复</button></div></div>}
     {imageNotice && <div className="image-toast" role="status">{imageNotice}</div>}
     {updateReady && <div className="update-toast">新版本已就绪。保存后刷新以更新。<button onClick={() => { const applyUpdate = applyUpdateRef.current; if (!applyUpdate) return; setUpdateReady(false); void applyUpdate(true).catch(() => setUpdateReady(true)) }}>刷新</button></div>}

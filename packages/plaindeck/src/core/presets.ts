@@ -1,6 +1,7 @@
 import type { SlideElement, Theme } from './schema.js'
+import { createSummaryCardElements } from './summary-cards.js'
 
-export type LayoutPresetId = 'blank' | 'title-body' | 'section' | 'statement' | 'metric' | 'two-column' | 'image-right' | 'three-cards'
+export type LayoutPresetId = 'blank' | 'title-body' | 'section' | 'statement' | 'metric' | 'two-column' | 'image-right' | 'three-cards' | 'summary-cards'
 
 export interface LayoutPreset {
   id: LayoutPresetId
@@ -17,6 +18,7 @@ export const layoutPresets: LayoutPreset[] = [
   { id: 'two-column', name: '双栏文字', description: '并列观点或对比' },
   { id: 'image-right', name: '图文并排', description: '左文右图的叙事页' },
   { id: 'three-cards', name: '三张卡片', description: '步骤、能力或分类' },
+  { id: 'summary-cards', name: '结构化卡片', description: '1–8 个自适应信息要点' },
 ]
 
 export interface ThemePreset {
@@ -110,6 +112,14 @@ export function createLayoutElements(layoutId: LayoutPresetId, theme: Theme): Sl
     body('body', '左侧保留关键叙述，右侧替换为照片、图表或研究结果。', 88, 370, 590, 210),
     { id: 'image', type: 'image', frame: frame(800, 72, 712, 756), src: imagePlaceholder, fit: 'cover', alt: '图片占位' },
   ]
+  if (layoutId === 'summary-cards') return createSummaryCardElements({
+    title: '把长内容整理成清楚的卡片',
+    cards: [
+      { title: '提炼', description: '每张卡只承载一个核心要点，保留主体、数字与必要限定。', icon: 'filter_alt' },
+      { title: '编排', description: '卡片数量会自动适配为一到两行，生成后仍可逐元素编辑。', icon: 'dashboard' },
+      { title: '复核', description: 'AI 负责初稿，人负责事实、判断与最终表达。', icon: 'verified' },
+    ],
+  }, theme)
   return [
     title('title', '三个并列要点', 80, 64, 1440, 90, 54),
     ...[0, 1, 2].map((index): SlideElement => ({

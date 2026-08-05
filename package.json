@@ -1,7 +1,7 @@
 {
   "name": "plaindeck-web",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.3.1",
   "type": "module",
   "workspaces": [
     "packages/*"
@@ -21,10 +21,10 @@
     "typecheck": "npm run build:packages && tsc -b --pretty false"
   },
   "dependencies": {
-    "@mappedinfo/plaindeck-react": "0.3.0",
+    "@mappedinfo/plaindeck-react": "0.3.1",
     "jszip": "^3.10.1",
     "lucide-react": "^0.468.0",
-    "plaindeck": "0.3.0",
+    "plaindeck": "0.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zod": "4.4.3",

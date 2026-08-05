@@ -1,6 +1,6 @@
 # PlainDeck Agent API 与 CLI
 
-PlainDeck v0.3.0 面向 Agent 的推荐工作流是：
+PlainDeck v0.3.1 面向 Agent 的推荐工作流是：
 
 ```text
 init → inspect → operations → validate → dry-run → apply → render
@@ -16,6 +16,7 @@ plaindeck validate <project> [--json]
 plaindeck inspect <project> [--json]
 plaindeck apply <project> --ops <file|-> [--dry-run] [--json]
 plaindeck add-slide <project> --layout <id> [--name <name>]
+plaindeck add-cards <project> --content <file|-> [--name <name>] [--after <slide-path>]
 plaindeck render <project> --format html|png|pdf --output <path> [--slide <index|path>] [--allow-network]
 ```
 
@@ -29,6 +30,14 @@ operations 也可以从 stdin 读取：
 printf '[{"op":"rename-slide","slide":"./slides/001-intro.json","name":"Introduction"}]' \
   | plaindeck apply ./my-deck --ops - --dry-run --json
 ```
+
+`add-cards` 接受 Markdown 或 JSON，把 1–8 个结构化要点转换为一张自适应卡片页。它不调用远程模型；Agent 可以先在会话中整理内容，再通过 stdin 写入项目：
+
+```bash
+cat brief.md | plaindeck add-cards ./my-deck --content - --name "Weekly brief" --json
+```
+
+Markdown 使用 `# 主标题`、`## 卡片标题`、描述和可选的 `icon_name`；兼容 `{ "mainTitle", "cards": [{ "title", "desc", "icon" }] }` 形式的 Juya News Card JSON。生成后每张卡的背景、编号、标题和正文都是独立 PlainDeck 元素，可以继续在 Web 画布拖动和编辑。
 
 ## Operations
 
@@ -62,6 +71,16 @@ printf '[{"op":"rename-slide","slide":"./slides/001-intro.json","name":"Introduc
   { "op": "remove-element", "slide": "./slides/001-intro.json", "element": "old-note" },
   { "op": "move-element", "slide": "./slides/001-intro.json", "element": "agent-note", "before": "title" },
   { "op": "add-slide", "layout": "image-right", "name": "Results", "after": "./slides/001-intro.json" },
+  {
+    "op": "add-summary-slide",
+    "name": "Weekly brief",
+    "content": {
+      "title": "本周关键进展",
+      "cards": [
+        { "title": "能力", "description": "模型更擅长结构化提炼，但重要事实仍需人工复核。", "icon": "auto_awesome" }
+      ]
+    }
+  },
   { "op": "duplicate-slide", "slide": "./slides/001-intro.json", "id": "intro-copy" },
   { "op": "rename-slide", "slide": "./slides/002-results.json", "name": "Key results" },
   { "op": "move-slide", "slide": "./slides/002-results.json", "after": "./slides/001-intro.json" },
@@ -89,7 +108,7 @@ printf '[{"op":"rename-slide","slide":"./slides/001-intro.json","name":"Introduc
 
 `set-element` 不能修改元素的 `id` 或 `type`。`move-element` 与 `move-slide` 使用稳定 ID/路径及 `before` 或 `after`，不暴露数组索引。不存在的页面或元素、重复元素 ID、非法 patch、删除最后一页等都会使整批操作失败；操作在内存中全部完成并通过全量 schema 校验后，CLI 才会写盘。Web 编辑器也把交互动作转换为同一组 operations 后再更新历史与保存。
 
-可用布局：`blank`、`title-body`、`section`、`statement`、`metric`、`two-column`、`image-right`、`three-cards`。
+可用布局：`blank`、`title-body`、`section`、`statement`、`metric`、`two-column`、`image-right`、`three-cards`、`summary-cards`。
 
 ## TypeScript API
 

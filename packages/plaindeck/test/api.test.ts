@@ -2,7 +2,7 @@ import { cp, mkdtemp, readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { applyOperations, canonicalJson, createDeckTemplate, createSavePlan, deckTemplatePresets, inspectDeck, loadDeck, resolveFooterSlot, saveDeck, themePresets, validateDeck } from '../src/index.js'
+import { applyOperations, canonicalJson, createDeckTemplate, createSavePlan, createSummaryCardElements, deckTemplatePresets, inspectDeck, loadDeck, parseSummaryCards, resolveFooterSlot, saveDeck, summaryCardsToMarkdown, themePresets, validateDeck } from '../src/index.js'
 
 const starter = resolve('examples/starter')
 
@@ -46,6 +46,33 @@ describe('PlainDeck public API', () => {
     expect(original.slides['./slides/001-intro.json'].elements.find(element => element.id === 'title')).not.toMatchObject({ text: 'Agent title' })
     expect(result.changedPaths).toEqual(['./slides/001-intro.json', 'deck.json', './slides/006-agent-results.json'])
     expect(result.document.deck.slides).toHaveLength(6)
+  })
+
+  it('parses Juya-style Markdown and JSON into editable summary-card elements', () => {
+    const markdown = '# AI 简报\n\n## 进展\n模型能力提升 **3 倍**，但仍需人工复核。\ntrending_up\n\n## 风险\n事实错误与偏见需要明确责任边界。\nverified'
+    const content = parseSummaryCards(markdown)
+    expect(content).toEqual({ title: 'AI 简报', cards: [
+      { title: '进展', description: '模型能力提升 3 倍，但仍需人工复核。', icon: 'trending_up' },
+      { title: '风险', description: '事实错误与偏见需要明确责任边界。', icon: 'verified' },
+    ] })
+    expect(parseSummaryCards(JSON.stringify({ mainTitle: 'JSON 简报', cards: [{ title: '格式', desc: '兼容 <strong>Juya</strong> 字段。', icon: 'code' }] }))).toMatchObject({ title: 'JSON 简报', cards: [{ description: '兼容 Juya 字段。' }] })
+    expect(parseSummaryCards(summaryCardsToMarkdown(content))).toEqual(content)
+    expect(createSummaryCardElements(content, themePresets[0].theme)).toHaveLength(10)
+  })
+
+  it('adds a validated 1–8 card summary slide through the operation kernel', () => {
+    const original = createDeckTemplate('blank')
+    const content = { title: '本周关键进展', cards: Array.from({ length: 8 }, (_, index) => ({ title: `要点 ${index + 1}`, description: `第 ${index + 1} 个要点保留事实与限定。` })) }
+    const result = applyOperations(original, [{ op: 'add-summary-slide', id: 'weekly-brief', after: original.deck.slides[0], content }])
+    expect(original.deck.slides).toHaveLength(1)
+    expect(result.changedPaths).toEqual(['deck.json', './slides/002-weekly-brief.json'])
+    expect(result.document.slides['./slides/002-weekly-brief.json']).toMatchObject({ layoutRef: 'summary-cards', name: '本周关键进展' })
+    expect(result.document.slides['./slides/002-weekly-brief.json'].elements).toHaveLength(34)
+    expect(validateDeck(result.document)).toMatchObject({ valid: true, issues: [] })
+    const recolored = applyOperations(result.document, [{ op: 'set-theme', patch: { background: '#101714', accent: '#D8FF52', muted: '#9FAB9F' } }])
+    expect(recolored.document.slides['./slides/002-weekly-brief.json'].elements.find(element => element.id === 'summary-card-1')).toMatchObject({ fill: '#D8FF52' })
+    expect(recolored.document.slides['./slides/002-weekly-brief.json'].elements.find(element => element.id === 'summary-card-2')).toMatchObject({ fill: '#101714', stroke: '#9FAB9F' })
+    expect(() => applyOperations(original, [{ op: 'add-summary-slide', content: { title: 'Too many', cards: Array.from({ length: 9 }, () => ({ title: 'x', description: 'y' })) } }])).toThrow()
   })
 
   it('recolors theme-bound template elements through set-theme', () => {

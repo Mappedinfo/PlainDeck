@@ -1,6 +1,6 @@
 {
   "name": "@mappedinfo/plaindeck-react",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Shared React renderer for PlainDeck JSON slides",
   "type": "module",
   "license": "MIT",
@@ -30,7 +30,7 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "plaindeck": "0.3.0"
+    "plaindeck": "0.3.1"
   },
   "peerDependencies": {
     "react": ">=19.0.0",

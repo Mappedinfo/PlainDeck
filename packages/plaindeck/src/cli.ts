@@ -2,7 +2,7 @@
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { stdin, stderr, stdout } from 'node:process'
-import { applyOperations, createDeckTemplate, createSavePlan, deckTemplatePresets, inspectDeck, layoutPresets, themePresets, validateDeck, type DeckTemplateId } from './core/index.js'
+import { applyOperations, createDeckTemplate, createSavePlan, deckTemplatePresets, inspectDeck, layoutPresets, parseSummaryCards, themePresets, validateDeck, type DeckTemplateId } from './core/index.js'
 import { loadDeck, prepareDocumentAssets, renderPdf, renderPng, saveDeck } from './node/index.js'
 import { renderHtml } from './render/index.js'
 import packageMetadata from '../package.json' with { type: 'json' }
@@ -20,6 +20,7 @@ Usage:
   plaindeck inspect <project> [--json]
   plaindeck apply <project> --ops <file|-> [--dry-run] [--json]
   plaindeck add-slide <project> --layout <id> [--name <name>] [--json]
+  plaindeck add-cards <project> --content <file|-> [--name <name>] [--after <slide-path>] [--json]
   plaindeck render <project> --format html|png|pdf --output <path> [--slide <index|path>] [--allow-network] [--json]
 `
 
@@ -117,6 +118,17 @@ async function run() {
     await saveDeck(root, result.document, result.changedPaths)
     const addedPath = result.changedPaths.find(path => path.startsWith('./slides/'))
     emit({ ok: true, changedPaths: result.changedPaths, slide: addedPath }, `✓ 已添加页面 ${addedPath}`)
+    return
+  }
+  if (command === 'add-cards') {
+    const root = projectPath()
+    const source = requiredOption('--content')
+    const raw = source === '-' ? await readStdin() : await readFile(source, 'utf8')
+    const content = parseSummaryCards(raw)
+    const result = applyOperations(await loadDeck(root), [{ op: 'add-summary-slide', content, name: option('--name'), after: option('--after') }])
+    await saveDeck(root, result.document, result.changedPaths)
+    const addedPath = result.changedPaths.find(path => path.startsWith('./slides/'))
+    emit({ ok: true, changedPaths: result.changedPaths, slide: addedPath, cards: content.cards.length }, `✓ 已添加结构化卡片页 ${addedPath} · ${content.cards.length} 个要点`)
     return
   }
   if (command === 'render') {

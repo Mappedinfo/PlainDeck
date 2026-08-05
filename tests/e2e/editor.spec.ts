@@ -67,6 +67,21 @@ test('opens presentation and export surfaces', async ({ page }) => {
   await expect(page.getByText('Take the deck with you.')).toBeVisible()
 })
 
+test('creates an editable local summary-card page from structured Markdown', async ({ page }) => {
+  await page.goto('./')
+  await page.getByRole('button', { name: '从 Markdown / JSON 生成结构化卡片页' }).click()
+  const dialog = page.getByRole('dialog', { name: '从结构化内容创建卡片页' })
+  await expect(dialog).toBeVisible()
+  await expect(dialog).toContainText('已识别 4 个要点')
+  await dialog.getByRole('button', { name: /生成卡片页/ }).click()
+  await expect(page.locator('.slide-thumb')).toHaveCount(6)
+  await expect(page.locator('.slide-thumb.active .slide-name')).toHaveText('生成式 AI 正在改变什么')
+  await expect(page.locator('.canvas-workspace [data-element-id="summary-card-4-body"]')).toContainText('提供上下文与评价标准')
+  await page.locator('.canvas-workspace [data-element-id="summary-card-2-title"]').click()
+  await expect(page.locator('.slide-element.selected')).toHaveAttribute('data-element-id', 'summary-card-2-title')
+  await page.screenshot({ path: '/tmp/plaindeck-summary-cards.png', fullPage: true })
+})
+
 test('renames the active artboard and updates the page list', async ({ page }) => {
   await page.goto('./')
   await page.locator('.canvas-name').dblclick()

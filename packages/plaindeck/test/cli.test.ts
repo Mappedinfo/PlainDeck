@@ -93,6 +93,20 @@ describe('PlainDeck CLI', () => {
     expect(output).toContain('class="player-bar"')
   })
 
+  it('adds an editable summary-card slide from Markdown stdin', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'plaindeck-cli-cards-'))
+    await cp(starter, root, { recursive: true })
+    const markdown = '# Agent 简报\n\n## 能力\n从长文提炼结构化要点。\nauto_awesome\n\n## 边界\n重要事实仍需人工复核。\nverified'
+    const added = await run(['add-cards', root, '--content', '-', '--name', 'Daily brief', '--json'], markdown)
+    expect(added.code).toBe(0)
+    expect(JSON.parse(added.stdout)).toMatchObject({ ok: true, cards: 2, slide: expect.stringMatching(/\.\/slides\/006-summary-/) })
+    const slidePath = JSON.parse(added.stdout).slide.replace(/^\.\//, '')
+    const slide = await readFile(join(root, slidePath), 'utf8')
+    expect(slide).toContain('Daily brief')
+    expect(slide).toContain('从长文提炼结构化要点。')
+    expect(slide).toContain('summary-card-2-body')
+  })
+
   it('uses a distinct usage error exit code', async () => {
     const result = await run(['render', starter, '--format', 'bad', '--output', 'x', '--json'])
     expect(result.code).toBe(2)
