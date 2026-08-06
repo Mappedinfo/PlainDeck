@@ -151,7 +151,7 @@ export function createSummaryCardElements(content: SummaryCardContent, theme: Th
     const row = Math.floor(index / columns); const column = index % columns
     const x = marginX + column * (cardWidth + gap); const y = cardsTop + row * (cardHeight + gap)
     const primary = index === 0 && !['terminal', 'future', 'minimal', 'editorial'].includes(variant)
-    const fill = primary ? theme.colors.accent : theme.colors.background
+    const fill = primary ? theme.colors.accent : theme.colors.surface ?? theme.colors.background
     const foreground = primary ? mostReadable(fill, [theme.colors.background, theme.colors.text]) : theme.colors.text
     const muted = primary ? foreground : contrastRatio(theme.colors.muted, fill) >= 3 ? theme.colors.muted : theme.colors.text
     const radius = recipe?.card.radius ?? 22; const borderWidth = recipe?.card.borderWidth ?? 2

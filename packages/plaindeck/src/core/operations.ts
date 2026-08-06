@@ -1,14 +1,14 @@
 import { z } from 'zod'
-import { createLayoutElements, layoutPresets } from './presets.js'
+import { createLayoutElements, deriveThemeSurface, layoutPresets } from './presets.js'
 import { ElementSchema, FooterSchema, SlideMotionSchema, ThemeSchema, assertDocument, type DeckDocument, type SlideElement } from './schema.js'
 import { applyDocumentTheme } from './theme.js'
 import { createSummaryCardElements, SummaryCardContentSchema } from './summary-cards.js'
 import { getDesignRecipe } from './design-recipes.js'
 
-const LayoutIdSchema = z.enum(['blank', 'title-body', 'section', 'statement', 'metric', 'two-column', 'image-right', 'three-cards', 'summary-cards'])
+const LayoutIdSchema = z.enum(['blank', 'title-body', 'section', 'statement', 'metric', 'two-column', 'image-right', 'three-cards', 'summary-cards', 'paper-figure', 'paper-table', 'versus', 'contributions', 'limits', 'closing'])
 const SlidePathSchema = z.string().startsWith('./slides/').endsWith('.json')
 const ColorPatchSchema = z.object({
-  background: z.string().optional(), text: z.string().optional(), muted: z.string().optional(), accent: z.string().optional(),
+  background: z.string().optional(), text: z.string().optional(), muted: z.string().optional(), accent: z.string().optional(), surface: z.string().optional(),
 }).strict()
 
 export const DeckOperationSchema = z.discriminatedUnion('op', [
@@ -160,7 +160,12 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
       changed.add('deck.json')
     } else {
       if ((operation.patch && operation.theme) || (!operation.patch && !operation.theme)) throw new Error('set-theme 必须且只能指定 patch 或 theme。')
-      const theme = operation.theme ?? { ...document.theme, colors: { ...document.theme.colors, ...operation.patch } }
+      let theme = operation.theme
+      if (!theme) {
+        const colors = { ...document.theme.colors, ...operation.patch }
+        if (!operation.patch?.surface) colors.surface = deriveThemeSurface(colors.background, colors.text)
+        theme = { ...document.theme, colors }
+      }
       document = applyDocumentTheme(document, theme)
       changed.add(document.deck.theme)
       document.deck.slides.forEach(path => changed.add(path))

@@ -33,7 +33,7 @@ plaindeck render ./my-deck --format png --output dist/slides
 plaindeck render ./my-deck --format pdf --output dist/deck.pdf
 ```
 
-`init` defaults to the five-slide `showcase` template and the `studio-cobalt` theme. Templates are `showcase`, `pitch`, and `blank`; color systems include `studio-cobalt`, `night-citrus`, `ink-rose`, `paper-signal`, `night-blue`, `field-notes`, `editorial-blue`, and `poster-red`.
+`init` defaults to the five-slide `showcase` template and the `studio-cobalt` theme. Templates are `showcase`, `pitch`, `blank`, and `paper-reading` (an eight-slide paper walkthrough: problem, contributions, figure/table evidence, comparison, limitations, takeaway; defaults to `night-citrus`). Color systems include `studio-cobalt`, `night-citrus`, `ink-rose`, `paper-signal`, `night-blue`, `field-notes`, `editorial-blue`, and `poster-red`.
 
 `add-cards` turns Juya-style Markdown or JSON into a responsive 1–8 card slide. `styles` exposes 174 native recipes batch-compiled from the MIT-licensed Juya template catalog into 27 categories and 10 PlainDeck composition variants. Parsing, recipes, and layout live in the public core, so CLI-created cards are the same editable elements shown by the Web editor and every renderer.
 

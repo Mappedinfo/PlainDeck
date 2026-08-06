@@ -39,6 +39,8 @@ export const TextElementSchema = ElementBase.extend({
   fontFamily: z.string().min(1).optional(),
   color: z.string().optional(),
   fontWeight: z.number().int().min(100).max(900).optional(),
+  lineHeight: z.number().positive().optional(),
+  letterSpacing: z.number().optional(),
 })
 
 export const ImageElementSchema = ElementBase.extend({
@@ -88,7 +90,7 @@ export const SlideSchema = z.object({
 export const ThemeSchema = z.object({
   fonts: z.object({ title: z.string(), body: z.string(), mono: z.string().optional() }),
   fontSizes: z.object({ title: z.number(), heading: z.number(), body: z.number(), caption: z.number() }),
-  colors: z.object({ background: z.string(), text: z.string(), muted: z.string(), accent: z.string() }),
+  colors: z.object({ background: z.string(), text: z.string(), muted: z.string(), accent: z.string(), surface: z.string().optional() }),
   spacing: z.object({ page: z.number(), small: z.number(), medium: z.number(), large: z.number() }),
 })
 

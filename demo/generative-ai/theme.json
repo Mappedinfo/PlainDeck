@@ -1,7 +1,7 @@
 {
   "fonts": {
-    "title": "Avenir Next, Aptos Display, Helvetica Neue, sans-serif",
-    "body": "Avenir Next, Aptos, Helvetica Neue, sans-serif",
+    "title": "Avenir Next, Aptos Display, Helvetica Neue, \"PingFang SC\", \"Noto Sans SC\", sans-serif",
+    "body": "Avenir Next, Aptos, Helvetica Neue, \"PingFang SC\", \"Noto Sans SC\", sans-serif",
     "mono": "SFMono-Regular, IBM Plex Mono, Consolas, monospace"
   },
   "fontSizes": {

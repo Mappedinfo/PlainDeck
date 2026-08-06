@@ -111,7 +111,7 @@ Markdown 使用 `# 主标题`、`## 卡片标题`、描述和可选的 `icon_nam
 
 `set-element` 不能修改元素的 `id` 或 `type`。`move-element` 与 `move-slide` 使用稳定 ID/路径及 `before` 或 `after`，不暴露数组索引。不存在的页面或元素、重复元素 ID、非法 patch、删除最后一页等都会使整批操作失败；操作在内存中全部完成并通过全量 schema 校验后，CLI 才会写盘。Web 编辑器也把交互动作转换为同一组 operations 后再更新历史与保存。
 
-可用布局：`blank`、`title-body`、`section`、`statement`、`metric`、`two-column`、`image-right`、`three-cards`、`summary-cards`。
+可用布局：`blank`、`title-body`、`section`、`statement`、`metric`、`two-column`、`image-right`、`three-cards`、`summary-cards`，以及论文解读族 `paper-figure`、`paper-table`、`versus`、`contributions`、`limits`、`closing`。
 
 ## TypeScript API
 

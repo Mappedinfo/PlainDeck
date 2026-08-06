@@ -1,7 +1,7 @@
 import { assertDocument, type DeckDocument, type Slide, type SlideElement, type Theme } from './schema.js'
-import { getThemePreset } from './presets.js'
+import { createLayoutElements, getThemePreset, type LayoutPresetId } from './presets.js'
 
-export type DeckTemplateId = 'showcase' | 'pitch' | 'blank'
+export type DeckTemplateId = 'showcase' | 'pitch' | 'blank' | 'paper-reading'
 
 export interface DeckTemplatePreset {
   id: DeckTemplateId
@@ -20,6 +20,7 @@ export const deckTemplatePresets: DeckTemplatePreset[] = [
   { id: 'showcase', name: 'Editorial showcase', description: '五页叙事骨架，适合介绍、报告与作品展示', slideCount: 5 },
   { id: 'pitch', name: 'Focused pitch', description: '问题、方案、证据与行动的五页提案', slideCount: 5 },
   { id: 'blank', name: 'Minimal start', description: '只有一张精心排版的封面', slideCount: 1 },
+  { id: 'paper-reading', name: 'Paper reading', description: '论文解读八页：问题、贡献、证据、对比、局限与 takeaway', slideCount: 8 },
 ]
 
 const frame = (x: number, y: number, w: number, h: number) => ({ x, y, w, h })
@@ -101,12 +102,47 @@ function storySlides(template: Exclude<DeckTemplateId, 'blank'>, theme: Theme, t
   }
 }
 
+/** Build a slide from a layout preset, overriding placeholder text by element id. */
+function layoutSlide(id: string, name: string, layoutId: LayoutPresetId, theme: Theme, overrides: Record<string, string> = {}): Slide {
+  const elements = createLayoutElements(layoutId, theme).map(element =>
+    element.type === 'text' && overrides[element.id] ? { ...element, text: overrides[element.id] } : element)
+  return { id, name, layoutRef: layoutId, background: { color: theme.colors.background }, elements }
+}
+
+function paperReadingSlides(theme: Theme, title: string): Record<string, Slide> {
+  const c = theme.colors; const mono = theme.fonts.mono ?? theme.fonts.body
+  return {
+    './slides/001-cover.json': { id: 'cover', name: 'Cover', layoutRef: 'paper-cover', background: { color: c.background }, elements: [
+      shape('accent-panel', 0, 0, 420, 900, c.accent),
+      text('panel-mark', 'PAPER\nREADING', 62, 76, 320, 170, { fontSize: 56, fontWeight: 800, color: c.background }),
+      text('panel-index', '01 — 08', 62, 756, 280, 50, { fontSize: 20, fontWeight: 700, color: c.background, fontFamily: mono }),
+      text('kicker', 'VENUE · YEAR · TRACK', 510, 78, 880, 42, { fontSize: 18, fontWeight: 800, color: c.accent, fontFamily: mono, letterSpacing: 2 }),
+      text('title', title, 510, 188, 980, 260, { styleRef: 'slide-title', fontSize: 80, fontWeight: 800, color: c.text }),
+      shape('rule', 510, 530, 980, 4, c.text),
+      text('authors', '作者列表 · 机构', 510, 588, 890, 60, { fontSize: 28, fontWeight: 500, color: c.muted }),
+      text('hint', 'ONE PAPER · ONE READING · EIGHT SLIDES', 510, 790, 900, 34, { fontSize: 16, fontWeight: 700, color: c.muted, fontFamily: mono, letterSpacing: 2 }),
+    ] },
+    './slides/002-problem.json': layoutSlide('problem', 'Problem', 'statement', theme, {
+      kicker: '01 / THE PROBLEM', index: '01',
+      statement: '这篇论文要解决的核心问题，\n用一句话说清楚。',
+      context: '为什么已有方法在这个问题上仍然不够？',
+    }),
+    './slides/003-contributions.json': layoutSlide('contributions', 'Contributions', 'contributions', theme, { kicker: '02 / CONTRIBUTIONS' }),
+    './slides/004-figure.json': layoutSlide('figure', 'Key figure', 'paper-figure', theme, { kicker: '03 / EVIDENCE · FIGURE' }),
+    './slides/005-table.json': layoutSlide('table', 'Key table', 'paper-table', theme, { kicker: '04 / EVIDENCE · TABLE' }),
+    './slides/006-versus.json': layoutSlide('versus', 'Comparison', 'versus', theme, { kicker: '05 / COMPARISON' }),
+    './slides/007-limits.json': layoutSlide('limits', 'Limitations', 'limits', theme, { kicker: '06 / LIMITATIONS' }),
+    './slides/008-closing.json': layoutSlide('closing', 'Takeaway', 'closing', theme, { kicker: '07 / TAKEAWAY' }),
+  }
+}
+
 export function createDeckTemplate(templateId: DeckTemplateId = 'showcase', options: CreateDeckTemplateOptions = {}): DeckDocument {
   if (!deckTemplatePresets.some(template => template.id === templateId)) throw new Error(`未知模板：${templateId}`)
   const preset = typeof options.theme === 'string' ? getThemePreset(options.theme) : undefined
   if (typeof options.theme === 'string' && !preset) throw new Error(`未知主题：${options.theme}`)
-  const theme = structuredClone(typeof options.theme === 'object' ? options.theme : preset?.theme ?? getThemePreset('studio-cobalt')!.theme)
-  const title = options.title?.trim() || (templateId === 'pitch' ? 'A focused idea, ready to move.' : templateId === 'blank' ? 'Untitled presentation' : 'Make the idea visible.')
+  const defaultTheme = templateId === 'paper-reading' ? 'night-citrus' : 'studio-cobalt'
+  const theme = structuredClone(typeof options.theme === 'object' ? options.theme : preset?.theme ?? getThemePreset(defaultTheme)!.theme)
+  const title = options.title?.trim() || (templateId === 'pitch' ? 'A focused idea, ready to move.' : templateId === 'blank' ? 'Untitled presentation' : templateId === 'paper-reading' ? '论文标题：一句话说清核心贡献' : 'Make the idea visible.')
   const id = options.id?.trim() || slug(title)
   if (templateId === 'blank') {
     const path = './slides/001-cover.json'
@@ -121,7 +157,7 @@ export function createDeckTemplate(templateId: DeckTemplateId = 'showcase', opti
       ] } },
     })
   }
-  const slides = storySlides(templateId, theme, title)
+  const slides = templateId === 'paper-reading' ? paperReadingSlides(theme, title) : storySlides(templateId, theme, title)
   return assertDocument({
     deck: { schemaVersion: '0.1', id, title, canvas: { width: 1600, height: 900 }, theme: './theme.json', slides: Object.keys(slides) },
     theme, slides,

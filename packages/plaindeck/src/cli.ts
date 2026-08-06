@@ -75,7 +75,7 @@ async function run() {
   if (command === 'init') {
     const root = projectPath()
     const template = option('--template') ?? 'showcase'
-    const theme = option('--theme') ?? 'studio-cobalt'
+    const theme = option('--theme') ?? (template === 'paper-reading' ? 'night-citrus' : 'studio-cobalt')
     if (!deckTemplatePresets.some(item => item.id === template)) throw new UsageError(`未知模板 ${template}。可用模板：${deckTemplatePresets.map(item => item.id).join(', ')}`)
     if (!themePresets.some(item => item.id === theme)) throw new UsageError(`未知主题 ${theme}。可用主题：${themePresets.map(item => item.id).join(', ')}`)
     const document = createDeckTemplate(template as DeckTemplateId, { title: option('--title'), id: option('--id'), theme })

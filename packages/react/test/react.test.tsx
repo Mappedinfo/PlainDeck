@@ -11,7 +11,7 @@ describe('@mappedinfo/plaindeck-react', () => {
     if (!text || text.type !== 'text') throw new Error('Text fixture missing')
     const reactMarkup = renderToStaticMarkup(<PlainDeckSlide document={document} slidePath={slidePath} />)
     const htmlMarkup = renderHtml(document, { mode: 'document', slidePaths: [slidePath] })
-    for (const token of [`data-element-id="${text.id}"`, `left:${text.frame.x}px`, `font-size:${text.fontSize}px`, `font-family:${document.theme.fonts.title}`]) {
+    for (const token of [`data-element-id="${text.id}"`, `left:${text.frame.x}px`, `font-size:${text.fontSize}px`, `font-family:${document.theme.fonts.title.replaceAll('"', '&quot;')}`]) {
       expect(reactMarkup).toContain(token)
       expect(htmlMarkup).toContain(token)
     }

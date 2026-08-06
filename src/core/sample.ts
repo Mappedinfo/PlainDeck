@@ -1,7 +1,7 @@
 import { createDeckTemplate, getThemePreset, type DeckDocument } from 'plaindeck/core'
 
-export const defaultTheme = getThemePreset('studio-cobalt')!.theme
+export const defaultTheme = getThemePreset('night-citrus')!.theme
 
 export function createSampleDocument(): DeckDocument {
-  return createDeckTemplate('showcase', { title: 'PlainDeck · Make the idea visible.', id: 'plaindeck-showcase', theme: 'studio-cobalt' })
+  return createDeckTemplate('paper-reading', { title: '论文标题：一句话说清核心贡献', id: 'plaindeck-paper-reading', theme: 'night-citrus' })
 }

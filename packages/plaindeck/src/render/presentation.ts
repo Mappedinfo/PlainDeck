@@ -3,6 +3,31 @@ import type { DeckDocument, SlideElement } from '../core/schema.js'
 
 export type PresentationStyle = Record<string, string | number | undefined>
 
+const wideGlyph = /[぀-ヿ㐀-䶿一-鿿豈-﫿︰-﹏＀-￯]/
+
+/** Estimate rendered text width in px without a layout engine: CJK ≈ 1em, whitespace ≈ 0.32em, latin ≈ 0.6em (deliberately generous — over-shrinking beats clipping). */
+export function estimateTextWidth(text: string, fontSize: number, fontWeight = 400, letterSpacing = 0): number {
+  const weightFactor = fontWeight >= 700 ? 1.05 : 1
+  let width = 0
+  for (const char of text) {
+    width += (wideGlyph.test(char) ? fontSize : /\s/.test(char) ? fontSize * 0.32 : fontSize * 0.6) * weightFactor + letterSpacing
+  }
+  return width
+}
+
+const MIN_SHRINK_FONT_SIZE = 12
+
+/** Reduce font size until the estimated wrapped text fits the frame; returns the original size when it already fits. */
+export function shrinkFontToFit(text: string, frame: { w: number; h: number }, fontSize: number, lineHeight: number, fontWeight = 400, letterSpacing = 0): number {
+  let size = fontSize
+  while (size > MIN_SHRINK_FONT_SIZE) {
+    const lines = text.split('\n').reduce((count, paragraph) => count + Math.max(1, Math.ceil(estimateTextWidth(paragraph, size, fontWeight, letterSpacing) / frame.w)), 0)
+    if (lines * size * lineHeight <= frame.h) return size
+    size = Math.max(MIN_SHRINK_FONT_SIZE, Math.floor(size * 0.9))
+  }
+  return size
+}
+
 export function horizontalAlignment(align?: 'left' | 'center' | 'right') {
   return align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'
 }
@@ -35,16 +60,21 @@ export function elementFrameStyle(element: SlideElement): PresentationStyle {
 
 export function textContentStyle(element: Extract<SlideElement, { type: 'text' }>, theme: DeckDocument['theme']): PresentationStyle {
   const title = element.styleRef === 'slide-title'
+  const lineHeight = element.lineHeight ?? 1.12
+  const fontWeight = element.fontWeight ?? (title ? 700 : 400)
+  let fontSize = element.fontSize ?? (title ? theme.fontSizes.title : theme.fontSizes.body)
+  if (element.fit === 'shrink') fontSize = shrinkFontToFit(element.text, element.frame, fontSize, lineHeight, fontWeight, element.letterSpacing)
   return {
     width: '100%', height: '100%', display: 'flex',
     fontFamily: element.fontFamily ?? (title ? theme.fonts.title : theme.fonts.body),
-    fontSize: element.fontSize ?? (title ? theme.fontSizes.title : theme.fontSizes.body),
-    fontWeight: element.fontWeight ?? (title ? 700 : 400),
+    fontSize,
+    fontWeight,
     color: element.color ?? theme.colors.text,
     textAlign: element.align ?? 'left',
     justifyContent: horizontalAlignment(element.align),
     alignItems: verticalAlignment(element.verticalAlign),
-    whiteSpace: 'pre-wrap', lineHeight: 1.12, overflow: 'hidden', boxSizing: 'border-box',
+    letterSpacing: element.letterSpacing,
+    whiteSpace: 'pre-wrap', lineHeight, overflow: 'hidden', boxSizing: 'border-box',
   }
 }
 

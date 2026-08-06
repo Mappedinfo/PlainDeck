@@ -2,7 +2,7 @@ import { cp, mkdtemp, readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { applyOperations, canonicalJson, createDeckTemplate, createSavePlan, createSummaryCardElements, deckTemplatePresets, designRecipeCategories, designRecipes, designRecipeSource, getDesignRecipe, inspectDeck, loadDeck, parseSummaryCards, resolveFooterSlot, saveDeck, searchDesignRecipes, summaryCardsToMarkdown, themePresets, validateDeck } from '../src/index.js'
+import { applyOperations, canonicalJson, createDeckTemplate, createSavePlan, createSummaryCardElements, deckTemplatePresets, designRecipeCategories, designRecipes, designRecipeSource, getDesignRecipe, inspectDeck, loadDeck, parseSummaryCards, renderHtml, resolveFooterSlot, saveDeck, searchDesignRecipes, shrinkFontToFit, summaryCardsToMarkdown, themePresets, validateDeck } from '../src/index.js'
 
 const starter = resolve('examples/starter')
 
@@ -71,8 +71,18 @@ describe('PlainDeck public API', () => {
     expect(validateDeck(result.document)).toMatchObject({ valid: true, issues: [] })
     const recolored = applyOperations(result.document, [{ op: 'set-theme', patch: { background: '#101714', accent: '#D8FF52', muted: '#9FAB9F' } }])
     expect(recolored.document.slides['./slides/002-weekly-brief.json'].elements.find(element => element.id === 'summary-card-1')).toMatchObject({ fill: '#D8FF52' })
-    expect(recolored.document.slides['./slides/002-weekly-brief.json'].elements.find(element => element.id === 'summary-card-2')).toMatchObject({ fill: '#101714', stroke: '#9FAB9F' })
+    expect(recolored.document.slides['./slides/002-weekly-brief.json'].elements.find(element => element.id === 'summary-card-2')).toMatchObject({ fill: recolored.document.theme.colors.surface, stroke: '#9FAB9F' })
     expect(() => applyOperations(original, [{ op: 'add-summary-slide', content: { title: 'Too many', cards: Array.from({ length: 9 }, () => ({ title: 'x', description: 'y' })) } }])).toThrow()
+  })
+
+  it('shrinks oversized fit:shrink text to its frame in rendered output', () => {
+    expect(shrinkFontToFit('73–100%', { w: 322, h: 126 }, 78, 1.12, 800)).toBeLessThan(78)
+    expect(shrinkFontToFit('≈0', { w: 322, h: 126 }, 78, 1.12, 800)).toBe(78)
+    const document = createDeckTemplate('blank')
+    const path = document.deck.slides[0]
+    document.slides[path].elements.push({ id: 'crowded', type: 'text', frame: { x: 100, y: 100, w: 200, h: 60 }, text: '一段远远超过文本框宽度的中文内容需要自动缩小字号以避免被裁切', fontSize: 60, fontWeight: 700, fit: 'shrink' })
+    const html = renderHtml(document, { mode: 'document' })
+    expect(html).not.toContain('font-size:60px')
   })
 
   it('ships all 174 Juya-derived recipes as validated PlainDeck-native styles', () => {
