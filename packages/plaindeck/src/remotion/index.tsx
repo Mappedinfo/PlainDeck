@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
-import { PlainDeckSlide, type PlainDeckSlideProps } from '@mappedinfo/plaindeck-react'
-import type { DeckDocument, ElementAnimation, SlideElement } from 'plaindeck/core'
+import { PlainDeckSlide, type PlainDeckSlideProps } from '../react/index.js'
+import type { DeckDocument, ElementAnimation, SlideElement } from '../core/index.js'
 import { AbsoluteFill, Easing, Series, interpolate, useCurrentFrame, useVideoConfig } from 'remotion'
 
 const animationOffset = (enter: ElementAnimation['enter'], distance: number) => {

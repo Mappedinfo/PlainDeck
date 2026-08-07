@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createDeckTemplate } from 'plaindeck'
-import { elementAnimationStyle } from '../src/index.js'
+import { elementAnimationStyle } from '../src/remotion/index.js'
 
-describe('@mappedinfo/plaindeck-remotion', () => {
+describe('plaindeck/remotion', () => {
   it('turns readable animation metadata into deterministic frame styles', () => {
     const document = createDeckTemplate('showcase')
     const element = document.slides[document.deck.slides[0]].elements[0]

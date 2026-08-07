@@ -3,18 +3,18 @@
 PlainDeck 的页面内容只有一套实现：
 
 ```text
-PlainDeck JSON → shared presentation model → @mappedinfo/plaindeck-react
+PlainDeck JSON → shared presentation model → plaindeck/react
                                       ├── Web editor
-                                      └── @mappedinfo/plaindeck-remotion → video timeline
+                                      └── plaindeck/remotion → video timeline
 PlainDeck JSON → shared presentation model → HTML → PNG / PDF
 ```
 
-`@mappedinfo/plaindeck-react` 负责文本、图片、占位、形状文字、线条、背景、字体、主题和页脚。`@mappedinfo/plaindeck-remotion` 不重新实现这些元素，只根据 `useCurrentFrame()` 为页面组件添加确定性的逐元素进入和页面缩放。
+`plaindeck/react` 负责文本、图片、占位、形状文字、线条、背景、字体、主题和页脚。`plaindeck/remotion` 不重新实现这些元素，只根据 `useCurrentFrame()` 为页面组件添加确定性的逐元素进入和页面缩放。
 
 ## React
 
 ```tsx
-import { PlainDeckSlide } from '@mappedinfo/plaindeck-react'
+import { PlainDeckSlide } from 'plaindeck/react'
 
 export const Preview = ({ deck }) => (
   <PlainDeckSlide
@@ -29,7 +29,7 @@ export const Preview = ({ deck }) => (
 
 ```tsx
 import { AbsoluteFill } from 'remotion'
-import { PlainDeckTimeline } from '@mappedinfo/plaindeck-remotion'
+import { PlainDeckTimeline } from 'plaindeck/remotion'
 
 export const Video = ({ deck }) => (
   <AbsoluteFill>
@@ -44,7 +44,7 @@ export const Video = ({ deck }) => (
 
 ## paper-to-Bilibili 迁移
 
-现有流程可以保留 storyboard、TTS、字幕与音频，只替换画面层：让 storyboard 先生成 PlainDeck JSON，再把 `PlainDeckTimeline` 放入原来的 Remotion composition。发布 `@plaindeck/*` 后再使用 npm 依赖接入，避免在另一个仓库提交易失效的 `file:` 路径。
+现有流程可以保留 storyboard、TTS、字幕与音频，只替换画面层：让 storyboard 先生成 PlainDeck JSON，再把 `PlainDeckTimeline` 放入原来的 Remotion composition。React 页面组件与 Remotion 适配器都随 `plaindeck` 单包发布（`plaindeck/react` 与 `plaindeck/remotion` 子路径），用 npm 依赖接入即可，避免在另一个仓库提交易失效的 `file:` 路径。
 
 推荐边界：
 

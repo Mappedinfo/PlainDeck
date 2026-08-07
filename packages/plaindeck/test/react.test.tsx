@@ -1,9 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { createDeckTemplate, renderHtml } from 'plaindeck'
-import { PlainDeckSlide } from '../src/index.js'
+import { PlainDeckSlide } from '../src/react/index.js'
 
-describe('@mappedinfo/plaindeck-react', () => {
+describe('plaindeck/react', () => {
   it('renders the same presentation geometry and typography as HTML output', () => {
     const document = createDeckTemplate('showcase', { theme: 'studio-cobalt' })
     const slidePath = document.deck.slides[0]

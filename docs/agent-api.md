@@ -107,7 +107,7 @@ Markdown 使用 `# 主标题`、`## 卡片标题`、描述和可选的 `icon_nam
 
 `set-footer` 一次设置文档级左、中、右页脚，只修改 `deck.json`；设为 `null` 可关闭页脚。槽位类型为 `none`、`text`、`date`、`page`、`page-count`、`page-of-count`、`deck-title` 或 `slide-name`，其中 `text` 还需要 `text` 字段。日期在显示或导出时生成，页码和页面名称会随页面排序自动更新。
 
-`set-element` 可设置可选的 `animation`；`set-slide-motion` 设置页面级镜头，传入 `null` 可移除。HTML/PNG/PDF 与普通 React 渲染保留最终版式但忽略动画，`@mappedinfo/plaindeck-remotion` 才按帧解释这些字段。
+`set-element` 可设置可选的 `animation`；`set-slide-motion` 设置页面级镜头，传入 `null` 可移除。HTML/PNG/PDF 与普通 React 渲染保留最终版式但忽略动画，`plaindeck/remotion` 才按帧解释这些字段。
 
 `set-element` 不能修改元素的 `id` 或 `type`。`move-element` 与 `move-slide` 使用稳定 ID/路径及 `before` 或 `after`，不暴露数组索引。不存在的页面或元素、重复元素 ID、非法 patch、删除最后一页等都会使整批操作失败；操作在内存中全部完成并通过全量 schema 校验后，CLI 才会写盘。Web 编辑器也把交互动作转换为同一组 operations 后再更新历史与保存。
 
@@ -142,7 +142,7 @@ await renderPdf(result.document, { projectPath: './my-deck', output: './dist/dec
 
 `createDeckTemplate('showcase', { title: 'My story', theme: 'studio-cobalt' })` 与 CLI `init` 使用同一个模板工厂，因此 Web 默认项目、Agent API 与命令行不会产生三套不同的设计。
 
-`plaindeck/core` 公开 schema、类型、migration、canonical serializer、布局和主题预设。`plaindeck/render` 包含浏览器安全的纯 HTML renderer 与所有输出共用的 presentation model；文件系统、资源嵌入和 Playwright 渲染能力从包根入口 `plaindeck` 导出。React 页面组件由 `@mappedinfo/plaindeck-react` 导出，Remotion 时间轴由 `@mappedinfo/plaindeck-remotion` 导出。
+`plaindeck/core` 公开 schema、类型、migration、canonical serializer、布局和主题预设。`plaindeck/render` 包含浏览器安全的纯 HTML renderer 与所有输出共用的 presentation model；文件系统、资源嵌入和 Playwright 渲染能力从包根入口 `plaindeck` 导出。React 页面组件由 `plaindeck/react` 导出，Remotion 时间轴由 `plaindeck/remotion` 导出（同一 npm 包的子路径，React 与 remotion 为可选 peer 依赖）。
 
 ## 渲染安全与输出
 

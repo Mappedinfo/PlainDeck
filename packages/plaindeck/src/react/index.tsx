@@ -8,8 +8,8 @@ import {
   shapeLabelStyle,
   slideStyle,
   textContentStyle,
-} from 'plaindeck/render'
-import type { DeckDocument, SlideElement } from 'plaindeck/core'
+} from '../render/index.js'
+import type { DeckDocument, SlideElement } from '../core/index.js'
 
 const css = (value: Record<string, string | number | undefined>): CSSProperties => value as CSSProperties
 

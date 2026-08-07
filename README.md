@@ -157,16 +157,16 @@ npx playwright install chromium
 
 ## React 与 Remotion：一页内容，所有输出
 
-PlainDeck 不把视频做成第二套幻灯片。`@mappedinfo/plaindeck-react` 把同一份页面 JSON 渲染为 React 组件，Web 编辑器直接使用它；`@mappedinfo/plaindeck-remotion` 只在组件外增加逐元素入场与页面镜头。HTML、PNG、PDF、Web 和视频共同使用 `plaindeck/render` 中的布局、字体、主题、形状和页脚解析。
+PlainDeck 不把视频做成第二套幻灯片。`plaindeck/react` 把同一份页面 JSON 渲染为 React 组件，Web 编辑器直接使用它；`plaindeck/remotion` 只在组件外增加逐元素入场与页面镜头。HTML、PNG、PDF、Web 和视频共同使用 `plaindeck/render` 中的布局、字体、主题、形状和页脚解析。
 
 ```bash
-npm install plaindeck @mappedinfo/plaindeck-react
-npm install @mappedinfo/plaindeck-remotion remotion
+npm install plaindeck react react-dom
+npm install plaindeck remotion
 ```
 
 ```tsx
-import { PlainDeckSlide } from '@mappedinfo/plaindeck-react'
-import { PlainDeckTimeline } from '@mappedinfo/plaindeck-remotion'
+import { PlainDeckSlide } from 'plaindeck/react'
+import { PlainDeckTimeline } from 'plaindeck/remotion'
 
 <PlainDeckSlide document={deck} slidePath="./slides/001-intro.json" />
 <PlainDeckTimeline document={deck} framesPerSlide={150} />
@@ -185,7 +185,7 @@ Web 工具栏显示的版本号直接读取 `packages/plaindeck/package.json`。
 - 形状内文字、双击编辑、字号、颜色与对齐方式；
 - 文档级左、中、右页脚编辑器，支持自定义文字、自动日期、页码、总页数、文档标题与页面名称；
 - 可选的逐元素进入动画与页面镜头 JSON，Web 属性面板可视化编辑；
-- `@mappedinfo/plaindeck-react` 共享页面组件与 `@mappedinfo/plaindeck-remotion` 帧驱动时间轴适配器；
+- `plaindeck/react` 共享页面组件与 `plaindeck/remotion` 帧驱动时间轴适配器；
 - 选择、Shift 多选、拖动、缩放、属性编辑、图层、对齐和网格吸附；元素可暂放在画布外，并通过本页元素清单检索或一键移回中心；
 - 100 步 Undo/Redo、复制、删除和键盘微调；
 - 本地目录读写、防抖最小写入、外部修改保护和 OPFS 恢复快照；

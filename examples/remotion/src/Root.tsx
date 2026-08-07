@@ -1,4 +1,4 @@
-import { PlainDeckRemotionSlide } from '@mappedinfo/plaindeck-remotion'
+import { PlainDeckRemotionSlide } from 'plaindeck/remotion'
 import { Composition } from 'remotion'
 import { document } from './deck'
 
