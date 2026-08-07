@@ -1,4 +1,5 @@
 import { resolveFooterSlot } from '../core/footer.js'
+import { DEFAULT_TYPE_SCALE } from '../core/typography.js'
 import type { DeckDocument, SlideElement } from '../core/schema.js'
 
 export type PresentationStyle = Record<string, string | number | undefined>
@@ -73,6 +74,46 @@ export function fitTextSize(text: string, frame: { w: number; h: number }, fontS
   return best
 }
 
+/**
+ * Unify same-type components within one slide to a single adopted size:
+ * elements whose ids share a pattern (trailing numbers and -rule/-number
+ * suffixes stripped) are treated as one component group, and the group's
+ * size is driven by its longest member. Writing that single size into each
+ * member's `scale` forces the renderer to adopt it everywhere on the page.
+ * Cross-page coherence comes from the type scale itself.
+ */
+export function unifyComponentTypeSizes(elements: SlideElement[], options: { scale?: number[] } = {}): void {
+  const scale = options.scale ?? DEFAULT_TYPE_SCALE
+  const groupKey = (element: SlideElement) =>
+    element.id.replace(/-(?:\d+)$/g, '').replace(/-(?:rule|number)$/g, '')
+  const groups = new Map<string, SlideElement[]>()
+  for (const element of elements) {
+    if (element.type !== 'text' || element.fit !== 'fill') continue
+    const key = groupKey(element)
+    const members = groups.get(key)
+    if (members) members.push(element)
+    else groups.set(key, [element])
+  }
+  for (const members of groups.values()) {
+    if (members.length < 2) continue
+    let shared = Infinity
+    for (const member of members) {
+      if (member.type !== 'text') continue
+      const ideal = fitTextSize(
+        member.text, member.frame, member.fontSize ?? 24, member.lineHeight ?? 1.3,
+        member.fontWeight ?? 400, member.letterSpacing ?? 0,
+        { grow: true, scale },
+      )
+      shared = Math.min(shared, ideal)
+    }
+    if (Number.isFinite(shared)) {
+      for (const member of members) {
+        if (member.type === 'text') member.scale = [shared]
+      }
+    }
+  }
+}
+
 export function horizontalAlignment(align?: 'left' | 'center' | 'right') {
   return align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'
 }
@@ -109,7 +150,7 @@ export function textContentStyle(element: Extract<SlideElement, { type: 'text' }
   const fontWeight = element.fontWeight ?? (title ? 700 : 400)
   let fontSize = element.fontSize ?? (title ? theme.fontSizes.title : theme.fontSizes.body)
   if (element.fit === 'shrink') fontSize = shrinkFontToFit(element.text, element.frame, fontSize, lineHeight, fontWeight, element.letterSpacing)
-  else if (element.fit === 'fill') fontSize = fitTextSize(element.text, element.frame, fontSize, lineHeight, fontWeight, element.letterSpacing, {grow: true, scale: element.scale ?? theme.typeScale})
+  else if (element.fit === 'fill') fontSize = fitTextSize(element.text, element.frame, fontSize, lineHeight, fontWeight, element.letterSpacing, {grow: true, scale: element.scale ?? theme.typeScale ?? DEFAULT_TYPE_SCALE})
   return {
     width: '100%', height: '100%', display: 'flex',
     fontFamily: element.fontFamily ?? (title ? theme.fonts.title : theme.fonts.body),
