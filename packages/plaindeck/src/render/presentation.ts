@@ -44,6 +44,8 @@ export interface FitTextOptions {
   grow?: boolean
   /** Limited size choices: snap the adopted size to the largest member at or below the ideal. */
   scale?: number[]
+  /** Height safety factor applied to the fit check; defaults to 0.88. */
+  heightSafety?: number
 }
 
 /**
@@ -56,9 +58,13 @@ export interface FitTextOptions {
 export function fitTextSize(text: string, frame: { w: number; h: number }, fontSize: number, lineHeight: number, fontWeight = 400, letterSpacing = 0, options: FitTextOptions = {}): number {
   const minSize = options.minSize ?? MIN_FILL_FONT_SIZE
   const maxSize = Math.max(minSize, options.maxSize ?? (options.grow ? fontSize * 1.5 : fontSize))
+  // Conservative height margin: the width estimate is heuristic (latin/digits
+  // render wider than the flat factor in proportional fonts), so a filled box
+  // must keep ~12% headroom or the real text clips at the frame edge.
+  const heightSafety = options.heightSafety ?? 0.88
   const fits = (size: number) => {
     const lines = text.split('\n').reduce((count, paragraph) => count + Math.max(1, Math.ceil(estimateTextWidth(paragraph, size, fontWeight, letterSpacing) / frame.w)), 0)
-    return lines * size * lineHeight <= frame.h
+    return lines * size * lineHeight <= frame.h * heightSafety
   }
   let lo = minSize
   let hi = maxSize
@@ -110,6 +116,56 @@ export function unifyComponentTypeSizes(elements: SlideElement[], options: { sca
       for (const member of members) {
         if (member.type === 'text') member.scale = [shared]
       }
+    }
+  }
+}
+
+export interface ExpandTextFramesOptions {
+  /** Hard lower bound for any vertical extension (e.g. the caption-safe zone). */
+  maxBottom: number
+  /** Hard right bound for any horizontal extension. */
+  maxRight: number
+  /** Minimum gap kept to the next element; defaults to 8. */
+  gap?: number
+}
+
+/**
+ * Restrained text-box auto-extension: when a fill/shrink text element is near
+ * its frame limit (estimated wrapped height >= 85% or width >= 90%), extend
+ * the frame in the free direction — down by at most one line, right by the
+ * estimated surplus — without touching the next element or the hard bounds.
+ * This gives real-vs-estimate headroom (the width estimate is heuristic) so
+ * dense text stops clipping at the box edge.
+ */
+export function expandTextFrames(elements: SlideElement[], options: ExpandTextFramesOptions): void {
+  const gap = options.gap ?? 8
+  for (const element of elements) {
+    if (element.type !== 'text' || !(element.fit === 'fill' || element.fit === 'shrink')) continue
+    const frame = element.frame
+    const size = element.fontSize ?? 28
+    const lineHeight = element.lineHeight ?? 1.3
+    const weight = element.fontWeight ?? 400
+    const ls = element.letterSpacing ?? 0
+    const paragraphs = element.text.split('\n')
+    const estHeight = paragraphs.reduce((sum, paragraph) => sum + Math.max(1, Math.ceil(estimateTextWidth(paragraph, size, weight, ls) / frame.w)), 0) * size * lineHeight
+    const maxLineWidth = Math.max(...paragraphs.map((paragraph) => estimateTextWidth(paragraph, size, weight, ls)))
+    const tightH = estHeight >= frame.h * 0.85
+    const tightW = maxLineWidth >= frame.w * 0.9
+    if (!tightH && !tightW) continue
+    let topLimit = options.maxBottom
+    let leftLimit = options.maxRight
+    for (const other of elements) {
+      if (other === element) continue
+      if (other.frame.y >= frame.y + frame.h) topLimit = Math.min(topLimit, other.frame.y)
+      if (other.frame.x >= frame.x + frame.w) leftLimit = Math.min(leftLimit, other.frame.x)
+    }
+    if (tightH) {
+      const extend = Math.min(size * lineHeight, topLimit - (frame.y + frame.h) - gap)
+      if (extend > 0) element.frame = { ...frame, h: Math.round(frame.h + extend) }
+    }
+    if (tightW) {
+      const extend = Math.min(maxLineWidth - frame.w + 4, leftLimit - (frame.x + frame.w) - gap)
+      if (extend > 0) element.frame = { ...frame, w: Math.round(frame.w + extend) }
     }
   }
 }
