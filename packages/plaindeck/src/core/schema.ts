@@ -34,7 +34,7 @@ export const TextElementSchema = ElementBase.extend({
   styleRef: z.string().optional(),
   align: z.enum(['left', 'center', 'right']).optional(),
   verticalAlign: z.enum(['top', 'middle', 'bottom']).optional(),
-  fit: z.enum(['none', 'shrink', 'clip']).optional(),
+  fit: z.enum(['none', 'shrink', 'fill', 'clip']).optional(),
   fontSize: z.number().positive().optional(),
   fontFamily: z.string().min(1).optional(),
   color: z.string().optional(),

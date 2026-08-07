@@ -166,12 +166,12 @@ function buildLayoutElements(layoutId: LayoutPresetId, theme: Theme): SlideEleme
     title('title', '这张原图是核心证据', 88, 112, 1300, 64, 44),
     { id: 'figure-stage', type: 'shape', frame: frame(88, 200, 950, 556), shape: 'rounded-rectangle', fill: surface, radius: 18 },
     { id: 'figure', type: 'image', frame: frame(112, 224, 902, 508), src: imagePlaceholder, fit: 'contain', alt: '论文原图' },
-    { id: 'caption', type: 'text', frame: frame(88, 776, 950, 48), text: '图注：用一句话说明这张图证明了什么。', fontSize: 19, color: muted, lineHeight: 1.4 },
+    { id: 'caption', type: 'text', frame: frame(88, 770, 950, 64), text: '图注：用一句话说明这张图证明了什么。', fontSize: 24, color: muted, lineHeight: 1.4, fit: 'fill' },
     { id: 'rail-rule', type: 'shape', frame: frame(1076, 200, 3, 556), shape: 'rectangle', fill: accent },
-    { id: 'notes-label', type: 'text', frame: frame(1112, 200, 400, 30), text: 'READING NOTES', fontSize: 16, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2 },
+    { id: 'notes-label', type: 'text', frame: frame(1112, 200, 400, 30), text: 'READING NOTES', fontSize: 17, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2 },
     ...[0, 1, 2].flatMap((index): SlideElement[] => [
       { id: `note-${index + 1}-number`, type: 'text', frame: frame(1112, 252 + index * 170, 80, 36), text: `0${index + 1}`, fontSize: 22, fontWeight: 700, fontFamily: mono, color: accent },
-      { id: `note-${index + 1}`, type: 'text', frame: frame(1112, 296 + index * 170, 400, 120), text: ['先看坐标轴与单位，再看趋势。', '指出与正文结论对应的曲线。', '标注例外、噪声或反常之处。'][index], fontSize: 21, color: text, lineHeight: 1.5 },
+      { id: `note-${index + 1}`, type: 'text', frame: frame(1112, 296 + index * 170, 400, 120), text: ['先看坐标轴与单位，再看趋势。', '指出与正文结论对应的曲线。', '标注例外、噪声或反常之处。'][index], fontSize: 24, color: text, lineHeight: 1.5, fit: 'fill' },
     ]),
     { id: 'source', type: 'text', frame: frame(88, 848, 1200, 30), text: 'SOURCE · VENUE · YEAR', fontSize: 16, fontWeight: 700, fontFamily: mono, color: muted },
   ]
@@ -225,8 +225,8 @@ function buildLayoutElements(layoutId: LayoutPresetId, theme: Theme): SlideEleme
     title('title', '本文的三个贡献', 88, 118, 1300, 70, 52),
     ...[0, 1, 2].flatMap((index): SlideElement[] => [
       { id: `item-${index + 1}-number`, type: 'text', frame: frame(88, 258 + index * 182, 150, 100), text: `0${index + 1}`, fontSize: 84, fontWeight: 800, fontFamily: mono, color: accent },
-      { id: `item-${index + 1}-title`, type: 'text', frame: frame(272, 264 + index * 182, 1100, 48), text: ['一个新问题或新设定', '一个关键方法设计', '一组有说服力的证据'][index], fontSize: 34, fontWeight: 700, color: text },
-      { id: `item-${index + 1}-body`, type: 'text', frame: frame(272, 326 + index * 182, 1180, 72), text: '用一到两句话说明它解决了什么、与此前工作的差别在哪里。', fontSize: 23, color: muted, lineHeight: 1.45 },
+      { id: `item-${index + 1}-title`, type: 'text', frame: frame(272, 264 + index * 182, 1100, 52), text: ['一个新问题或新设定', '一个关键方法设计', '一组有说服力的证据'][index], fontSize: 36, fontWeight: 700, color: text, fit: 'fill' },
+      { id: `item-${index + 1}-body`, type: 'text', frame: frame(272, 330 + index * 182, 1180, 76), text: '用一到两句话说明它解决了什么、与此前工作的差别在哪里。', fontSize: 26, color: muted, lineHeight: 1.45, fit: 'fill' },
       ...(index < 2 ? [{ id: `item-${index + 1}-rule`, type: 'line', frame: frame(272, 424 + index * 182, 1240, 2), color: muted, strokeWidth: 2, opacity: 0.3 } as SlideElement] : []),
     ]),
     { id: 'source', type: 'text', frame: frame(88, 848, 1200, 30), text: 'SOURCE · VENUE · YEAR', fontSize: 16, fontWeight: 700, fontFamily: mono, color: muted },

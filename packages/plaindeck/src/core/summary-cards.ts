@@ -123,7 +123,7 @@ export function createSummaryCardElements(content: SummaryCardContent, theme: Th
   const cardWidth = (contentWidth - gap * (columns - 1)) / columns
   const cardHeight = (cardsBottom - cardsTop - gap * (rows - 1)) / rows
   const compact = count >= 5
-  const titleSize = compact ? 27 : count >= 3 ? 31 : 36; const bodySize = compact ? 19 : count >= 3 ? 22 : 26
+  const titleSize = compact ? 32 : count >= 3 ? 36 : 40; const bodySize = compact ? 24 : count >= 3 ? 26 : 30
   const elements: SlideElement[] = []
 
   if (variant === 'glass') elements.push(
@@ -160,8 +160,8 @@ export function createSummaryCardElements(content: SummaryCardContent, theme: Th
     elements.push(
       { id: `summary-card-${index + 1}`, type: 'shape', frame: frame(x, y, cardWidth, cardHeight), shape: radius ? 'rounded-rectangle' : 'rectangle', fill, stroke: primary ? undefined : (variant === 'future' || variant === 'terminal' ? theme.colors.accent : theme.colors.muted), strokeWidth: primary ? 0 : borderWidth, radius, rotation, opacity: variant === 'glass' ? .82 : undefined },
       { id: `summary-card-${index + 1}-index`, type: 'text', frame: frame(x + 26, y + 22, cardWidth - 52, 28), text: `${String(index + 1).padStart(2, '0')}${card.icon ? ` / ${card.icon.replaceAll('_', ' ').toUpperCase()}` : ''}`, fontSize: compact ? 13 : 15, fontFamily: theme.fonts.mono ?? theme.fonts.body, fontWeight: 800, color: primary ? foreground : theme.colors.accent, fit: 'shrink', rotation },
-      { id: `summary-card-${index + 1}-title`, type: 'text', frame: frame(x + 26, y + 65, cardWidth - 52, compact ? 54 : 62), text: card.title, fontSize: titleSize, fontFamily: theme.fonts.title, fontWeight: variant === 'minimal' ? 600 : 800, color: foreground, fit: 'shrink', rotation },
-      { id: `summary-card-${index + 1}-body`, type: 'text', frame: frame(x + 26, y + (compact ? 124 : 138), cardWidth - 52, cardHeight - (compact ? 146 : 164)), text: card.description, fontSize: bodySize, fontFamily: theme.fonts.body, fontWeight: 500, color: muted, fit: 'shrink', rotation },
+      { id: `summary-card-${index + 1}-title`, type: 'text', frame: frame(x + 26, y + 65, cardWidth - 52, compact ? 54 : 62), text: card.title, fontSize: titleSize, fontFamily: theme.fonts.title, fontWeight: variant === 'minimal' ? 600 : 800, color: foreground, fit: 'fill', rotation },
+      { id: `summary-card-${index + 1}-body`, type: 'text', frame: frame(x + 26, y + (compact ? 124 : 138), cardWidth - 52, cardHeight - (compact ? 146 : 164)), text: card.description, fontSize: bodySize, fontFamily: theme.fonts.body, fontWeight: 500, color: muted, fit: 'fill', rotation },
     )
     if (variant === 'editorial') elements.push({ id: `summary-card-${index + 1}-rule`, type: 'shape', frame: frame(x, y, cardWidth, 8), shape: 'rectangle', fill: index % 2 ? theme.colors.text : theme.colors.accent })
     if (variant === 'future') elements.push({ id: `summary-card-${index + 1}-corner`, type: 'shape', frame: frame(x + cardWidth - 28, y, 28, 7), shape: 'rectangle', fill: theme.colors.accent })
