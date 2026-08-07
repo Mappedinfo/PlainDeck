@@ -41,14 +41,16 @@ export interface FitTextOptions {
   maxSize?: number
   /** Allow growing above the design size so the template is properly filled. */
   grow?: boolean
+  /** Limited size choices: snap the adopted size to the largest member at or below the ideal. */
+  scale?: number[]
 }
 
 /**
  * Compute the largest font size in [minSize, maxSize] whose estimated wrapped
  * text fits the frame. With `grow` the text is scaled up to fill the box
  * instead of staying at a hardcoded size; without it this is a precise
- * shrink-only fit. Layouts declare a design size and the renderer adopts the
- * actual size per slide.
+ * shrink-only fit. With `scale`, the adopted size snaps down to a limited set
+ * of allowed sizes so same-type components stay coherent across pages.
  */
 export function fitTextSize(text: string, frame: { w: number; h: number }, fontSize: number, lineHeight: number, fontWeight = 400, letterSpacing = 0, options: FitTextOptions = {}): number {
   const minSize = options.minSize ?? MIN_FILL_FONT_SIZE
@@ -63,6 +65,10 @@ export function fitTextSize(text: string, frame: { w: number; h: number }, fontS
   while (lo <= hi) {
     const mid = Math.floor((lo + hi) / 2)
     if (fits(mid)) { best = mid; lo = mid + 1 } else { hi = mid - 1 }
+  }
+  if (options.scale && options.scale.length > 0) {
+    const snapped = options.scale.filter((size) => size <= best && size >= minSize).sort((a, b) => b - a)[0]
+    if (snapped !== undefined) return snapped
   }
   return best
 }
@@ -103,7 +109,7 @@ export function textContentStyle(element: Extract<SlideElement, { type: 'text' }
   const fontWeight = element.fontWeight ?? (title ? 700 : 400)
   let fontSize = element.fontSize ?? (title ? theme.fontSizes.title : theme.fontSizes.body)
   if (element.fit === 'shrink') fontSize = shrinkFontToFit(element.text, element.frame, fontSize, lineHeight, fontWeight, element.letterSpacing)
-  else if (element.fit === 'fill') fontSize = fitTextSize(element.text, element.frame, fontSize, lineHeight, fontWeight, element.letterSpacing, {grow: true})
+  else if (element.fit === 'fill') fontSize = fitTextSize(element.text, element.frame, fontSize, lineHeight, fontWeight, element.letterSpacing, {grow: true, scale: element.scale ?? theme.typeScale})
   return {
     width: '100%', height: '100%', display: 'flex',
     fontFamily: element.fontFamily ?? (title ? theme.fonts.title : theme.fonts.body),

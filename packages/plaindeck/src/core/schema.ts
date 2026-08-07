@@ -35,6 +35,9 @@ export const TextElementSchema = ElementBase.extend({
   align: z.enum(['left', 'center', 'right']).optional(),
   verticalAlign: z.enum(['top', 'middle', 'bottom']).optional(),
   fit: z.enum(['none', 'shrink', 'fill', 'clip']).optional(),
+  // Optional per-element allowed size set; fill-fit snaps to the largest
+  // member at or below the ideal instead of the theme typeScale.
+  scale: z.array(z.number()).min(1).optional(),
   fontSize: z.number().positive().optional(),
   fontFamily: z.string().min(1).optional(),
   color: z.string().optional(),
@@ -92,6 +95,10 @@ export const ThemeSchema = z.object({
   fontSizes: z.object({ title: z.number(), heading: z.number(), body: z.number(), caption: z.number() }),
   colors: z.object({ background: z.string(), text: z.string(), muted: z.string(), accent: z.string(), surface: z.string().optional() }),
   spacing: z.object({ page: z.number(), small: z.number(), medium: z.number(), large: z.number() }),
+  // Limited font-size choices for the whole deck: fill-fit sizing snaps the
+  // adopted size to the nearest step at or below the ideal, so same-type
+  // components render coherently across pages instead of drifting per slide.
+  typeScale: z.array(z.number()).min(1).optional(),
 })
 
 export const FooterSlotSchema = z.discriminatedUnion('type', [
