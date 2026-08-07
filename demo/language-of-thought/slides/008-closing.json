@@ -1,0 +1,96 @@
+{
+  "id": "closing",
+  "name": "Takeaway",
+  "layoutRef": "closing",
+  "background": {
+    "color": "#F1F0E7"
+  },
+  "elements": [
+    {
+      "id": "kicker",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 72,
+        "w": 720,
+        "h": 40
+      },
+      "text": "07 / TAKEAWAY",
+      "fontSize": 18,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700,
+      "letterSpacing": 2
+    },
+    {
+      "id": "quote-mark",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 72,
+        "y": 120,
+        "w": 260,
+        "h": 220
+      },
+      "text": "“",
+      "fontSize": 220,
+      "fontWeight": 800
+    },
+    {
+      "id": "quote",
+      "type": "text",
+      "styleRef": "slide-title",
+      "frame": {
+        "x": 120,
+        "y": 330,
+        "w": 1392,
+        "h": 240
+      },
+      "text": "思维有自己的语言。",
+      "fontSize": 64,
+      "fontWeight": 700
+    },
+    {
+      "id": "rule",
+      "type": "shape",
+      "frame": {
+        "x": 120,
+        "y": 640,
+        "w": 1392,
+        "h": 3
+      },
+      "shape": "rectangle",
+      "fill": "#547A5A"
+    },
+    {
+      "id": "attribution",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 120,
+        "y": 700,
+        "w": 1100,
+        "h": 44
+      },
+      "text": "—— Kean et al. 2026 · PNAS · DOI:10.1073/pnas.2520095123",
+      "fontSize": 24
+    },
+    {
+      "id": "end",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 1300,
+        "y": 786,
+        "w": 212,
+        "h": 46
+      },
+      "text": "END",
+      "align": "right",
+      "fontSize": 22,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700,
+      "letterSpacing": 2
+    }
+  ]
+}

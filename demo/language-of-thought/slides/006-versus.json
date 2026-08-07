@@ -1,0 +1,214 @@
+{
+  "id": "versus",
+  "name": "Aphasia patients",
+  "layoutRef": "versus",
+  "background": {
+    "color": "#F1F0E7"
+  },
+  "elements": [
+    {
+      "id": "kicker",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 64,
+        "w": 700,
+        "h": 34
+      },
+      "text": "05 / COMPARISON",
+      "fontSize": 18,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700,
+      "letterSpacing": 2
+    },
+    {
+      "id": "title",
+      "type": "text",
+      "styleRef": "slide-title",
+      "frame": {
+        "x": 88,
+        "y": 112,
+        "w": 1300,
+        "h": 64
+      },
+      "text": "语言坏了，推理还在",
+      "fontSize": 44,
+      "fontWeight": 700
+    },
+    {
+      "id": "panel-left",
+      "type": "shape",
+      "frame": {
+        "x": 88,
+        "y": 210,
+        "w": 664,
+        "h": 480
+      },
+      "shape": "rounded-rectangle",
+      "fill": "#e2e3da",
+      "radius": 18
+    },
+    {
+      "id": "panel-right",
+      "type": "shape",
+      "frame": {
+        "x": 848,
+        "y": 210,
+        "w": 664,
+        "h": 480
+      },
+      "shape": "rounded-rectangle",
+      "fill": "#e2e3da",
+      "radius": 18
+    },
+    {
+      "id": "left-label",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 128,
+        "y": 250,
+        "w": 560,
+        "h": 32
+      },
+      "text": "PREDICTION",
+      "fontSize": 19,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700,
+      "letterSpacing": 2
+    },
+    {
+      "id": "left-title",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 128,
+        "y": 300,
+        "w": 560,
+        "h": 48
+      },
+      "text": "如果思维用语言",
+      "fontSize": 32,
+      "fontWeight": 700
+    },
+    {
+      "id": "left-body",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 128,
+        "y": 372,
+        "w": 584,
+        "h": 260
+      },
+      "text": "失语症应当摧毁推理能力：语言系统崩了，思考就该跟着崩。",
+      "fontSize": 22,
+      "lineHeight": 1.5
+    },
+    {
+      "id": "right-label",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 888,
+        "y": 250,
+        "w": 560,
+        "h": 32
+      },
+      "text": "OBSERVED",
+      "fontSize": 19,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700,
+      "letterSpacing": 2
+    },
+    {
+      "id": "right-title",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 888,
+        "y": 300,
+        "w": 560,
+        "h": 48
+      },
+      "text": "实际观察到的",
+      "fontSize": 32,
+      "fontWeight": 700
+    },
+    {
+      "id": "right-body",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 888,
+        "y": 372,
+        "w": 584,
+        "h": 260
+      },
+      "text": "两位重度失语症患者，归纳与矩阵推理表现正常；归纳激活的是多需求网络。",
+      "fontSize": 22,
+      "lineHeight": 1.5
+    },
+    {
+      "id": "vs-badge",
+      "type": "shape",
+      "frame": {
+        "x": 766,
+        "y": 418,
+        "w": 68,
+        "h": 68
+      },
+      "text": "VS",
+      "textColor": "#F1F0E7",
+      "align": "center",
+      "verticalAlign": "middle",
+      "fontSize": 24,
+      "fontWeight": 800,
+      "shape": "ellipse",
+      "fill": "#547A5A"
+    },
+    {
+      "id": "verdict-rule",
+      "type": "shape",
+      "frame": {
+        "x": 88,
+        "y": 742,
+        "w": 1424,
+        "h": 3
+      },
+      "shape": "rectangle",
+      "fill": "#547A5A"
+    },
+    {
+      "id": "verdict-label",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 770,
+        "w": 220,
+        "h": 30
+      },
+      "text": "VERDICT",
+      "fontSize": 17,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700,
+      "letterSpacing": 2
+    },
+    {
+      "id": "verdict",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 340,
+        "y": 762,
+        "w": 1172,
+        "h": 52
+      },
+      "text": "结论：语言是沟通和压缩的工具，不负责思考本身。",
+      "fontSize": 26,
+      "fontWeight": 600
+    }
+  ]
+}

@@ -1,0 +1,356 @@
+{
+  "id": "table",
+  "name": "Language network response",
+  "layoutRef": "paper-table",
+  "background": {
+    "color": "#F1F0E7"
+  },
+  "elements": [
+    {
+      "id": "kicker",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 64,
+        "w": 700,
+        "h": 34
+      },
+      "text": "04 / EVIDENCE · TABLE",
+      "fontSize": 18,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700,
+      "letterSpacing": 2
+    },
+    {
+      "id": "table-label",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 1000,
+        "y": 64,
+        "w": 512,
+        "h": 34
+      },
+      "text": "FIGURE 2 · PDF P.4",
+      "align": "right",
+      "fontSize": 17,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700
+    },
+    {
+      "id": "title",
+      "type": "text",
+      "styleRef": "slide-title",
+      "frame": {
+        "x": 88,
+        "y": 112,
+        "w": 1300,
+        "h": 64
+      },
+      "text": "语言网络，对逻辑推理几乎无感",
+      "fontSize": 44,
+      "fontWeight": 700
+    },
+    {
+      "id": "table-header",
+      "type": "shape",
+      "frame": {
+        "x": 88,
+        "y": 210,
+        "w": 1424,
+        "h": 64
+      },
+      "shape": "rectangle",
+      "fill": "#e2e3da"
+    },
+    {
+      "id": "table-header-rule",
+      "type": "shape",
+      "frame": {
+        "x": 88,
+        "y": 274,
+        "w": 1424,
+        "h": 4
+      },
+      "shape": "rectangle",
+      "fill": "#547A5A"
+    },
+    {
+      "id": "header-1",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 108,
+        "y": 228,
+        "w": 480,
+        "h": 32
+      },
+      "text": "任务",
+      "fontSize": 20,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700
+    },
+    {
+      "id": "header-2",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 640,
+        "y": 228,
+        "w": 440,
+        "h": 32
+      },
+      "text": "推理类型",
+      "fontSize": 20,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700
+    },
+    {
+      "id": "header-3",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 1140,
+        "y": 228,
+        "w": 352,
+        "h": 32
+      },
+      "text": "语言网络响应",
+      "fontSize": 20,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700
+    },
+    {
+      "id": "row-highlight",
+      "type": "shape",
+      "frame": {
+        "x": 88,
+        "y": 386,
+        "w": 1424,
+        "h": 96
+      },
+      "shape": "rectangle",
+      "fill": "#e2e3da"
+    },
+    {
+      "id": "row-highlight-bar",
+      "type": "shape",
+      "frame": {
+        "x": 88,
+        "y": 386,
+        "w": 6,
+        "h": 96
+      },
+      "shape": "rectangle",
+      "fill": "#547A5A"
+    },
+    {
+      "id": "cell-1-1",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 108,
+        "y": 320,
+        "w": 480,
+        "h": 44
+      },
+      "text": "语言定位",
+      "fontSize": 24,
+      "fontWeight": 700
+    },
+    {
+      "id": "cell-1-2",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 640,
+        "y": 320,
+        "w": 440,
+        "h": 44
+      },
+      "text": "——（对照）",
+      "fontSize": 22,
+      "fontWeight": 500
+    },
+    {
+      "id": "cell-1-3",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 1140,
+        "y": 320,
+        "w": 352,
+        "h": 44
+      },
+      "text": "强烈响应",
+      "fontSize": 22,
+      "fontWeight": 500
+    },
+    {
+      "id": "row-rule-1",
+      "color": "#6E786F",
+      "type": "line",
+      "frame": {
+        "x": 88,
+        "y": 386,
+        "w": 1424,
+        "h": 2
+      },
+      "strokeWidth": 2,
+      "opacity": 0.3
+    },
+    {
+      "id": "cell-2-1",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 108,
+        "y": 416,
+        "w": 480,
+        "h": 44
+      },
+      "text": "规则归纳",
+      "fontSize": 24,
+      "fontWeight": 700
+    },
+    {
+      "id": "cell-2-2",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 640,
+        "y": 416,
+        "w": 440,
+        "h": 44
+      },
+      "text": "归纳",
+      "fontSize": 22,
+      "fontWeight": 500
+    },
+    {
+      "id": "cell-2-3",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 1140,
+        "y": 416,
+        "w": 352,
+        "h": 44
+      },
+      "text": "微弱",
+      "fontSize": 22,
+      "fontWeight": 500
+    },
+    {
+      "id": "row-rule-2",
+      "color": "#6E786F",
+      "type": "line",
+      "frame": {
+        "x": 88,
+        "y": 482,
+        "w": 1424,
+        "h": 2
+      },
+      "strokeWidth": 2,
+      "opacity": 0.3
+    },
+    {
+      "id": "cell-3-1",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 108,
+        "y": 512,
+        "w": 480,
+        "h": 44
+      },
+      "text": "三段论与矩阵",
+      "fontSize": 24,
+      "fontWeight": 700
+    },
+    {
+      "id": "cell-3-2",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 640,
+        "y": 512,
+        "w": 440,
+        "h": 44
+      },
+      "text": "演绎",
+      "fontSize": 22,
+      "fontWeight": 500
+    },
+    {
+      "id": "cell-3-3",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 1140,
+        "y": 512,
+        "w": 352,
+        "h": 44
+      },
+      "text": "几乎不动",
+      "fontSize": 22,
+      "fontWeight": 500
+    },
+    {
+      "id": "row-rule-3",
+      "color": "#6E786F",
+      "type": "line",
+      "frame": {
+        "x": 88,
+        "y": 578,
+        "w": 1424,
+        "h": 2
+      },
+      "strokeWidth": 2,
+      "opacity": 0.3
+    },
+    {
+      "id": "takeaway-bar",
+      "type": "shape",
+      "frame": {
+        "x": 88,
+        "y": 640,
+        "w": 6,
+        "h": 56
+      },
+      "shape": "rectangle",
+      "fill": "#547A5A"
+    },
+    {
+      "id": "takeaway",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 114,
+        "y": 636,
+        "w": 1398,
+        "h": 60
+      },
+      "text": "读法：对语言强烈响应的脑区，对逻辑推理几乎无响应。",
+      "fontSize": 26,
+      "fontWeight": 600,
+      "lineHeight": 1.3
+    },
+    {
+      "id": "source",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 848,
+        "w": 1200,
+        "h": 30
+      },
+      "text": "KEAN ET AL. 2026 · PNAS",
+      "fontSize": 16,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700
+    }
+  ]
+}

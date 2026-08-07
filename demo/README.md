@@ -1,6 +1,6 @@
 # PlainDeck demo gallery
 
-These three five-slide decks were created with the public `plaindeck` CLI workflow:
+These decks were created with the public `plaindeck` CLI workflow:
 
 ```text
 init → inspect → operations → validate → dry-run → apply → render
@@ -13,6 +13,7 @@ Every slide remains an editable JSON file. The committed `operations.json` files
 | Generative AI: A Practical Mental Model | `night-citrus` | [`generative-ai`](./generative-ai) | [Download PDF](./renders/generative-ai.pdf) |
 | How the Internet Works | `editorial-blue` | [`how-the-internet-works`](./how-the-internet-works) | [Download PDF](./renders/how-the-internet-works.pdf) |
 | How Learning Sticks | `paper-signal` | [`how-learning-sticks`](./how-learning-sticks) | [Download PDF](./renders/how-learning-sticks.pdf) |
+| 思维的语言，不是自然语言（Kean et al. 2026） | `field-notes` | [`language-of-thought`](./language-of-thought) | [Download PDF](./renders/language-of-thought.pdf) |
 
 ## Reproduce one demo
 
@@ -35,7 +36,15 @@ npx plaindeck validate ./generative-ai
 npx plaindeck render ./generative-ai --format pdf --output ./generative-ai.pdf
 ```
 
-Run the commands from a clean working directory and point `--ops` to the copied operations file. The other two demos follow the same sequence with their corresponding title, ID, theme, and operations file.
+Run the commands from a clean working directory and point `--ops` to the copied operations file. The other two five-slide demos follow the same sequence with their corresponding title, ID, theme, and operations file. The `language-of-thought` demo uses the eight-slide paper-reading template instead:
+
+```bash
+npx plaindeck init ./language-of-thought \
+  --title "思维的语言，不是自然语言" \
+  --id language-of-thought \
+  --template paper-reading \
+  --theme field-notes
+```
 
 ## Source notes
 
@@ -44,3 +53,4 @@ The decks use no external images. Non-trivial knowledge claims were checked agai
 - Generative AI: [Vaswani et al., *Attention Is All You Need*](https://arxiv.org/abs/1706.03762) and [NIST AI RMF 1.0](https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-ai-rmf-10).
 - Internet: [IETF RFC 8200, Internet Protocol Version 6](https://datatracker.ietf.org/doc/html/rfc8200) and [IETF RFC 9110, HTTP Semantics](https://datatracker.ietf.org/doc/html/rfc9110).
 - Learning: [Roediger & Karpicke, 2006](https://pubmed.ncbi.nlm.nih.gov/16507066/) and [Dunlosky et al., 2013](https://doi.org/10.1177/1529100612453266).
+- Language of Thought: Kean et al., 2026, *PNAS*, [DOI:10.1073/pnas.2520095123](https://doi.org/10.1073/pnas.2520095123).

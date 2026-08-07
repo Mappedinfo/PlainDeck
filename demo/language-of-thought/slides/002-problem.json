@@ -1,0 +1,78 @@
+{
+  "id": "problem",
+  "name": "The problem",
+  "layoutRef": "statement",
+  "background": {
+    "color": "#F1F0E7"
+  },
+  "elements": [
+    {
+      "id": "kicker",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 72,
+        "w": 720,
+        "h": 40
+      },
+      "text": "01 / THE PROBLEM",
+      "fontSize": 18,
+      "fontWeight": 700
+    },
+    {
+      "id": "index",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 1260,
+        "y": 52,
+        "w": 252,
+        "h": 150
+      },
+      "text": "01",
+      "align": "right",
+      "fontSize": 112,
+      "fontWeight": 700
+    },
+    {
+      "id": "statement",
+      "type": "text",
+      "styleRef": "slide-title",
+      "frame": {
+        "x": 88,
+        "y": 238,
+        "w": 1240,
+        "h": 270
+      },
+      "text": "两千多年前亚里士多德就画下这条界线：\n思考，是否需要语言？",
+      "fontSize": 56,
+      "fontWeight": 700
+    },
+    {
+      "id": "rule",
+      "type": "shape",
+      "frame": {
+        "x": 88,
+        "y": 620,
+        "w": 1424,
+        "h": 3
+      },
+      "shape": "rectangle",
+      "fill": "#203027"
+    },
+    {
+      "id": "context",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 682,
+        "w": 1040,
+        "h": 70
+      },
+      "text": "数学推理、因果推理、心智理论，都曾在失语症患者身上完好——但先例各说各话。",
+      "fontSize": 28
+    }
+  ]
+}

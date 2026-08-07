@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "0.1",
+  "id": "language-of-thought",
+  "title": "思维的语言，不是自然语言",
+  "canvas": {
+    "width": 1600,
+    "height": 900
+  },
+  "theme": "./theme.json",
+  "slides": [
+    "./slides/001-cover.json",
+    "./slides/002-problem.json",
+    "./slides/003-contributions.json",
+    "./slides/004-figure.json",
+    "./slides/005-table.json",
+    "./slides/006-versus.json",
+    "./slides/007-limits.json",
+    "./slides/008-closing.json"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "fonts": {
+    "title": "Georgia, Charter, \"Songti SC\", \"Noto Serif SC\", serif",
+    "body": "Avenir Next, Aptos, \"PingFang SC\", \"Noto Sans SC\", sans-serif",
+    "mono": "SFMono-Regular, Consolas, monospace"
+  },
+  "fontSizes": {
+    "title": 76,
+    "body": 28,
+    "heading": 48,
+    "caption": 19
+  },
+  "colors": {
+    "background": "#F1F0E7",
+    "text": "#203027",
+    "muted": "#6E786F",
+    "accent": "#547A5A",
+    "surface": "#e2e3da"
+  },
+  "spacing": {
+    "page": 80,
+    "small": 16,
+    "medium": 30,
+    "large": 64
+  }
+}

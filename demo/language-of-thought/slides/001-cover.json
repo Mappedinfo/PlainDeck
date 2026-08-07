@@ -1,0 +1,124 @@
+{
+  "id": "cover",
+  "name": "Cover",
+  "layoutRef": "paper-cover",
+  "background": {
+    "color": "#F1F0E7"
+  },
+  "elements": [
+    {
+      "id": "accent-panel",
+      "type": "shape",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 420,
+        "h": 900
+      },
+      "shape": "rectangle",
+      "fill": "#547A5A"
+    },
+    {
+      "id": "panel-mark",
+      "color": "#F1F0E7",
+      "type": "text",
+      "frame": {
+        "x": 62,
+        "y": 76,
+        "w": 320,
+        "h": 170
+      },
+      "text": "PAPER\nREADING",
+      "fontSize": 56,
+      "fontWeight": 800
+    },
+    {
+      "id": "panel-index",
+      "color": "#F1F0E7",
+      "type": "text",
+      "frame": {
+        "x": 62,
+        "y": 756,
+        "w": 280,
+        "h": 50
+      },
+      "text": "01 — 08",
+      "fontSize": 20,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700
+    },
+    {
+      "id": "kicker",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 510,
+        "y": 78,
+        "w": 880,
+        "h": 42
+      },
+      "text": "PNAS 2026 · NEUROSCIENCE · LANGUAGE OF THOUGHT",
+      "fontSize": 18,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 800,
+      "letterSpacing": 2
+    },
+    {
+      "id": "title",
+      "color": "#203027",
+      "type": "text",
+      "styleRef": "slide-title",
+      "frame": {
+        "x": 510,
+        "y": 188,
+        "w": 980,
+        "h": 260
+      },
+      "text": "思维的语言，\n不是自然语言",
+      "fontSize": 76,
+      "fontWeight": 800
+    },
+    {
+      "id": "rule",
+      "type": "shape",
+      "frame": {
+        "x": 510,
+        "y": 530,
+        "w": 980,
+        "h": 4
+      },
+      "shape": "rectangle",
+      "fill": "#203027"
+    },
+    {
+      "id": "authors",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 510,
+        "y": 588,
+        "w": 890,
+        "h": 60
+      },
+      "text": "Kean et al. · PNAS · DOI:10.1073/pnas.2520095123",
+      "fontSize": 28,
+      "fontWeight": 500
+    },
+    {
+      "id": "hint",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 510,
+        "y": 790,
+        "w": 900,
+        "h": 34
+      },
+      "text": "ONE PAPER · ONE READING · EIGHT SLIDES",
+      "fontSize": 16,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700,
+      "letterSpacing": 2
+    }
+  ]
+}

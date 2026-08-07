@@ -1,0 +1,189 @@
+{
+  "id": "limits",
+  "name": "Limitations",
+  "layoutRef": "limits",
+  "background": {
+    "color": "#F1F0E7"
+  },
+  "elements": [
+    {
+      "id": "kicker",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 64,
+        "w": 700,
+        "h": 34
+      },
+      "text": "06 / LIMITATIONS",
+      "fontSize": 18,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700,
+      "letterSpacing": 2
+    },
+    {
+      "id": "title",
+      "type": "text",
+      "styleRef": "slide-title",
+      "frame": {
+        "x": 88,
+        "y": 112,
+        "w": 1300,
+        "h": 64
+      },
+      "text": "边界要说清楚",
+      "fontSize": 44,
+      "fontWeight": 700
+    },
+    {
+      "id": "intro",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 192,
+        "w": 1300,
+        "h": 40
+      },
+      "text": "两位患者样本极小，结论限于成年大脑。",
+      "fontSize": 24
+    },
+    {
+      "id": "limit-1-card",
+      "type": "shape",
+      "frame": {
+        "x": 88,
+        "y": 268,
+        "w": 690,
+        "h": 380
+      },
+      "shape": "rounded-rectangle",
+      "fill": "#e2e3da",
+      "radius": 18
+    },
+    {
+      "id": "limit-1-marker",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 128,
+        "y": 304,
+        "w": 80,
+        "h": 44
+      },
+      "text": "△",
+      "fontSize": 32,
+      "fontWeight": 700
+    },
+    {
+      "id": "limit-1-title",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 128,
+        "y": 366,
+        "w": 610,
+        "h": 44
+      },
+      "text": "证据边界",
+      "fontSize": 30,
+      "fontWeight": 700
+    },
+    {
+      "id": "limit-1-body",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 128,
+        "y": 430,
+        "w": 610,
+        "h": 180
+      },
+      "text": "失语症部分仅两位被试。重度损伤本身罕见，样本虽小，个案价值高。",
+      "fontSize": 22,
+      "lineHeight": 1.5
+    },
+    {
+      "id": "limit-2-card",
+      "type": "shape",
+      "frame": {
+        "x": 822,
+        "y": 268,
+        "w": 690,
+        "h": 380
+      },
+      "shape": "rounded-rectangle",
+      "fill": "#e2e3da",
+      "radius": 18
+    },
+    {
+      "id": "limit-2-marker",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 862,
+        "y": 304,
+        "w": 80,
+        "h": 44
+      },
+      "text": "△",
+      "fontSize": 32,
+      "fontWeight": 700
+    },
+    {
+      "id": "limit-2-title",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 862,
+        "y": 366,
+        "w": 610,
+        "h": 44
+      },
+      "text": "适用边界",
+      "fontSize": 30,
+      "fontWeight": 700
+    },
+    {
+      "id": "limit-2-body",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 862,
+        "y": 430,
+        "w": 610,
+        "h": 180
+      },
+      "text": "结论限于成年大脑，不涉及语言在童年逻辑概念习得中的作用。",
+      "fontSize": 22,
+      "lineHeight": 1.5
+    },
+    {
+      "id": "future-rule",
+      "type": "shape",
+      "frame": {
+        "x": 88,
+        "y": 716,
+        "w": 1424,
+        "h": 3
+      },
+      "shape": "rectangle",
+      "fill": "#203027"
+    },
+    {
+      "id": "future",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 764,
+        "w": 1300,
+        "h": 52
+      },
+      "text": "未来工作：更大样本的失语症研究，以及儿童发展阶段的追踪。",
+      "fontSize": 24,
+      "fontWeight": 600
+    }
+  ]
+}

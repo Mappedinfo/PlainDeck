@@ -1,0 +1,210 @@
+{
+  "id": "contributions",
+  "name": "Two lines of evidence",
+  "layoutRef": "contributions",
+  "background": {
+    "color": "#F1F0E7"
+  },
+  "elements": [
+    {
+      "id": "kicker",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 64,
+        "w": 700,
+        "h": 34
+      },
+      "text": "02 / CONTRIBUTIONS",
+      "fontSize": 18,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700,
+      "letterSpacing": 2
+    },
+    {
+      "id": "title",
+      "type": "text",
+      "styleRef": "slide-title",
+      "frame": {
+        "x": 88,
+        "y": 118,
+        "w": 1300,
+        "h": 70
+      },
+      "text": "两条证据线，围堵一个问题",
+      "fontSize": 52,
+      "fontWeight": 700
+    },
+    {
+      "id": "item-1-number",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 258,
+        "w": 150,
+        "h": 100
+      },
+      "text": "01",
+      "fontSize": 84,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 800
+    },
+    {
+      "id": "item-1-title",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 272,
+        "y": 264,
+        "w": 1100,
+        "h": 48
+      },
+      "text": "fMRI：健康大脑",
+      "fontSize": 34,
+      "fontWeight": 700
+    },
+    {
+      "id": "item-1-body",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 272,
+        "y": 326,
+        "w": 1180,
+        "h": 72
+      },
+      "text": "每个被试单独做语言定位任务，逐个划出语言网络，再看推理任务激活了多少。",
+      "fontSize": 23,
+      "lineHeight": 1.45
+    },
+    {
+      "id": "item-1-rule",
+      "color": "#6E786F",
+      "type": "line",
+      "frame": {
+        "x": 272,
+        "y": 424,
+        "w": 1240,
+        "h": 2
+      },
+      "strokeWidth": 2,
+      "opacity": 0.3
+    },
+    {
+      "id": "item-2-number",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 440,
+        "w": 150,
+        "h": 100
+      },
+      "text": "02",
+      "fontSize": 84,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 800
+    },
+    {
+      "id": "item-2-title",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 272,
+        "y": 446,
+        "w": 1100,
+        "h": 48
+      },
+      "text": "行为：重度失语症患者",
+      "fontSize": 34,
+      "fontWeight": 700
+    },
+    {
+      "id": "item-2-body",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 272,
+        "y": 508,
+        "w": 1180,
+        "h": 72
+      },
+      "text": "语言能力严重受损的患者，还能不能完成归纳与演绎推理。",
+      "fontSize": 23,
+      "lineHeight": 1.45
+    },
+    {
+      "id": "item-2-rule",
+      "color": "#6E786F",
+      "type": "line",
+      "frame": {
+        "x": 272,
+        "y": 606,
+        "w": 1240,
+        "h": 2
+      },
+      "strokeWidth": 2,
+      "opacity": 0.3
+    },
+    {
+      "id": "item-3-number",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 622,
+        "w": 150,
+        "h": 100
+      },
+      "text": "03",
+      "fontSize": 84,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 800
+    },
+    {
+      "id": "item-3-title",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 272,
+        "y": 628,
+        "w": 1100,
+        "h": 48
+      },
+      "text": "三种任务范式",
+      "fontSize": 34,
+      "fontWeight": 700
+    },
+    {
+      "id": "item-3-body",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 272,
+        "y": 690,
+        "w": 1180,
+        "h": 72
+      },
+      "text": "规则归纳测归纳，三段论和矩阵测演绎，覆盖两种推理类型。",
+      "fontSize": 23,
+      "lineHeight": 1.45
+    },
+    {
+      "id": "source",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 848,
+        "w": 1200,
+        "h": 30
+      },
+      "text": "SOURCE · VENUE · YEAR",
+      "fontSize": 16,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700
+    }
+  ]
+}

@@ -1,0 +1,226 @@
+{
+  "id": "figure",
+  "name": "Three task paradigms",
+  "layoutRef": "paper-figure",
+  "background": {
+    "color": "#F1F0E7"
+  },
+  "elements": [
+    {
+      "id": "kicker",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 64,
+        "w": 700,
+        "h": 34
+      },
+      "text": "03 / EVIDENCE · FIGURE",
+      "fontSize": 18,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700,
+      "letterSpacing": 2
+    },
+    {
+      "id": "fig-label",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 1000,
+        "y": 64,
+        "w": 512,
+        "h": 34
+      },
+      "text": "FIGURE 1 · PDF P.3",
+      "align": "right",
+      "fontSize": 17,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700
+    },
+    {
+      "id": "title",
+      "type": "text",
+      "styleRef": "slide-title",
+      "frame": {
+        "x": 88,
+        "y": 112,
+        "w": 1300,
+        "h": 64
+      },
+      "text": "三种任务，覆盖归纳与演绎",
+      "fontSize": 44,
+      "fontWeight": 700
+    },
+    {
+      "id": "figure-stage",
+      "type": "shape",
+      "frame": {
+        "x": 88,
+        "y": 200,
+        "w": 950,
+        "h": 556
+      },
+      "shape": "rounded-rectangle",
+      "fill": "#e2e3da",
+      "radius": 18
+    },
+    {
+      "id": "figure",
+      "type": "image",
+      "frame": {
+        "x": 112,
+        "y": 224,
+        "w": 902,
+        "h": 508
+      },
+      "fit": "contain",
+      "src": "placeholder:image",
+      "alt": "论文原图"
+    },
+    {
+      "id": "caption",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 776,
+        "w": 950,
+        "h": 48
+      },
+      "text": "图注：规则归纳、三段论、矩阵推理，三种范式覆盖归纳与演绎。",
+      "fontSize": 19,
+      "lineHeight": 1.4
+    },
+    {
+      "id": "rail-rule",
+      "type": "shape",
+      "frame": {
+        "x": 1076,
+        "y": 200,
+        "w": 3,
+        "h": 556
+      },
+      "shape": "rectangle",
+      "fill": "#547A5A"
+    },
+    {
+      "id": "notes-label",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 1112,
+        "y": 200,
+        "w": 400,
+        "h": 30
+      },
+      "text": "KEY POINTS",
+      "fontSize": 16,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700,
+      "letterSpacing": 2
+    },
+    {
+      "id": "note-1-number",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 1112,
+        "y": 252,
+        "w": 80,
+        "h": 36
+      },
+      "text": "01",
+      "fontSize": 22,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700
+    },
+    {
+      "id": "note-1",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 1112,
+        "y": 296,
+        "w": 400,
+        "h": 120
+      },
+      "text": "规则归纳：从样例中猜出变换规则。",
+      "fontSize": 21,
+      "lineHeight": 1.5
+    },
+    {
+      "id": "note-2-number",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 1112,
+        "y": 422,
+        "w": 80,
+        "h": 36
+      },
+      "text": "02",
+      "fontSize": 22,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700
+    },
+    {
+      "id": "note-2",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 1112,
+        "y": 466,
+        "w": 400,
+        "h": 120
+      },
+      "text": "三段论：判断结论是否必然成立。",
+      "fontSize": 21,
+      "lineHeight": 1.5
+    },
+    {
+      "id": "note-3-number",
+      "color": "#547A5A",
+      "type": "text",
+      "frame": {
+        "x": 1112,
+        "y": 592,
+        "w": 80,
+        "h": 36
+      },
+      "text": "03",
+      "fontSize": 22,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700
+    },
+    {
+      "id": "note-3",
+      "color": "#203027",
+      "type": "text",
+      "frame": {
+        "x": 1112,
+        "y": 636,
+        "w": 400,
+        "h": 120
+      },
+      "text": "矩阵推理：找出不符合规律的一项。",
+      "fontSize": 21,
+      "lineHeight": 1.5
+    },
+    {
+      "id": "source",
+      "color": "#6E786F",
+      "type": "text",
+      "frame": {
+        "x": 88,
+        "y": 848,
+        "w": 1200,
+        "h": 30
+      },
+      "text": "KEAN ET AL. 2026 · PNAS",
+      "fontSize": 16,
+      "fontFamily": "SFMono-Regular, Consolas, monospace",
+      "fontWeight": 700
+    }
+  ]
+}
