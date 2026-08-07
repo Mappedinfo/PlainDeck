@@ -4,14 +4,21 @@ import type { DeckDocument, SlideElement } from '../core/schema.js'
 
 export type PresentationStyle = Record<string, string | number | undefined>
 
-const wideGlyph = /[぀-ヿ㐀-䶿一-鿿豈-﫿︰-﹏＀-￯]/
+// CJK unified + extension + fullwidth forms + CJK punctuation (、。！？「」 are full-width 1em in CJK fonts)
+const wideGlyph = /[぀-ヿ㐀-䶿一-鿿豈-﫿︰-﹏＀-￯\u3000-\u303f]/
 
 /** Estimate rendered text width in px without a layout engine: CJK ≈ 1em, whitespace ≈ 0.32em, latin ≈ 0.6em (deliberately generous — over-shrinking beats clipping). */
 export function estimateTextWidth(text: string, fontSize: number, fontWeight = 400, letterSpacing = 0): number {
-  const weightFactor = fontWeight >= 700 ? 1.05 : 1
+  // Proportional latin: uppercase/digits render wider than lowercase; bold
+  // inflates them further. 0.62 / 0.72 stays slightly conservative so the
+  // line-count estimate never misses a wrap (clipping is worse than a small
+  // shrink). CJK stays exactly 1em and CJK punctuation 1em (full-width).
+  const latinFactor = fontWeight >= 700 ? 0.72 : 0.62
   let width = 0
   for (const char of text) {
-    width += (wideGlyph.test(char) ? fontSize : /\s/.test(char) ? fontSize * 0.32 : fontSize * 0.6) * weightFactor + letterSpacing
+    if (wideGlyph.test(char)) width += fontSize + letterSpacing
+    else if (/\s/.test(char)) width += fontSize * 0.32 + letterSpacing
+    else width += fontSize * latinFactor + letterSpacing
   }
   return width
 }
@@ -168,6 +175,68 @@ export function expandTextFrames(elements: SlideElement[], options: ExpandTextFr
       if (extend > 0) element.frame = { ...frame, w: Math.round(frame.w + extend) }
     }
   }
+}
+
+export interface TextFitIssue {
+  elementId: string
+  code: 'overflow_at_min' | 'below_readable' | 'tight_near_cap'
+  fontSize: number
+  message: string
+}
+
+export interface DiagnoseTextFitOptions {
+  /** Readable floor; defaults to MIN_FILL_FONT_SIZE. */
+  minSize?: number
+  /** Below this adopted size the element is flagged below_readable; defaults to 28. */
+  readableSize?: number
+  /** Height safety factor matching fitTextSize; defaults to 0.88. */
+  heightSafety?: number
+}
+
+/**
+ * Content-layout balance diagnostics for fill-fitted text. Returns issues
+ * the author should resolve by reorganizing content:
+ * - overflow_at_min: even the readable floor size does not fit the frame
+ *   (the text will clip); split the scene or switch layout.
+ * - below_readable: the adopted size is squeezed below the comfortable body
+ *   size; trim the text or split the page.
+ * - tight_near_cap: the estimated height nearly fills the frame after
+ *   expansion; content is at the layout's capacity.
+ */
+export function diagnoseTextFit(elements: SlideElement[], options: DiagnoseTextFitOptions = {}): TextFitIssue[] {
+  const minSize = options.minSize ?? MIN_FILL_FONT_SIZE
+  const readableSize = options.readableSize ?? 28
+  const heightSafety = options.heightSafety ?? 0.88
+  const issues: TextFitIssue[] = []
+  for (const element of elements) {
+    if (element.type !== 'text' || element.fit !== 'fill') continue
+    const frame = element.frame
+    const size = element.fontSize ?? 28
+    // 与 textContentStyle 的渲染一致：元素未显式设置时缺省 1.12
+    const lineHeight = element.lineHeight ?? 1.12
+    const weight = element.fontWeight ?? 400
+    const ls = element.letterSpacing ?? 0
+    const estHeight = (s: number) => {
+      const lines = element.text.split('\n').reduce((count, paragraph) => count + Math.max(1, Math.ceil(estimateTextWidth(paragraph, s, weight, ls) / frame.w)), 0)
+      return lines * s * lineHeight
+    }
+    const capacity = frame.h * heightSafety
+    if (estHeight(minSize) > capacity) {
+      issues.push({ elementId: element.id, code: 'overflow_at_min', fontSize: minSize, message: 'text does not fit even at the minimum readable size; split the scene or switch layout' })
+      continue
+    }
+    const adopted = fitTextSize(element.text, frame, size, lineHeight, weight, ls, { grow: true, minSize })
+    if (adopted < readableSize) {
+      issues.push({ elementId: element.id, code: 'below_readable', fontSize: adopted, message: `adopted size ${adopted}px is below the ${readableSize}px comfortable body size; trim the text or split the page` })
+    } else if (estHeight(adopted) >= capacity * 0.95) {
+      // 单行标题填满短盒是设计常态；只在多行正文接近容量时提示作者留余量。
+      const adoptedLines = element.text.split('\n').reduce((count, paragraph) => count + Math.max(1, Math.ceil(estimateTextWidth(paragraph, adopted, weight, ls) / frame.w)), 0)
+      if (adoptedLines >= 2) {
+        issues.push({ elementId: element.id, code: 'tight_near_cap', fontSize: adopted, message: `estimated height fills ${Math.round((estHeight(adopted) / capacity) * 100)}% of the frame; content is at the layout's capacity` })
+      }
+    }
+  }
+  return issues
 }
 
 export function horizontalAlignment(align?: 'left' | 'center' | 'right') {
