@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { extname, isAbsolute, relative, resolve } from 'node:path'
 import type { DeckDocument } from '../core/schema.js'
@@ -40,4 +41,26 @@ export async function prepareDocumentAssets(input: DeckDocument, options: Prepar
     }
   }
   return { document, warnings }
+}
+
+/**
+ * Check that every local image referenced by the deck exists under root.
+ * External (http/https/file) and data: sources are skipped; missing or
+ * out-of-bounds paths are reported without mutation.
+ */
+export function checkDeckAssets(input: DeckDocument, root?: string): { missing: Array<{ src: string; slide: string }> } {
+  const base = resolve(root ?? '.')
+  const missing: Array<{ src: string; slide: string }> = []
+  for (const slidePath of input.deck.slides) {
+    for (const element of input.slides[slidePath].elements) {
+      if (element.type !== 'image' || element.src === 'placeholder:image') continue
+      if (/^(data:|https?:|file:)/i.test(element.src)) continue
+      const assetPath = resolve(base, element.src.replace(/^\.\//, ''))
+      const inside = relative(base, assetPath)
+      if (inside.startsWith('..') || isAbsolute(inside) || !existsSync(assetPath)) {
+        missing.push({ src: element.src, slide: slidePath })
+      }
+    }
+  }
+  return { missing }
 }

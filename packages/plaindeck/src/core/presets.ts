@@ -1,7 +1,7 @@
 import type { SlideElement, Theme } from './schema.js'
 import { createSummaryCardElements } from './summary-cards.js'
 
-export type LayoutPresetId = 'blank' | 'title-body' | 'section' | 'statement' | 'metric' | 'two-column' | 'image-right' | 'three-cards' | 'summary-cards' | 'paper-figure' | 'paper-table' | 'versus' | 'contributions' | 'limits' | 'closing'
+export type LayoutPresetId = 'blank' | 'title-body' | 'section' | 'statement' | 'metric' | 'two-column' | 'image-right' | 'three-cards' | 'summary-cards' | 'paper-figure' | 'paper-table' | 'versus' | 'contributions' | 'limits' | 'closing' | 'hook-statement' | 'prose-panel' | 'takeaway'
 
 export interface LayoutPreset {
   id: LayoutPresetId
@@ -25,6 +25,9 @@ export const layoutPresets: LayoutPreset[] = [
   { id: 'contributions', name: '贡献列表', description: '编号式贡献陈述' },
   { id: 'limits', name: '局限页', description: '诚实标注方法的边界' },
   { id: 'closing', name: '金句收尾', description: '一句话 takeaway 作为结束' },
+  { id: 'hook-statement', name: '开场论断页', description: '超大标题 + 引导/支撑两句，右侧幽灵页码' },
+  { id: 'prose-panel', name: '正文面板页', description: '标题 + 面板卡片正文，右侧幽灵页码' },
+  { id: 'takeaway', name: '编号要点收尾', description: '分号切条成编号要点，底部 END 收束' },
 ]
 
 export interface ThemePreset {
@@ -251,6 +254,33 @@ function buildLayoutElements(layoutId: LayoutPresetId, theme: Theme): SlideEleme
     { id: 'rule', type: 'shape', frame: frame(120, 640, 1392, 3), shape: 'rectangle', fill: accent },
     { id: 'attribution', type: 'text', frame: frame(120, 700, 1100, 44), text: '—— 作者 · 会议 / 期刊 · 年份', fontSize: 24, color: muted },
     { id: 'end', type: 'text', frame: frame(1300, 786, 212, 46), text: 'END', fontSize: 22, fontWeight: 700, fontFamily: mono, align: 'right', color: accent, letterSpacing: 2 },
+  ]
+  if (layoutId === 'hook-statement') return [
+    { id: 'kicker', type: 'text', frame: frame(88, 48, 750, 34), text: 'HOOK / STATEMENT', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent },
+    { id: 'ghost', type: 'text', frame: frame(1108, 100, 392, 300), text: '01', fontSize: 240, fontWeight: 800, fontFamily: mono, align: 'right', color: surface },
+    { id: 'heading', type: 'text', styleRef: 'slide-title', frame: frame(100, 200, 1067, 110), text: '把最重要的论点写成超大标题', fontSize: 66, fontWeight: 800, color: text },
+    { id: 'heading-rule', type: 'line', frame: frame(100, 340, 183, 2), color: accent, strokeWidth: 8 },
+    { id: 'lead', type: 'text', frame: frame(100, 402, 1250, 150), text: '引导句：点明本页主题与论点。', fontSize: 40, fontWeight: 700, color: text, lineHeight: 1.45 },
+    { id: 'support', type: 'text', frame: frame(100, 568, 1250, 176), text: '支撑句：补充证据、限定条件或行动含义。', fontSize: 30, fontWeight: 500, color: muted, lineHeight: 1.6 },
+  ]
+  if (layoutId === 'prose-panel') return [
+    { id: 'kicker', type: 'text', frame: frame(88, 48, 750, 34), text: 'CONTEXT / PROSE', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent },
+    title('heading', '正文面板页', 100, 116, 1167, 80, 50),
+    { id: 'heading-rule', type: 'line', frame: frame(100, 226, 1400, 2), color: surface, strokeWidth: 3 },
+    { id: 'prose-panel', type: 'shape', frame: frame(100, 286, 1033, 500), shape: 'rounded-rectangle', fill: surface, radius: 28 },
+    { id: 'ghost', type: 'text', frame: frame(1175, 286, 325, 500), text: '02', fontSize: 200, fontWeight: 800, fontFamily: mono, align: 'center', color: surface, verticalAlign: 'middle' },
+    { id: 'lead', type: 'text', frame: frame(155, 348, 915, 140), text: '引导句：点明本页主题。', fontSize: 36, fontWeight: 700, color: text, lineHeight: 1.45 },
+    { id: 'lead-rule', type: 'line', frame: frame(155, 520, 117, 2), color: accent, strokeWidth: 6 },
+    { id: 'support', type: 'text', frame: frame(155, 556, 915, 190), text: '支撑句：补充证据、限定条件或行动含义。', fontSize: 30, fontWeight: 500, color: muted, lineHeight: 1.6 },
+  ]
+  if (layoutId === 'takeaway') return [
+    { id: 'kicker', type: 'text', frame: frame(88, 48, 750, 34), text: 'TAKEAWAY / SUMMARY', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent },
+    title('heading', '编号要点收尾', 100, 120, 1083, 84, 50),
+    { id: 'heading-rule', type: 'line', frame: frame(100, 232, 183, 2), color: accent, strokeWidth: 8 },
+    { id: 'quote', type: 'text', frame: frame(100, 268, 1300, 90), text: '把整篇论文压缩成一句可以被带走的话。', fontSize: 34, fontWeight: 700, color: accent, lineHeight: 1.3 },
+    { id: 'end-rule', type: 'line', frame: frame(100, 852, 1400, 2), color: surface, strokeWidth: 3 },
+    { id: 'attribution', type: 'text', frame: frame(100, 864, 1000, 30), text: '—— 作者 · 会议 / 期刊 · 年份', fontSize: 20, fontWeight: 600, color: muted },
+    { id: 'end', type: 'text', frame: frame(1350, 864, 150, 30), text: 'END', fontSize: 20, fontWeight: 700, fontFamily: mono, align: 'right', color: accent },
   ]
   return [
     title('title', '三个并列要点', 80, 64, 1440, 90, 54),
