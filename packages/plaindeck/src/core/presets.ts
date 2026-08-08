@@ -260,8 +260,8 @@ function buildLayoutElements(layoutId: LayoutPresetId, theme: Theme): SlideEleme
     { id: 'ghost', type: 'text', frame: frame(1108, 100, 392, 300), text: '01', fontSize: 240, fontWeight: 800, fontFamily: mono, align: 'right', color: surface },
     { id: 'heading', type: 'text', styleRef: 'slide-title', frame: frame(100, 200, 1000, 110), text: '把最重要的论点写成超大标题', fontSize: 66, fontWeight: 800, color: text },
     { id: 'heading-rule', type: 'line', frame: frame(100, 340, 183, 2), color: accent, strokeWidth: 8 },
-    { id: 'lead', type: 'text', frame: frame(100, 402, 1250, 150), text: '引导句：点明本页主题与论点。', fontSize: 40, fontWeight: 700, color: text, lineHeight: 1.45 },
-    { id: 'support', type: 'text', frame: frame(100, 568, 1250, 176), text: '支撑句：补充证据、限定条件或行动含义。', fontSize: 30, fontWeight: 500, color: muted, lineHeight: 1.6 },
+    { id: 'lead', type: 'text', frame: frame(100, 402, 1250, 140), text: '引导句：点明本页主题与论点。', fontSize: 40, fontWeight: 700, color: text, lineHeight: 1.45 },
+    { id: 'support', type: 'text', frame: frame(100, 560, 1250, 258), text: '支撑句：补充证据、限定条件或行动含义。\n\n第二段：继续展开，最多约两百字，保证每页自含上下文。', fontSize: 30, fontWeight: 500, color: muted, lineHeight: 1.6 },
   ]
   if (layoutId === 'prose-panel') return [
     { id: 'kicker', type: 'text', frame: frame(88, 48, 750, 34), text: 'CONTEXT / PROSE', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent },
@@ -269,9 +269,9 @@ function buildLayoutElements(layoutId: LayoutPresetId, theme: Theme): SlideEleme
     { id: 'heading-rule', type: 'line', frame: frame(100, 226, 1400, 2), color: surface, strokeWidth: 3 },
     { id: 'prose-panel', type: 'shape', frame: frame(100, 286, 1033, 500), shape: 'rounded-rectangle', fill: surface, radius: 28 },
     { id: 'ghost', type: 'text', frame: frame(1175, 286, 325, 500), text: '02', fontSize: 200, fontWeight: 800, fontFamily: mono, align: 'center', color: surface, verticalAlign: 'middle' },
-    { id: 'lead', type: 'text', frame: frame(155, 348, 915, 140), text: '引导句：点明本页主题。', fontSize: 36, fontWeight: 700, color: text, lineHeight: 1.45 },
-    { id: 'lead-rule', type: 'line', frame: frame(155, 520, 117, 2), color: accent, strokeWidth: 6 },
-    { id: 'support', type: 'text', frame: frame(155, 556, 915, 190), text: '支撑句：补充证据、限定条件或行动含义。', fontSize: 30, fontWeight: 500, color: muted, lineHeight: 1.6 },
+    { id: 'lead', type: 'text', frame: frame(155, 332, 915, 92), text: '引导句：点明本页主题。', fontSize: 36, fontWeight: 700, color: text, lineHeight: 1.45 },
+    { id: 'lead-rule', type: 'line', frame: frame(155, 446, 117, 2), color: accent, strokeWidth: 6 },
+    { id: 'support', type: 'text', frame: frame(155, 472, 915, 284), text: '支撑句：补充证据、限定条件或行动含义。\n\n第二段：继续展开，最多约两百字，保证每页自含上下文。', fontSize: 30, fontWeight: 500, color: muted, lineHeight: 1.6 },
   ]
   if (layoutId === 'takeaway') return [
     { id: 'kicker', type: 'text', frame: frame(88, 48, 750, 34), text: 'TAKEAWAY / SUMMARY', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent },

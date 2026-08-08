@@ -15,7 +15,9 @@ export function splitLeadSupport(body: string): { lead: string; support: string 
     ?.map((sentence) => sentence.trim())
     .filter(Boolean) ?? []
   if (sentences.length <= 1) return { lead: sentences[0] ?? '', support: '' }
-  return { lead: sentences[0], support: sentences.slice(1).join('') }
+  // support 按句号逐句分行：每句一行（\n），渲染端 pre-wrap 保留换行。
+  // 这样长正文以可读的行列表呈现，而不是被压成一段小字。
+  return { lead: sentences[0], support: sentences.slice(1).join('\n') }
 }
 
 /** Split a body into numbered takeaway clauses on ；/; separators. */

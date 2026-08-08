@@ -132,8 +132,10 @@ export function fillHookStatement(content: StatementContent, theme: Theme, canva
     const support = elements.find((element) => element.id === 'support')
     if (lead && support) {
       setFrameY(lead, rule.frame.y + 62)
-      lead.frame = { ...lead.frame, h: content.support ? 150 : 320 }
-      setFrameY(support, rule.frame.y + 62 + 166)
+      lead.frame = { ...lead.frame, h: content.support ? 140 : 320 }
+      setFrameY(support, rule.frame.y + 62 + 158)
+      // 正文用满页面底部空间：30px×1.6 下约 6 行，长正文保持可读字号
+      support.frame = { ...support.frame, h: Math.max(176, Math.round(900 - (support.frame.y + 84))) }
     }
   }
   return elements
@@ -167,6 +169,20 @@ export function fillProsePanel(content: ProsePanelContent, theme: Theme, canvas 
   const lead = elements.find((element) => element.id === 'lead')
   const support = elements.find((element) => element.id === 'support')
   if (lead && lead.type === 'text' && !content.support) lead.frame = { ...lead.frame, h: 360 }
+  // 双段正文：support 存在时，把 lead 压到一行高、support 用满卡片剩余空间，
+  // 保证长正文以可读字号完整展示而不是被压到 16px。
+  if (lead && support && lead.type === 'text' && support.type === 'text') {
+    const panel = elements.find((element) => element.id === 'prose-panel')
+    if (panel && panel.type === 'shape') {
+      const bottom = panel.frame.y + panel.frame.h - 24
+      const rule = elements.find((element) => element.id === 'lead-rule')
+      if (rule && rule.type === 'line') {
+        support.frame = { ...support.frame, y: rule.frame.y + 26, h: Math.max(120, Math.round(bottom - (rule.frame.y + 26))) }
+        const leadLines = Math.max(1, Math.ceil(estimateTextWidth(content.lead ?? '', lead.fontSize ?? 36, lead.fontWeight ?? 700) / (lead.frame.w * 0.98)))
+        lead.frame = { ...lead.frame, h: Math.min(150, Math.round((leadLines * (lead.fontSize ?? 36) * (lead.lineHeight ?? 1.45)) + 12)) }
+      }
+    }
+  }
   // lead-rule 只在引导句与支撑句同时存在时保留
   if (lead && support) return elements
   return elements.filter((element) => element.id !== 'lead-rule')
