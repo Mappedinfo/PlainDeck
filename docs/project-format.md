@@ -25,6 +25,21 @@ exports/
 
 结构化卡片页使用 `layoutRef: "summary-cards/<style-id>"` 记录设计配方来源，但配方会在创建时完全展开为普通元素；打开和渲染项目不依赖外部模板仓库。
 
+原生表格使用 `type: "table"`。`cells` 是矩形二维字符串数组，`headerRows` 指定表头行数；`columnWidths` 是相对权重，`alignments` 按列设置对齐。`style` 支持 `rules`、`grid`、`stripes`。表格仍是单个可拖动、缩放和检查的元素，Web、HTML、PNG/PDF、React 与 Remotion 共用相同渲染规则。
+
+```json
+{
+  "id": "table",
+  "type": "table",
+  "frame": { "x": 88, "y": 222, "w": 1424, "h": 442 },
+  "cells": [["Method", "Score"], ["Baseline", "82.4"], ["PlainDeck", "89.7"]],
+  "headerRows": 1,
+  "columnWidths": [1.55, 1],
+  "alignments": ["left", "right"],
+  "style": "rules"
+}
+```
+
 ## 可选动画与镜头
 
 动画是元素上的可选数据，不改变静态布局：

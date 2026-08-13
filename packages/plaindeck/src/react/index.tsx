@@ -7,6 +7,9 @@ import {
   shapeContentStyle,
   shapeLabelStyle,
   slideStyle,
+  tableCellStyle,
+  tableColumnWidths,
+  tableContentStyle,
   textContentStyle,
 } from '../render/index.js'
 import type { DeckDocument, SlideElement } from '../core/index.js'
@@ -19,11 +22,12 @@ export interface PlainDeckElementContentProps {
   resolveAsset?: (src: string, element: Extract<SlideElement, { type: 'image' }>) => string
   editable?: boolean
   onTextCommit?: (text: string) => void
+  onTableCellCommit?: (row: number, column: number, text: string) => void
   onImageError?: ReactEventHandler<HTMLImageElement>
   placeholder?: ReactNode
 }
 
-export function PlainDeckElementContent({ element, theme, resolveAsset = src => src, editable = false, onTextCommit, onImageError, placeholder }: PlainDeckElementContentProps) {
+export function PlainDeckElementContent({ element, theme, resolveAsset = src => src, editable = false, onTextCommit, onTableCellCommit, onImageError, placeholder }: PlainDeckElementContentProps) {
   const commit = (event: FocusEvent<HTMLElement>, current: string) => {
     const next = event.currentTarget.innerText
     if (next !== current) onTextCommit?.(next)
@@ -34,6 +38,13 @@ export function PlainDeckElementContent({ element, theme, resolveAsset = src => 
     return <img src={resolveAsset(element.src, element)} alt={element.alt ?? ''} draggable={false} style={css(imageContentStyle(element))} onError={onImageError} />
   }
   if (element.type === 'shape') return <div className="shape-content" style={css(shapeContentStyle(element))}><div className="shape-label editable-content" style={css(shapeLabelStyle(element, theme))} contentEditable={editable} suppressContentEditableWarning onBlur={event => commit(event, element.text ?? '')}><span>{element.text ?? ''}</span></div></div>
+  if (element.type === 'table') return <table className={`table-content table-${element.style}`} style={css(tableContentStyle(element, theme))}>
+    <colgroup>{tableColumnWidths(element).map((width, index) => <col key={index} style={{ width }} />)}</colgroup>
+    <tbody>{element.cells.map((row, rowIndex) => <tr key={rowIndex}>{row.map((cell, columnIndex) => {
+      const Cell = rowIndex < element.headerRows ? 'th' : 'td'
+      return <Cell key={columnIndex} data-row={rowIndex} data-column={columnIndex} className="table-cell editable-content" style={css(tableCellStyle(element, theme, rowIndex, columnIndex))} contentEditable={editable} suppressContentEditableWarning onBlur={event => onTableCellCommit?.(rowIndex, columnIndex, event.currentTarget.innerText)}>{cell}</Cell>
+    })}</tr>)}</tbody>
+  </table>
   return <div className="line-content" style={css(lineContentStyle(element))}>{element.arrowEnd && <span aria-hidden style={{ position: 'absolute', right: -1, top: -element.strokeWidth * 2 - 3, width: 0, height: 0, borderLeft: `${element.strokeWidth * 4}px solid ${element.color}`, borderTop: `${element.strokeWidth * 2 + 3}px solid transparent`, borderBottom: `${element.strokeWidth * 2 + 3}px solid transparent` }} />}</div>
 }
 

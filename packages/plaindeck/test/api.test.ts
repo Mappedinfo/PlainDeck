@@ -2,7 +2,7 @@ import { cp, mkdtemp, readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { applyOperations, canonicalJson, createDeckTemplate, createSavePlan, createSummaryCardElements, deckTemplatePresets, designRecipeCategories, designRecipes, designRecipeSource, getDesignRecipe, inspectDeck, loadDeck, parseSummaryCards, renderHtml, resolveFooterSlot, saveDeck, searchDesignRecipes, shrinkFontToFit, summaryCardsToMarkdown, themePresets, validateDeck } from '../src/index.js'
+import { applyOperations, canonicalJson, createDeckTemplate, createSavePlan, createSummaryCardElements, deckTemplatePresets, designRecipeCategories, designRecipes, designRecipeSource, getDesignRecipe, inspectDeck, loadDeck, parseSummaryCards, parseTableContent, renderHtml, resolveFooterSlot, saveDeck, searchDesignRecipes, shrinkFontToFit, summaryCardsToMarkdown, themePresets, validateDeck } from '../src/index.js'
 
 const starter = resolve('examples/starter')
 
@@ -73,6 +73,24 @@ describe('PlainDeck public API', () => {
     expect(recolored.document.slides['./slides/002-weekly-brief.json'].elements.find(element => element.id === 'summary-card-1')).toMatchObject({ fill: '#D8FF52' })
     expect(recolored.document.slides['./slides/002-weekly-brief.json'].elements.find(element => element.id === 'summary-card-2')).toMatchObject({ fill: recolored.document.theme.colors.surface, stroke: '#9FAB9F' })
     expect(() => applyOperations(original, [{ op: 'add-summary-slide', content: { title: 'Too many', cards: Array.from({ length: 9 }, () => ({ title: 'x', description: 'y' })) } }])).toThrow()
+  })
+
+  it('parses Markdown, CSV, and JSON into one native table contract', () => {
+    const markdown = parseTableContent('# 结果改进\n| Method | Score |\n| --- | ---: |\n| Base | 82.4 |\n| Ours | **89.7** |\nTakeaway: Ours wins.\nSource: Table 2')
+    expect(markdown).toEqual({ title: '结果改进', columns: ['Method', 'Score'], rows: [['Base', '82.4'], ['Ours', '89.7']], alignments: ['left', 'right'], takeaway: 'Ours wins.', source: 'Table 2' })
+    expect(parseTableContent('Method,Score\nBase,82.4\nOurs,89.7')).toMatchObject({ columns: ['Method', 'Score'], rows: [['Base', '82.4'], ['Ours', '89.7']] })
+    expect(parseTableContent('[{"Method":"Base","Score":82.4},{"Method":"Ours","Score":89.7}]')).toMatchObject({ columns: ['Method', 'Score'], rows: [['Base', '82.4'], ['Ours', '89.7']] })
+  })
+
+  it('adds a semantic table slide through the shared operation kernel', () => {
+    const original = createDeckTemplate('blank', { theme: 'nature-editorial' })
+    const content = parseTableContent('# Benchmark conclusion\n| Method | Accuracy | Latency |\n| --- | ---: | ---: |\n| Base | 82.4 | 41 ms |\n| Ours | 89.7 | 28 ms |')
+    const result = applyOperations(original, [{ op: 'add-table-slide', id: 'benchmark', after: original.deck.slides[0], content, style: 'rules' }])
+    const slide = result.document.slides['./slides/002-benchmark.json']
+    expect(slide).toMatchObject({ layoutRef: 'table/rules', name: 'Benchmark conclusion' })
+    expect(slide.elements.find(element => element.type === 'table')).toMatchObject({ type: 'table', cells: [['Method', 'Accuracy', 'Latency'], ['Base', '82.4', '41 ms'], ['Ours', '89.7', '28 ms']], alignments: ['left', 'right', 'right'] })
+    expect(validateDeck(result.document)).toMatchObject({ valid: true, issues: [] })
+    expect(renderHtml(result.document, { mode: 'document' })).toContain('<table class="table-content table-rules"')
   })
 
   it('shrinks oversized fit:shrink text to its frame in rendered output', () => {

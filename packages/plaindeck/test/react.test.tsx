@@ -17,4 +17,17 @@ describe('plaindeck/react', () => {
     }
     expect(reactMarkup).toContain('class="plaindeck-slide slide"')
   })
+
+  it('renders semantic table markup with shared styling', () => {
+    const document = createDeckTemplate('nature-methods')
+    const slidePath = document.deck.slides[4]
+    const reactMarkup = renderToStaticMarkup(<PlainDeckSlide document={document} slidePath={slidePath} />)
+    const htmlMarkup = renderHtml(document, { mode: 'document', slidePaths: [slidePath] })
+    for (const markup of [reactMarkup, htmlMarkup]) {
+      expect(markup).toContain('class="table-content table-rules"')
+      expect(markup).toContain('<th')
+      expect(markup).toContain('本文方法')
+      expect(markup).toContain('89.7')
+    }
+  })
 })

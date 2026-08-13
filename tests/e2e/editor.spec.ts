@@ -9,7 +9,7 @@ test('edits the sample deck and uses history', async ({ page }) => {
   await page.goto('./')
   await expect(page.getByRole('banner').getByText('PlainDeck', { exact: true })).toBeVisible()
   await expect(page.getByTitle('PlainDeck core version')).toHaveText(`v${packageVersion}`)
-  await expect(page.locator('.slide-thumb')).toHaveCount(5)
+  await expect(page.locator('.slide-thumb')).toHaveCount(7)
   await expect(page.locator('.canvas-label strong')).toHaveText('Cover')
   await expect(page.getByRole('link', { name: '在 GitHub 查看 PlainDeck 源码' })).toHaveAttribute('href', 'https://github.com/Mappedinfo/PlainDeck')
   await page.getByRole('button', { name: '添加文本' }).click()
@@ -80,13 +80,35 @@ test('creates an editable local summary-card page from structured Markdown', asy
   await expect(dialog.locator('.selected-recipe')).toContainText('终端风格')
   await page.screenshot({ path: '/tmp/plaindeck-style-catalog.png', fullPage: true })
   await dialog.getByRole('button', { name: /生成卡片页/ }).click()
-  await expect(page.locator('.slide-thumb')).toHaveCount(6)
+  await expect(page.locator('.slide-thumb')).toHaveCount(8)
   await expect(page.locator('.slide-thumb.active .slide-name')).toHaveText('生成式 AI 正在改变什么')
   await expect(page.locator('.canvas-workspace [data-element-id="summary-card-4-body"]')).toContainText('提供上下文与评价标准')
   await expect(page.locator('.canvas-workspace [data-element-id="style-terminal-bar"]')).toContainText('terminalCli / local')
   await page.locator('.canvas-workspace [data-element-id="summary-card-2-title"]').click()
   await expect(page.locator('.slide-element.selected')).toHaveAttribute('data-element-id', 'summary-card-2-title')
   await page.screenshot({ path: '/tmp/plaindeck-summary-cards.png', fullPage: true })
+})
+
+test('creates and edits a semantic native table from structured data', async ({ page }) => {
+  await page.goto('./')
+  await page.getByRole('button', { name: '从 Markdown / CSV / JSON 生成原生表格页' }).click()
+  const dialog = page.getByRole('dialog', { name: '从结构化数据创建表格页' })
+  await expect(dialog).toContainText('Markdown · CSV · TSV · JSON')
+  await expect(dialog.locator('.table-data-preview table')).toContainText('PlainDeck')
+  await dialog.getByRole('button', { name: /Quiet stripes/ }).click()
+  await dialog.getByRole('button', { name: /生成表格页/ }).click()
+
+  await expect(page.locator('.slide-thumb')).toHaveCount(8)
+  const table = page.locator('.canvas-workspace [data-element-id="table"]')
+  await expect(table.locator('table')).toHaveClass(/table-stripes/)
+  await expect(table.locator('tbody tr')).toHaveCount(4)
+  await table.dblclick({ position: { x: 420, y: 170 } })
+  const cell = table.locator('[data-row="1"][data-column="1"]')
+  await cell.fill('84.2')
+  await cell.blur()
+  await expect(cell).toHaveText('84.2')
+  await expect(page.locator('.save-pill')).toContainText('未保存')
+  await page.screenshot({ path: '/tmp/plaindeck-native-table.png', fullPage: true })
 })
 
 test('renames the active artboard and updates the page list', async ({ page }) => {
@@ -107,7 +129,7 @@ test('renames the active artboard and updates the page list', async ({ page }) =
 test('stages elements outside the canvas and recovers them from the element index', async ({ page }) => {
   await page.goto('./')
   const surface = page.locator('.canvas-workspace .editor-surface')
-  const element = surface.locator('[data-element-id="accent-panel"]')
+  const element = surface.locator('[data-element-id="accent-rule"]')
   const surfaceBox = await surface.boundingBox(); const elementBox = await element.boundingBox()
   if (!surfaceBox || !elementBox) throw new Error('Canvas or element bounds missing')
 
@@ -118,19 +140,21 @@ test('stages elements outside the canvas and recovers them from the element inde
 
   await expect(element).toHaveAttribute('data-canvas-placement', 'outside')
   await expect(element.locator('.off-canvas-fragment')).not.toHaveCount(0)
-  await expect(page.locator('.element-row').filter({ hasText: 'accent-panel' })).toContainText('画布外')
+  await expect(page.locator('.element-row').filter({ hasText: 'accent-rule' })).toContainText('画布外')
   await expect(page.locator('.thumb-crop .output-surface').first()).toHaveCSS('overflow', 'hidden')
 
   await surface.click({ position: { x: surfaceBox.width * .65, y: surfaceBox.height * .5 } })
   await expect(element).not.toHaveClass(/selected/)
-  await page.mouse.click(surfaceBox.x - 30, elementBox.y + elementBox.height / 2)
+  const outsideBox = await element.boundingBox()
+  if (!outsideBox) throw new Error('Off-canvas element bounds missing')
+  await page.mouse.click(outsideBox.x + outsideBox.width / 2, outsideBox.y + outsideBox.height / 2)
   await expect(element).toHaveClass(/selected/)
   await page.screenshot({ path: '/tmp/plaindeck-off-canvas-staging.png', fullPage: true })
 
-  await page.getByRole('button', { name: '将 形状 · accent-panel 移回画布中心' }).click()
+  await page.getByRole('button', { name: '将 形状 · accent-rule 移回画布中心' }).click()
   await expect(element).toHaveAttribute('data-canvas-placement', 'inside')
   await expect(element.locator('.off-canvas-fragment')).toHaveCount(0)
-  await expect(page.locator('.element-row').filter({ hasText: 'accent-panel' })).toContainText('画布内')
+  await expect(page.locator('.element-row').filter({ hasText: 'accent-rule' })).toContainText('画布内')
 })
 
 test('configures left, center, and right automatic footers across slides', async ({ page }) => {
@@ -140,7 +164,7 @@ test('configures left, center, and right automatic footers across slides', async
   const footer = page.locator('.canvas-workspace .slide-footer')
   await expect(footer.locator('span').nth(0)).toHaveText('Cover')
   await expect(footer.locator('span').nth(1)).toHaveText(/^\d{4}-\d{2}-\d{2}$/)
-  await expect(footer.locator('span').nth(2)).toHaveText('1 / 5')
+  await expect(footer.locator('span').nth(2)).toHaveText('1 / 7')
 
   await editor.getByLabel('左侧页脚').selectOption('text')
   const custom = editor.getByLabel('左侧页脚文字')
@@ -149,7 +173,7 @@ test('configures left, center, and right automatic footers across slides', async
   await expect(footer.locator('span').nth(0)).toHaveText('Mappedinfo · PlainDeck')
 
   await page.locator('.slide-thumb').nth(1).click()
-  await expect(page.locator('.canvas-workspace .slide-footer span').nth(2)).toHaveText('2 / 5')
+  await expect(page.locator('.canvas-workspace .slide-footer span').nth(2)).toHaveText('2 / 7')
   await page.getByRole('button', { name: '演示' }).click()
   await expect(page.locator('.presentation .slide-footer')).toContainText('Mappedinfo · PlainDeck')
   await page.screenshot({ path: '/tmp/plaindeck-footer-editor.png', fullPage: true })
@@ -180,7 +204,7 @@ test('edits readable element animation and page camera metadata', async ({ page 
 test('duplicates and reorders pages and layers through the shared operation kernel', async ({ page }) => {
   await page.goto('./')
   await page.getByTitle('复制页面').click()
-  await expect(page.locator('.slide-thumb')).toHaveCount(6)
+  await expect(page.locator('.slide-thumb')).toHaveCount(8)
   await expect(page.locator('.slide-thumb').nth(1)).toHaveClass(/active/)
   await page.getByTitle('下移页面').click()
   await expect(page.locator('.slide-thumb').nth(2)).toHaveClass(/active/)
@@ -216,14 +240,14 @@ test('creates a layout page, changes its color style, and edits shape text', asy
   await nightCitrus.click()
   await expect(nightCitrus).toHaveClass(/active/)
   await expect(page.locator('.canvas-workspace .slide-surface')).toHaveCSS('background-color', 'rgb(16, 23, 20)')
-  await expect(page.locator('.canvas-workspace [data-element-id="accent-panel"] .shape-content')).toHaveCSS('background-color', 'rgb(216, 255, 82)')
+  await expect(page.locator('.canvas-workspace [data-element-id="accent-rule"] .shape-content')).toHaveCSS('background-color', 'rgb(216, 255, 82)')
   await page.getByRole('button', { name: '页面布局' }).click()
   const layoutPicker = page.getByRole('dialog', { name: '选择页面布局' })
   await expect(layoutPicker).toBeVisible()
   await page.screenshot({ path: '/tmp/plaindeck-layout-picker.png', fullPage: true })
   await layoutPicker.getByRole('button', { name: /图文并排/ }).click()
 
-  await expect(page.locator('.slide-thumb')).toHaveCount(6)
+  await expect(page.locator('.slide-thumb')).toHaveCount(8)
   await expect(page.locator('.canvas-workspace .slide-surface')).toContainText('让图片承担一半表达')
   await expect(page.locator('.canvas-workspace .image-placeholder')).toBeVisible()
 
@@ -241,9 +265,9 @@ test('creates a layout page, changes its color style, and edits shape text', asy
   await page.screenshot({ path: '/tmp/plaindeck-layout-theme-shape.png', fullPage: true })
 })
 
-test('presents the five-page onboarding story in order', async ({ page }) => {
+test('presents the seven-page evidence-led onboarding story in order', async ({ page }) => {
   await page.goto('./')
-  const expected = ['PlainDeck · Make the idea visible.', '每一页只负责一个值得记住的观点', '让叙事拥有清楚的骨架', '让视觉承担一半表达', '结束在决定']
+  const expected = ['方法标题：一句话说清解决了什么', '现有方法在哪个关键条件下仍然不够', '方法流程直接对应问题中的四个约束', '主图必须直接支撑本页结论', '比较表只保留改变判断的指标', '可信结论同时说明证据覆盖与失效条件', '方法的价值不在于看起来复杂']
   const thumbnails = page.locator('.slide-thumb')
   for (let index = 0; index < expected.length; index += 1) {
     await thumbnails.nth(index).click()

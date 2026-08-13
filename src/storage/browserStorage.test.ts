@@ -67,12 +67,12 @@ describe('browser project storage', () => {
     const original = createSampleDocument(); await initializeProject(root, original); events.length = 0
     const added = applyOperations(original, [{ op: 'add-slide', id: 'browser-safe', layout: 'blank' }])
     await writeProject(root, added.document, new Set(added.changedPaths))
-    expect(events).toEqual(['write:slides/009-browser-safe.json', 'write:deck.json'])
+    expect(events).toEqual(['write:slides/008-browser-safe.json', 'write:deck.json'])
     events.length = 0
-    const removed = applyOperations(added.document, [{ op: 'remove-slide', slide: './slides/009-browser-safe.json' }])
+    const removed = applyOperations(added.document, [{ op: 'remove-slide', slide: './slides/008-browser-safe.json' }])
     await writeProject(root, removed.document, new Set(removed.changedPaths))
-    expect(events).toEqual(['write:deck.json', 'remove:slides/009-browser-safe.json'])
-    expect((await readProject(root)).deck.slides).not.toContain('./slides/009-browser-safe.json')
+    expect(events).toEqual(['write:deck.json', 'remove:slides/008-browser-safe.json'])
+    expect((await readProject(root)).deck.slides).not.toContain('./slides/008-browser-safe.json')
   })
 
   it('restores only validated, dirty snapshots for the matching project', async () => {

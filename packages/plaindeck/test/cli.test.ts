@@ -107,6 +107,18 @@ describe('PlainDeck CLI', () => {
     expect(slide).toContain('summary-card-2-body')
   })
 
+  it('adds an editable native table from Markdown stdin', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'plaindeck-cli-table-'))
+    await cp(starter, root, { recursive: true })
+    const markdown = '# Benchmark conclusion\n| Method | Score |\n| --- | ---: |\n| Base | 82.4 |\n| Ours | 89.7 |\nSource: Table 2'
+    const added = await run(['add-table', root, '--data', '-', '--style', 'rules', '--json'], markdown)
+    expect(added.code).toBe(0)
+    expect(JSON.parse(added.stdout)).toMatchObject({ ok: true, rows: 2, columns: 2, style: 'rules', slide: expect.stringMatching(/\.\/slides\/006-table-/) })
+    const slidePath = JSON.parse(added.stdout).slide.replace(/^\.\//, '')
+    const slide = JSON.parse(await readFile(join(root, slidePath), 'utf8'))
+    expect(slide).toMatchObject({ layoutRef: 'table/rules', elements: expect.arrayContaining([expect.objectContaining({ id: 'table', type: 'table', cells: [['Method', 'Score'], ['Base', '82.4'], ['Ours', '89.7']] })]) })
+  })
+
   it('discovers all styles and applies a selected native recipe', async () => {
     const listed = await run(['styles', '--json'])
     expect(listed.code).toBe(0)

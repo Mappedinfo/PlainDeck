@@ -1,7 +1,7 @@
 import { assertDocument, type DeckDocument, type Slide, type SlideElement, type Theme } from './schema.js'
 import { createLayoutElements, getThemePreset, type LayoutPresetId } from './presets.js'
 
-export type DeckTemplateId = 'showcase' | 'pitch' | 'blank' | 'paper-reading'
+export type DeckTemplateId = 'showcase' | 'pitch' | 'blank' | 'paper-reading' | 'nature-methods'
 
 export interface DeckTemplatePreset {
   id: DeckTemplateId
@@ -21,6 +21,7 @@ export const deckTemplatePresets: DeckTemplatePreset[] = [
   { id: 'pitch', name: 'Focused pitch', description: '问题、方案、证据与行动的五页提案', slideCount: 5 },
   { id: 'blank', name: 'Minimal start', description: '只有一张精心排版的封面', slideCount: 1 },
   { id: 'paper-reading', name: 'Paper reading', description: '论文解读八页：问题、贡献、证据、对比、局限与 takeaway', slideCount: 8 },
+  { id: 'nature-methods', name: 'Nature methods', description: '证据优先的方法汇报：问题、流程、图表、边界与结论', slideCount: 7 },
 ]
 
 const frame = (x: number, y: number, w: number, h: number) => ({ x, y, w, h })
@@ -32,7 +33,7 @@ function slug(value: string) {
   return normalized || 'plaindeck-project'
 }
 
-function copyFor(template: Exclude<DeckTemplateId, 'blank'>, title: string) {
+function copyFor(template: 'showcase' | 'pitch', title: string) {
   if (template === 'pitch') return {
     coverKicker: 'FOCUSED PITCH / FIVE SLIDES', coverTitle: title, coverSubtitle: '把问题、方案与下一步压缩成一条清晰的决策路径。',
     thesisKicker: '01 / THE PROBLEM', thesis: '先描述一个真实、具体、值得解决的问题。', thesisNote: '谁在何时遇到它？现有方案为什么仍然不够？',
@@ -49,7 +50,7 @@ function copyFor(template: Exclude<DeckTemplateId, 'blank'>, title: string) {
   }
 }
 
-function storySlides(template: Exclude<DeckTemplateId, 'blank'>, theme: Theme, title: string): Record<string, Slide> {
+function storySlides(template: 'showcase' | 'pitch', theme: Theme, title: string): Record<string, Slide> {
   const c = theme.colors; const copy = copyFor(template, title)
   return {
     './slides/001-cover.json': { id: 'cover', name: 'Cover', layoutRef: 'showcase-cover', background: { color: c.background }, elements: [
@@ -136,13 +137,79 @@ function paperReadingSlides(theme: Theme, title: string): Record<string, Slide> 
   }
 }
 
+function natureMethodsSlides(theme: Theme, title: string): Record<string, Slide> {
+  const c = theme.colors; const mono = theme.fonts.mono ?? theme.fonts.body
+  return {
+    './slides/001-cover.json': { id: 'cover', name: 'Cover', layoutRef: 'nature-cover', background: { color: c.background }, elements: [
+      shape('accent-rule', 88, 76, 8, 748, c.accent),
+      text('kicker', 'METHODS / EVIDENCE-LED DECK', 132, 82, 920, 34, { fontSize: 17, fontWeight: 700, color: c.accent, fontFamily: mono, letterSpacing: 2 }),
+      text('title', title, 132, 204, 1240, 250, { styleRef: 'slide-title', fontSize: 72, fontWeight: 700, color: c.text, fit: 'shrink' }),
+      text('subtitle', '用问题、方法、证据与边界组织一场可信的学术汇报。', 132, 520, 1080, 80, { fontSize: 28, fontWeight: 400, color: c.muted }),
+      shape('metadata-rule', 132, 706, 1380, 2, c.muted),
+      text('metadata', 'AUTHOR · AFFILIATION · VENUE · YEAR', 132, 738, 1180, 32, { fontSize: 15, fontWeight: 600, color: c.muted, fontFamily: mono, letterSpacing: 1.5 }),
+      text('page', '01', 1370, 738, 142, 40, { fontSize: 23, fontWeight: 700, color: c.accent, fontFamily: mono, align: 'right' }),
+    ] },
+    './slides/002-problem.json': { id: 'problem', name: 'Problem', layoutRef: 'claim-led', background: { color: c.background }, elements: [
+      text('kicker', '01 / BOTTLENECK', 88, 62, 720, 34, { fontSize: 17, fontWeight: 700, color: c.accent, fontFamily: mono, letterSpacing: 2 }),
+      text('title', '现有方法在哪个关键条件下仍然不够？', 88, 142, 1260, 146, { styleRef: 'slide-title', fontSize: 58, fontWeight: 700, color: c.text, fit: 'shrink' }),
+      text('claim', '把研究缺口写成一个可验证的瓶颈，而不是宽泛的背景。', 88, 382, 1130, 118, { fontSize: 38, fontWeight: 600, color: c.text, lineHeight: 1.32 }),
+      shape('claim-rule', 88, 548, 170, 7, c.accent),
+      text('boundary', '限定对象、条件与失败方式；下一页的方法必须逐项回应这些条件。', 88, 602, 1140, 90, { fontSize: 25, color: c.muted, lineHeight: 1.45 }),
+      text('index', '02', 1354, 96, 158, 80, { fontSize: 52, fontWeight: 700, color: c.surface, fontFamily: mono, align: 'right' }),
+    ] },
+    './slides/003-method.json': { id: 'method', name: 'Method', layoutRef: 'process-wide', background: { color: c.background }, elements: [
+      text('kicker', '02 / METHOD', 88, 56, 720, 34, { fontSize: 17, fontWeight: 700, color: c.accent, fontFamily: mono, letterSpacing: 2 }),
+      text('title', '方法流程直接对应问题中的四个约束', 88, 112, 1340, 76, { styleRef: 'slide-title', fontSize: 48, fontWeight: 700, color: c.text, fit: 'shrink' }),
+      ...['输入与假设', '核心机制', '验证设计', '可复用输出'].flatMap((label, index): SlideElement[] => {
+        const x = 88 + index * 374
+        return [
+          { id: `stage-${index + 1}-number`, type: 'text', frame: frame(x, 276, 110, 46), text: `0${index + 1}`, fontSize: 23, fontWeight: 700, color: c.accent, fontFamily: mono },
+          { id: `stage-${index + 1}-title`, type: 'text', frame: frame(x, 350, 300, 52), text: label, fontSize: 30, fontWeight: 700, color: c.text },
+          { id: `stage-${index + 1}-body`, type: 'text', frame: frame(x, 430, 300, 148), text: ['定义输入、假设与适用边界。', '说明关键变换与作用路径。', '用数据、基线与消融建立证据。', '输出可复查结果与使用边界。'][index], fontSize: 22, color: c.muted, lineHeight: 1.45 },
+          { id: `stage-${index + 1}-rule`, type: 'shape', frame: frame(x, 620, 300, index === 3 ? 7 : 3), shape: 'rectangle', fill: index === 3 ? c.accent : c.muted, opacity: index === 3 ? 1 : .45 },
+          ...(index < 3 ? [{ id: `stage-${index + 1}-arrow`, type: 'line', frame: frame(x + 304, 452, 56, 2), color: c.accent, strokeWidth: 2, arrowEnd: true } as SlideElement] : []),
+        ]
+      }),
+      text('takeaway', '每个阶段都应留下可检查的输入、输出或证据。', 88, 736, 1320, 58, { fontSize: 26, fontWeight: 600, color: c.text }),
+    ] },
+    './slides/004-figure.json': layoutSlide('figure', 'Key figure', 'paper-figure', theme, { kicker: '03 / EVIDENCE · FIGURE', title: '主图必须直接支撑本页结论' }),
+    './slides/005-table.json': layoutSlide('table', 'Key table', 'paper-table', theme, { kicker: '04 / EVIDENCE · TABLE', title: '比较表只保留改变判断的指标' }),
+    './slides/006-boundaries.json': { id: 'boundaries', name: 'Boundaries', layoutRef: 'discussion', background: { color: c.background }, elements: [
+      text('kicker', '05 / BOUNDARIES', 88, 58, 720, 34, { fontSize: 17, fontWeight: 700, color: c.accent, fontFamily: mono, letterSpacing: 2 }),
+      text('title', '可信结论同时说明证据覆盖与失效条件', 88, 118, 1350, 76, { styleRef: 'slide-title', fontSize: 48, fontWeight: 700, color: c.text, fit: 'shrink' }),
+      ...[
+        ['01', '证据覆盖', '哪些数据、场景与比较已经被实验直接支持？'],
+        ['02', '失效条件', '哪些假设一旦不成立，方法表现就可能改变？'],
+        ['03', '仍待验证', '哪些外推、机制解释或应用判断仍是开放问题？'],
+      ].flatMap(([number, heading, body], index): SlideElement[] => {
+        const y = 284 + index * 156
+        return [
+          { id: `boundary-${index + 1}-number`, type: 'text', frame: frame(88, y, 100, 48), text: number, fontSize: 23, fontWeight: 700, color: c.accent, fontFamily: mono },
+          { id: `boundary-${index + 1}-title`, type: 'text', frame: frame(226, y, 300, 48), text: heading, fontSize: 29, fontWeight: 700, color: c.text },
+          { id: `boundary-${index + 1}-body`, type: 'text', frame: frame(558, y, 890, 74), text: body, fontSize: 23, color: c.muted, lineHeight: 1.4 },
+          { id: `boundary-${index + 1}-rule`, type: 'line', frame: frame(226, y + 104, 1222, 2), color: c.muted, strokeWidth: 1, opacity: .35 },
+        ]
+      }),
+      shape('boundary-anchor', 88, 770, 8, 58, c.accent),
+      text('boundary-takeaway', '结论强度不能超过证据覆盖范围。', 124, 770, 1120, 58, { fontSize: 27, fontWeight: 600, color: c.text, verticalAlign: 'middle' }),
+    ] },
+    './slides/007-closing.json': { id: 'closing', name: 'Takeaway', layoutRef: 'closing', background: { color: c.background }, elements: [
+      text('kicker', 'TAKEAWAY / ONE CLAIM', 88, 72, 720, 34, { fontSize: 17, fontWeight: 700, color: c.accent, fontFamily: mono, letterSpacing: 2 }),
+      text('quote', '方法的价值不在于看起来复杂，\n而在于证据能否改变判断。', 88, 262, 1300, 210, { styleRef: 'slide-title', fontSize: 62, fontWeight: 700, color: c.text, fit: 'shrink' }),
+      shape('rule', 88, 584, 1424, 4, c.accent),
+      text('next', '下一步：替换占位证据，核对来源，并把未验证的部分明确标出。', 88, 646, 1260, 72, { fontSize: 27, color: c.muted }),
+      text('end', 'END / 07', 1300, 790, 212, 34, { fontSize: 17, fontWeight: 700, color: c.accent, fontFamily: mono, align: 'right', letterSpacing: 2 }),
+    ] },
+  }
+}
+
 export function createDeckTemplate(templateId: DeckTemplateId = 'showcase', options: CreateDeckTemplateOptions = {}): DeckDocument {
   if (!deckTemplatePresets.some(template => template.id === templateId)) throw new Error(`未知模板：${templateId}`)
   const preset = typeof options.theme === 'string' ? getThemePreset(options.theme) : undefined
   if (typeof options.theme === 'string' && !preset) throw new Error(`未知主题：${options.theme}`)
-  const defaultTheme = templateId === 'paper-reading' ? 'night-citrus' : 'studio-cobalt'
+  const defaultTheme = templateId === 'paper-reading' || templateId === 'nature-methods' ? 'nature-editorial' : 'studio-cobalt'
   const theme = structuredClone(typeof options.theme === 'object' ? options.theme : preset?.theme ?? getThemePreset(defaultTheme)!.theme)
-  const title = options.title?.trim() || (templateId === 'pitch' ? 'A focused idea, ready to move.' : templateId === 'blank' ? 'Untitled presentation' : templateId === 'paper-reading' ? '论文标题：一句话说清核心贡献' : 'Make the idea visible.')
+  const title = options.title?.trim() || (templateId === 'pitch' ? 'A focused idea, ready to move.' : templateId === 'blank' ? 'Untitled presentation' : templateId === 'paper-reading' ? '论文标题：一句话说清核心贡献' : templateId === 'nature-methods' ? '方法标题：一句话说清解决了什么' : 'Make the idea visible.')
   const id = options.id?.trim() || slug(title)
   if (templateId === 'blank') {
     const path = './slides/001-cover.json'
@@ -157,7 +224,7 @@ export function createDeckTemplate(templateId: DeckTemplateId = 'showcase', opti
       ] } },
     })
   }
-  const slides = templateId === 'paper-reading' ? paperReadingSlides(theme, title) : storySlides(templateId, theme, title)
+  const slides = templateId === 'paper-reading' ? paperReadingSlides(theme, title) : templateId === 'nature-methods' ? natureMethodsSlides(theme, title) : storySlides(templateId, theme, title)
   return assertDocument({
     deck: { schemaVersion: '0.1', id, title, canvas: { width: 1600, height: 900 }, theme: './theme.json', slides: Object.keys(slides) },
     theme, slides,

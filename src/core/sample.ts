@@ -1,7 +1,7 @@
 import { createDeckTemplate, getThemePreset, type DeckDocument } from 'plaindeck/core'
 
-export const defaultTheme = getThemePreset('night-citrus')!.theme
+export const defaultTheme = getThemePreset('nature-editorial')!.theme
 
 export function createSampleDocument(): DeckDocument {
-  return createDeckTemplate('paper-reading', { title: '论文标题：一句话说清核心贡献', id: 'plaindeck-paper-reading', theme: 'night-citrus' })
+  return createDeckTemplate('nature-methods', { title: '方法标题：一句话说清解决了什么', id: 'plaindeck-nature-methods', theme: 'nature-editorial' })
 }

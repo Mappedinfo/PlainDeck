@@ -2,7 +2,7 @@
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { stdin, stderr, stdout } from 'node:process'
-import { applyOperations, createDeckTemplate, createSavePlan, deckTemplatePresets, designRecipes, inspectDeck, layoutPresets, parseSummaryCards, searchDesignRecipes, themePresets, validateDeck, type DeckTemplateId } from './core/index.js'
+import { applyOperations, createDeckTemplate, createSavePlan, deckTemplatePresets, designRecipes, inspectDeck, layoutPresets, parseSummaryCards, parseTableContent, searchDesignRecipes, tableStyles, themePresets, validateDeck, type DeckTemplateId, type TableStyle } from './core/index.js'
 import { loadDeck, prepareDocumentAssets, renderPdf, renderPng, saveDeck } from './node/index.js'
 import { renderHtml } from './render/index.js'
 import packageMetadata from '../package.json' with { type: 'json' }
@@ -15,12 +15,13 @@ const jsonMode = args.includes('--json')
 const help = `PlainDeck ${VERSION}
 
 Usage:
-  plaindeck init <project> [--title <title>] [--template showcase|pitch|blank] [--theme <id>] [--json]
+  plaindeck init <project> [--title <title>] [--template showcase|pitch|blank|paper-reading|nature-methods] [--theme <id>] [--json]
   plaindeck validate <project> [--json]
   plaindeck inspect <project> [--json]
   plaindeck apply <project> --ops <file|-> [--dry-run] [--json]
   plaindeck add-slide <project> --layout <id> [--name <name>] [--json]
   plaindeck add-cards <project> --content <file|-> [--style <id>] [--name <name>] [--after <slide-path>] [--json]
+  plaindeck add-table <project> --data <file|-> [--style rules|grid|stripes] [--title <title>] [--name <name>] [--after <slide-path>] [--json]
   plaindeck styles [--search <query>] [--json]
   plaindeck render <project> --format html|png|pdf --output <path> [--slide <index|path>] [--allow-network] [--json]
 `
@@ -75,7 +76,7 @@ async function run() {
   if (command === 'init') {
     const root = projectPath()
     const template = option('--template') ?? 'showcase'
-    const theme = option('--theme') ?? (template === 'paper-reading' ? 'night-citrus' : 'studio-cobalt')
+    const theme = option('--theme') ?? (template === 'paper-reading' || template === 'nature-methods' ? 'nature-editorial' : 'studio-cobalt')
     if (!deckTemplatePresets.some(item => item.id === template)) throw new UsageError(`未知模板 ${template}。可用模板：${deckTemplatePresets.map(item => item.id).join(', ')}`)
     if (!themePresets.some(item => item.id === theme)) throw new UsageError(`未知主题 ${theme}。可用主题：${themePresets.map(item => item.id).join(', ')}`)
     const document = createDeckTemplate(template as DeckTemplateId, { title: option('--title'), id: option('--id'), theme })
@@ -137,6 +138,20 @@ async function run() {
     await saveDeck(root, result.document, result.changedPaths)
     const addedPath = result.changedPaths.find(path => path.startsWith('./slides/'))
     emit({ ok: true, changedPaths: result.changedPaths, slide: addedPath, cards: content.cards.length, style: style ?? null }, `✓ 已添加结构化卡片页 ${addedPath} · ${content.cards.length} 个要点${style ? ` · ${style}` : ''}`)
+    return
+  }
+  if (command === 'add-table') {
+    const root = projectPath()
+    const source = requiredOption('--data')
+    const raw = source === '-' ? await readStdin() : await readFile(source, 'utf8')
+    const parsed = parseTableContent(raw)
+    const content = option('--title') ? { ...parsed, title: option('--title')! } : parsed
+    const style = option('--style') ?? 'rules'
+    if (!tableStyles.includes(style as TableStyle)) throw new UsageError(`未知表格样式 ${style}。可用样式：${tableStyles.join(', ')}`)
+    const result = applyOperations(await loadDeck(root), [{ op: 'add-table-slide', content, style: style as TableStyle, name: option('--name'), after: option('--after') }])
+    await saveDeck(root, result.document, result.changedPaths)
+    const addedPath = result.changedPaths.find(path => path.startsWith('./slides/'))
+    emit({ ok: true, changedPaths: result.changedPaths, slide: addedPath, rows: content.rows.length, columns: content.columns.length, style }, `✓ 已添加原生表格页 ${addedPath} · ${content.rows.length} 行 × ${content.columns.length} 列 · ${style}`)
     return
   }
   if (command === 'render') {

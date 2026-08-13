@@ -1,5 +1,5 @@
-import { AlignCenter, AlignLeft, AlignRight, ArrowDownToLine, ArrowLeftToLine, ArrowRightToLine, ArrowUpToLine, Image, LocateFixed, Minus, Search, Square, Type } from 'lucide-react'
-import { themePresets, type DeckFooter, type ElementAnimation, type FooterSlot, type SlideElement } from 'plaindeck/core'
+import { AlignCenter, AlignLeft, AlignRight, ArrowDownToLine, ArrowLeftToLine, ArrowRightToLine, ArrowUpToLine, Image, LocateFixed, Minus, Search, Square, Table2, Type } from 'lucide-react'
+import { parseTableCells, tableCellsToTsv, themePresets, type DeckFooter, type ElementAnimation, type FooterSlot, type SlideElement, type TableStyle } from 'plaindeck/core'
 import { useEffect, useState } from 'react'
 import { centerFrame, framePlacement } from '../core/geometry'
 import { useEditor } from '../store'
@@ -21,7 +21,19 @@ function DraftTextarea({ value, rows, label, placeholder, onCommit }: { value: s
   return <label className="field"><span>{label}</span><textarea rows={rows} value={draft} placeholder={placeholder} onChange={event => setDraft(event.target.value)} onBlur={() => { if (draft !== value) onCommit(draft) }} /></label>
 }
 
-const typeNames: Record<SlideElement['type'], string> = { text: '文本', image: '图片', shape: '形状', line: '线条' }
+function TableGridEditor({ element, onCommit }: { element: Extract<SlideElement, { type: 'table' }>; onCommit: (cells: string[][]) => void }) {
+  const value = tableCellsToTsv(element.cells)
+  const [draft, setDraft] = useState(value); const [error, setError] = useState('')
+  useEffect(() => { setDraft(value); setError('') }, [value])
+  const commit = () => {
+    if (draft === value) return
+    try { const cells = parseTableCells(draft); onCommit(cells); setError('') }
+    catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)) }
+  }
+  return <><label className="field"><span>单元格（Tab 分列）</span><textarea rows={8} value={draft} spellCheck={false} onChange={event => setDraft(event.target.value)} onBlur={commit} /></label>{error && <p className="table-grid-error">{error}</p>}</>
+}
+
+const typeNames: Record<SlideElement['type'], string> = { text: '文本', image: '图片', shape: '形状', line: '线条', table: '表格' }
 const placementNames = { inside: '画布内', partial: '部分越界', outside: '画布外' } as const
 const entranceOptions: Array<{ value: ElementAnimation['enter']; label: string }> = [
   { value: 'none', label: '无动画' }, { value: 'fade', label: '淡入' }, { value: 'fade-up', label: '向上淡入' },
@@ -30,7 +42,7 @@ const entranceOptions: Array<{ value: ElementAnimation['enter']; label: string }
 ]
 
 function elementName(element: SlideElement) {
-  const value = element.type === 'text' ? element.text : element.type === 'shape' ? element.text : element.type === 'image' ? element.alt : ''
+  const value = element.type === 'text' ? element.text : element.type === 'shape' ? element.text : element.type === 'image' ? element.alt : element.type === 'table' ? element.cells[0]?.join(' / ') : ''
   return value?.trim().replace(/\s+/g, ' ').slice(0, 28) || `${typeNames[element.type]} · ${element.id}`
 }
 
@@ -38,6 +50,7 @@ function ElementIcon({ type }: { type: SlideElement['type'] }) {
   if (type === 'text') return <Type />
   if (type === 'image') return <Image />
   if (type === 'shape') return <Square />
+  if (type === 'table') return <Table2 />
   return <Minus />
 }
 
@@ -98,6 +111,7 @@ export function Inspector() {
       {element.type === 'text' && <section><h3>TYPOGRAPHY</h3><Numeric label="SIZE" min={1} value={element.fontSize ?? state.document.theme.fontSizes.body} onChange={fontSize => patch({ fontSize } as Partial<SlideElement>)} /><DraftTextarea label="内容" rows={5} value={element.text} onCommit={text => patch({ text } as Partial<SlideElement>, '编辑文字')} /><div className="icon-grid three"><button onClick={() => patch({ align: 'left' } as Partial<SlideElement>)}><AlignLeft /></button><button onClick={() => patch({ align: 'center' } as Partial<SlideElement>)}><AlignCenter /></button><button onClick={() => patch({ align: 'right' } as Partial<SlideElement>)}><AlignRight /></button></div></section>}
       {element.type === 'shape' && <><section><h3>SHAPE TEXT</h3><DraftTextarea label="内容" rows={4} value={element.text ?? ''} placeholder="输入形状内文字" onCommit={text => patch({ text } as Partial<SlideElement>, '编辑形状文字')} /><Numeric label="SIZE" min={1} value={element.fontSize ?? state.document.theme.fontSizes.body} onChange={fontSize => patch({ fontSize } as Partial<SlideElement>)} /><label className="color-field"><input type="color" value={element.textColor ?? state.document.theme.colors.text} onChange={e => patch({ textColor: e.target.value } as Partial<SlideElement>)} /><span>text</span><code>{element.textColor ?? state.document.theme.colors.text}</code></label><div className="icon-grid three"><button onClick={() => patch({ align: 'left' } as Partial<SlideElement>)} title="左对齐"><AlignLeft /></button><button onClick={() => patch({ align: 'center' } as Partial<SlideElement>)} title="居中"><AlignCenter /></button><button onClick={() => patch({ align: 'right' } as Partial<SlideElement>)} title="右对齐"><AlignRight /></button></div></section><section><h3>APPEARANCE</h3><label className="color-field"><input type="color" value={element.fill} onChange={e => patch({ fill: e.target.value } as Partial<SlideElement>)} /><span>fill</span><code>{element.fill}</code></label><Numeric label="RADIUS" min={0} value={element.radius ?? 0} onChange={radius => patch({ radius } as Partial<SlideElement>)} /></section></>}
       {element.type === 'image' && <section><h3>IMAGE</h3><label className="field"><span>路径 / URL</span><input value={element.src} onChange={e => patch({ src: e.target.value } as Partial<SlideElement>)} /></label><label className="field"><span>适配</span><select value={element.fit} onChange={e => patch({ fit: e.target.value as 'contain' | 'cover' | 'stretch' } as Partial<SlideElement>)}><option>contain</option><option>cover</option><option>stretch</option></select></label></section>}
+      {element.type === 'table' && <><section><h3>TABLE DATA</h3><TableGridEditor element={element} onCommit={cells => patch({ cells } as Partial<SlideElement>, '批量编辑表格')} /><p className="element-index-hint">第一行为表头。也可在画布上双击表格，再直接编辑单元格。</p></section><section><h3>TABLE STYLE</h3><label className="field"><span>样式</span><select value={element.style} onChange={event => patch({ style: event.target.value as TableStyle } as Partial<SlideElement>, '修改表格样式')}><option value="rules">Nature rules</option><option value="grid">Compact grid</option><option value="stripes">Quiet stripes</option></select></label><Numeric label="字号" min={1} value={element.fontSize ?? state.document.theme.fontSizes.body} onChange={fontSize => patch({ fontSize } as Partial<SlideElement>)} /><Numeric label="内边距" min={0} value={element.cellPadding ?? 18} onChange={cellPadding => patch({ cellPadding } as Partial<SlideElement>)} /><Numeric label="表头行" min={0} value={element.headerRows} onChange={headerRows => patch({ headerRows: Math.min(headerRows, element.cells.length) } as Partial<SlideElement>)} /><label className="color-field"><input type="color" value={element.accentColor ?? state.document.theme.colors.accent} onChange={event => patch({ accentColor: event.target.value } as Partial<SlideElement>)} /><span>accent</span><code>{element.accentColor ?? state.document.theme.colors.accent}</code></label></section></>}
       {element.type === 'line' && <section><h3>LINE</h3><Numeric label="WIDTH" min={1} value={element.strokeWidth} onChange={strokeWidth => patch({ strokeWidth } as Partial<SlideElement>)} /><label className="check-field"><input type="checkbox" checked={element.dash ?? false} onChange={e => patch({ dash: e.target.checked } as Partial<SlideElement>)} />虚线</label></section>}
     </>}
   </aside>

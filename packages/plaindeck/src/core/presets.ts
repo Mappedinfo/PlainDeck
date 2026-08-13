@@ -65,7 +65,22 @@ const themePreset = (id: string, name: string, description: string, colors: Them
   return { id, name, description, colors: theme.colors, theme }
 }
 
+const natureEditorialTheme: Theme = {
+  ...makeTheme(
+    { background: '#FBFBF8', text: '#202326', muted: '#666B70', accent: '#A63C3C', surface: '#F0F1ED' },
+    {
+      title: 'Georgia, Charter, "Songti SC", "Noto Serif SC", serif',
+      body: 'Aptos, Helvetica Neue, "PingFang SC", "Noto Sans SC", sans-serif',
+      mono: 'SFMono-Regular, IBM Plex Mono, Consolas, monospace',
+    },
+  ),
+  fontSizes: { title: 64, heading: 42, body: 24, caption: 16 },
+  spacing: { page: 88, small: 14, medium: 28, large: 60 },
+  typeScale: [16, 18, 20, 24, 28, 34, 42, 52, 64],
+}
+
 export const themePresets: ThemePreset[] = [
+  { id: 'nature-editorial', name: 'Nature 学术编辑', description: '浅色、证据优先、克制而高密度', colors: natureEditorialTheme.colors, theme: natureEditorialTheme },
   themePreset('studio-cobalt', '钴蓝工作室', '编辑感、鲜明、现代', { background: '#F2F0E8', text: '#102A43', muted: '#667085', accent: '#FF5A4F' }),
   themePreset('night-citrus', '午夜柑橘', '深色、锐利、舞台感', { background: '#101714', text: '#F6F3E8', muted: '#9FAB9F', accent: '#D8FF52' }),
   themePreset('ink-rose', '墨色玫瑰', '克制、时尚、高对比', { background: '#171319', text: '#FFF7F2', muted: '#BAAEB6', accent: '#FF6B8A' }),
@@ -100,6 +115,8 @@ export function createLayoutElements(layoutId: LayoutPresetId, theme: Theme, can
     ...('fontSize' in element && element.fontSize ? { fontSize: Math.round(element.fontSize * fontScale) } : {}),
     ...('letterSpacing' in element && element.letterSpacing ? { letterSpacing: Math.round(element.letterSpacing * fontScale * 10) / 10 } : {}),
     ...('strokeWidth' in element && element.strokeWidth ? { strokeWidth: Math.max(1, Math.round(element.strokeWidth * fontScale)) } : {}),
+    ...('ruleWidth' in element && element.ruleWidth ? { ruleWidth: Math.max(1, Math.round(element.ruleWidth * fontScale)) } : {}),
+    ...('cellPadding' in element && element.cellPadding ? { cellPadding: Math.round(element.cellPadding * fontScale) } : {}),
     ...('radius' in element && element.radius ? { radius: Math.round(element.radius * fontScale) } : {}),
   }))
 }
@@ -179,29 +196,16 @@ function buildLayoutElements(layoutId: LayoutPresetId, theme: Theme): SlideEleme
     { id: 'source', type: 'text', frame: frame(88, 848, 1200, 30), text: 'SOURCE · VENUE · YEAR', fontSize: 16, fontWeight: 700, fontFamily: mono, color: muted },
   ]
   if (layoutId === 'paper-table') {
-    const columns = [{ x: 108, w: 480 }, { x: 640, w: 440 }, { x: 1140, w: 352 }]
-    const rows = ['基线方法', '本文方法', '消融变体']
     return [
       { id: 'kicker', type: 'text', frame: frame(88, 64, 700, 34), text: 'EVIDENCE / TABLE', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2 },
       { id: 'table-label', type: 'text', frame: frame(1000, 64, 512, 34), text: 'TABLE 2 · PAGE 9', fontSize: 17, fontWeight: 700, fontFamily: mono, align: 'right', color: muted },
       title('title', '表格里最值得记住的一行', 88, 112, 1300, 64, 44),
-      { id: 'table-header', type: 'shape', frame: frame(88, 210, 1424, 64), shape: 'rectangle', fill: surface },
-      { id: 'table-header-rule', type: 'shape', frame: frame(88, 274, 1424, 4), shape: 'rectangle', fill: accent },
-      ...columns.flatMap((column, index): SlideElement[] => [
-        { id: `header-${index + 1}`, type: 'text', frame: frame(column.x, 228, column.w, 32), text: ['方法', '设置', '结果'][index], fontSize: 20, fontWeight: 700, fontFamily: mono, color: text },
-      ]),
-      { id: 'row-highlight', type: 'shape', frame: frame(88, 386, 1424, 96), shape: 'rectangle', fill: surface },
-      { id: 'row-highlight-bar', type: 'shape', frame: frame(88, 386, 6, 96), shape: 'rectangle', fill: accent },
-      ...rows.flatMap((row, rowIndex): SlideElement[] => [
-        ...columns.map((column, columnIndex): SlideElement => ({
-          id: `cell-${rowIndex + 1}-${columnIndex + 1}`, type: 'text',
-          frame: frame(column.x, 320 + rowIndex * 96, column.w, 44),
-          text: columnIndex === 0 ? row : '双击填入数值',
-          fontSize: columnIndex === 0 ? 24 : 22, fontWeight: columnIndex === 0 ? 700 : 500,
-          color: columnIndex === 0 ? text : muted,
-        })),
-        { id: `row-rule-${rowIndex + 1}`, type: 'line', frame: frame(88, 386 + rowIndex * 96, 1424, 2), color: muted, strokeWidth: 2, opacity: 0.3 },
-      ]),
+      { id: 'table', type: 'table', frame: frame(88, 210, 1424, 394), cells: [
+        ['方法', '设置', '结果'],
+        ['基线方法', '默认设置', '82.4'],
+        ['本文方法', '完整模型', '89.7'],
+        ['消融变体', '移除关键模块', '85.1'],
+      ], headerRows: 1, columnWidths: [1.45, 1.2, 1], alignments: ['left', 'left', 'right'], style: 'rules', fontSize: 23, textColor: text, headerTextColor: text, headerFill: surface, stripeFill: surface, ruleColor: muted, accentColor: accent, ruleWidth: 2, cellPadding: 18, highlightRows: [2] },
       { id: 'takeaway-bar', type: 'shape', frame: frame(88, 640, 6, 56), shape: 'rectangle', fill: accent },
       { id: 'takeaway', type: 'text', frame: frame(114, 636, 1398, 60), text: '读法：哪一行改变了你的判断，就把哪一行讲出来。', fontSize: 26, fontWeight: 600, color: text, lineHeight: 1.3 },
       { id: 'source', type: 'text', frame: frame(88, 848, 1200, 30), text: 'SOURCE · VENUE · YEAR', fontSize: 16, fontWeight: 700, fontFamily: mono, color: muted },

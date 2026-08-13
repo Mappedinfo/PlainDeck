@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
@@ -39,13 +39,19 @@ try {
   const cli = join(installRoot, 'node_modules', '.bin', process.platform === 'win32' ? 'plaindeck.cmd' : 'plaindeck')
   const version = run(cli, ['--version'], { cwd: installRoot })
   if (version !== expectedVersion) throw new Error(`unexpected CLI version: ${version}; expected ${expectedVersion}`)
-  const exportsCheck = run(process.execPath, ['--input-type=module', '-e', "import { createDeckTemplate, validateDeck } from 'plaindeck'; import { DeckSchema } from 'plaindeck/core'; import { renderHtml } from 'plaindeck/render'; import { PlainDeckSlide } from 'plaindeck/react'; import { PlainDeckTimeline, elementAnimationStyle } from 'plaindeck/remotion'; console.log([typeof createDeckTemplate, typeof validateDeck, typeof DeckSchema.parse, typeof renderHtml, typeof PlainDeckSlide, typeof PlainDeckTimeline, typeof elementAnimationStyle].join(','))"], { cwd: installRoot })
-  if (exportsCheck !== 'function,function,function,function,function,function,function') throw new Error(`unexpected package exports: ${exportsCheck}`)
+  const exportsCheck = run(process.execPath, ['--input-type=module', '-e', "import { createDeckTemplate, validateDeck } from 'plaindeck'; import { DeckSchema, parseTableContent } from 'plaindeck/core'; import { renderHtml } from 'plaindeck/render'; import { PlainDeckSlide } from 'plaindeck/react'; import { PlainDeckTimeline, elementAnimationStyle } from 'plaindeck/remotion'; console.log([typeof createDeckTemplate, typeof validateDeck, typeof DeckSchema.parse, typeof parseTableContent, typeof renderHtml, typeof PlainDeckSlide, typeof PlainDeckTimeline, typeof elementAnimationStyle].join(','))"], { cwd: installRoot })
+  if (exportsCheck !== 'function,function,function,function,function,function,function,function') throw new Error(`unexpected package exports: ${exportsCheck}`)
   const created = join(work, 'created-deck')
   const initialized = JSON.parse(run(cli, ['init', created, '--title', 'Packed CLI deck', '--template', 'showcase', '--theme', 'studio-cobalt', '--json'], { cwd: installRoot }))
   if (!initialized.ok || initialized.slides !== 5) throw new Error(`packed CLI init failed: ${JSON.stringify(initialized)}`)
   const createdValidation = JSON.parse(run(cli, ['validate', created, '--json'], { cwd: installRoot }))
   if (!createdValidation.ok) throw new Error(`packed initialized deck validation failed: ${JSON.stringify(createdValidation)}`)
+  const tableSource = join(work, 'benchmark.md')
+  writeFileSync(tableSource, '# Packed table\n| Method | Score |\n| --- | ---: |\n| Base | 82.4 |\n| PlainDeck | 89.7 |\nSource: Pack test\n', 'utf8')
+  const addedTable = JSON.parse(run(cli, ['add-table', created, '--data', tableSource, '--style', 'rules', '--json'], { cwd: installRoot }))
+  if (!addedTable.ok || addedTable.rows !== 2 || addedTable.columns !== 2) throw new Error(`packed CLI add-table failed: ${JSON.stringify(addedTable)}`)
+  const tableValidation = JSON.parse(run(cli, ['validate', created, '--json'], { cwd: installRoot }))
+  if (!tableValidation.ok) throw new Error(`packed table deck validation failed: ${JSON.stringify(tableValidation)}`)
   const starter = resolve(root, 'examples/starter')
   const validation = JSON.parse(run(cli, ['validate', starter, '--json'], { cwd: installRoot }))
   if (!validation.ok) throw new Error(`packed CLI validation failed: ${JSON.stringify(validation)}`)
@@ -53,6 +59,9 @@ try {
   run(cli, ['render', starter, '--format', 'html', '--output', html, '--json'], { cwd: installRoot })
   const renderedHtml = readFileSync(html, 'utf8')
   if (!renderedHtml.includes('<!doctype html>') || !renderedHtml.includes('class="player-bar"')) throw new Error('packed CLI did not render the interactive standalone HTML player')
+  const tableHtml = join(work, 'table.html')
+  run(cli, ['render', created, '--format', 'html', '--output', tableHtml, '--json'], { cwd: installRoot })
+  if (!readFileSync(tableHtml, 'utf8').includes('class="table-content table-rules"')) throw new Error('packed CLI table did not reach standalone HTML output')
   process.stdout.write(`✓ installed and exercised ${tarballs.length} PlainDeck ${expectedVersion} tarballs\n`)
 } finally {
   rmSync(work, { recursive: true, force: true })

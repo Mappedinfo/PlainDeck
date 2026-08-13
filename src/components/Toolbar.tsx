@@ -1,11 +1,11 @@
-import { AlignCenter, AlignHorizontalDistributeCenter, AlignLeft, AlignRight, Box, Download, FilePlus2, FolderOpen, Image, LayoutDashboard, Minus, MousePointer2, Play, Redo2, Save, Square, Type, Undo2 } from 'lucide-react'
+import { AlignCenter, AlignHorizontalDistributeCenter, AlignLeft, AlignRight, Box, Download, FilePlus2, FolderOpen, Image, LayoutDashboard, Minus, MousePointer2, Play, Redo2, Save, Square, Table2, Type, Undo2 } from 'lucide-react'
 import { useEditor } from '../store'
 import { version as plainDeckVersion } from '../../packages/plaindeck/package.json'
 
-interface Props { onOpen: () => void; onNew: () => void; onImportZip: () => void; onAddImage: () => void; onAddCards: () => void; onExport: () => void; onPresent: () => void; onSave: () => void }
+interface Props { onOpen: () => void; onNew: () => void; onImportZip: () => void; onAddImage: () => void; onAddCards: () => void; onAddTable: () => void; onExport: () => void; onPresent: () => void; onSave: () => void }
 const ToolButton = ({ label, children, onClick, disabled, accent = false }: { label: string; children: React.ReactNode; onClick?: () => void; disabled?: boolean; accent?: boolean }) => <button className={`tool-button ${accent ? 'accent' : ''}`} title={label} aria-label={label} onClick={onClick} disabled={disabled}>{children}</button>
 
-export function Toolbar({ onOpen, onNew, onImportZip, onAddImage, onAddCards, onExport, onPresent, onSave }: Props) {
+export function Toolbar({ onOpen, onNew, onImportZip, onAddImage, onAddCards, onAddTable, onExport, onPresent, onSave }: Props) {
   const { addElement, undo, redo, past, future, selectedIds, reorderLayer } = useEditor()
   return <header className="toolbar">
     <div className="brand"><span className="brand-mark">P/D</span><span>PlainDeck</span><small title="PlainDeck core version">v{plainDeckVersion}</small></div>
@@ -21,6 +21,7 @@ export function Toolbar({ onOpen, onNew, onImportZip, onAddImage, onAddCards, on
       <ToolButton label="添加文本" onClick={() => addElement('text')}><Type /></ToolButton>
       <ToolButton label="插入本地图片" onClick={onAddImage}><Image /></ToolButton>
       <ToolButton label="从 Markdown / JSON 生成结构化卡片页" onClick={onAddCards}><LayoutDashboard /></ToolButton>
+      <ToolButton label="从 Markdown / CSV / JSON 生成原生表格页" onClick={onAddTable}><Table2 /></ToolButton>
       <ToolButton label="添加矩形" onClick={() => addElement('shape')}><Square /></ToolButton>
       <ToolButton label="添加线条" onClick={() => addElement('line')}><Minus /></ToolButton>
     </div>

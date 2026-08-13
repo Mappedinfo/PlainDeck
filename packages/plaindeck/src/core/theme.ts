@@ -26,6 +26,14 @@ export function applyDocumentTheme(input: DeckDocument, nextTheme: Theme): DeckD
         element.stroke = replace(element.stroke)
         element.textColor = replace(element.textColor)
       } else if (element.type === 'line') element.color = replace(element.color) ?? element.color
+      else if (element.type === 'table') {
+        element.textColor = replace(element.textColor)
+        element.headerTextColor = replace(element.headerTextColor)
+        element.headerFill = replace(element.headerFill)
+        element.stripeFill = replace(element.stripeFill)
+        element.ruleColor = replace(element.ruleColor)
+        element.accentColor = replace(element.accentColor)
+      }
     }
   }
   document.theme = structuredClone(nextTheme)

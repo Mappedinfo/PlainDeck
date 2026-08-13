@@ -14,7 +14,7 @@ export interface DeckInspection {
     name: string
     layoutRef?: string
     elementCount: number
-    elements: Array<{ id: string; type: string; text?: string }>
+    elements: Array<{ id: string; type: string; text?: string; rows?: number; columns?: number }>
   }>
 }
 
@@ -39,6 +39,7 @@ export function inspectDeck(document: DeckDocument): DeckInspection {
           id: element.id,
           type: element.type,
           ...(('text' in element && typeof element.text === 'string') ? { text: element.text } : {}),
+          ...(element.type === 'table' ? { text: element.cells[0]?.join(' | '), rows: element.cells.length - element.headerRows, columns: element.cells[0]?.length ?? 0 } : {}),
         })),
       }
     }),

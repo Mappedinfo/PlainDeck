@@ -1,6 +1,6 @@
 # PlainDeck Agent API 与 CLI
 
-PlainDeck v0.4.0 面向 Agent 的推荐工作流是：
+PlainDeck v0.5.0 面向 Agent 的推荐工作流是：
 
 ```text
 init → inspect → operations → validate → dry-run → apply → render
@@ -11,17 +11,18 @@ init → inspect → operations → validate → dry-run → apply → render
 ## CLI
 
 ```bash
-plaindeck init <project> [--title <title>] [--template showcase|pitch|blank] [--theme <id>] [--json]
+plaindeck init <project> [--title <title>] [--template showcase|pitch|blank|paper-reading|nature-methods] [--theme <id>] [--json]
 plaindeck validate <project> [--json]
 plaindeck inspect <project> [--json]
 plaindeck apply <project> --ops <file|-> [--dry-run] [--json]
 plaindeck add-slide <project> --layout <id> [--name <name>]
 plaindeck add-cards <project> --content <file|-> [--style <id>] [--name <name>] [--after <slide-path>]
+plaindeck add-table <project> --data <file|-> [--style rules|grid|stripes] [--title <title>] [--name <name>] [--after <slide-path>]
 plaindeck styles [--search <query>] [--json]
 plaindeck render <project> --format html|png|pdf --output <path> [--slide <index|path>] [--allow-network]
 ```
 
-`init` 让 Agent 无需先编写 TypeScript 即可创建完整项目。默认生成五页 `showcase` 模板与 `studio-cobalt` 配色；创建前会检查 `deck.json`、主题、所有计划页面和 `.gitignore`，任何目标文件已存在都会以退出码 `2` 拒绝初始化，且不会先写入其他文件。内置模板为 `showcase`、`pitch`、`blank`，内置主题为 `studio-cobalt`、`night-citrus`、`ink-rose`、`paper-signal`、`night-blue`、`field-notes`、`editorial-blue`、`poster-red`。
+`init` 让 Agent 无需先编写 TypeScript 即可创建完整项目。默认仍生成五页 `showcase` 与 `studio-cobalt`，以保留已有 CLI 契约；`nature-methods` 和 `paper-reading` 默认使用 `nature-editorial`。创建前会检查所有计划文件，发生冲突时以退出码 `2` 停止且不写入。
 
 `--json` 时 stdout 只包含 JSON，错误诊断写入 stderr。成功退出码为 `0`，校验或执行失败为 `1`，参数错误为 `2`。`apply --dry-run` 会返回 `changedPaths` 与 validation 结果，但不会写入文件。
 
@@ -41,6 +42,8 @@ cat brief.md | plaindeck add-cards ./my-deck --content - --style inkLandscape
 ```
 
 Markdown 使用 `# 主标题`、`## 卡片标题`、描述和可选的 `icon_name`；兼容 `{ "mainTitle", "cards": [{ "title", "desc", "icon" }] }` 形式的 Juya News Card JSON。`styles` 提供 174 个由 Juya 模板批量迁移的原生设计配方；它们归入 27 个分类和 10 类构图语法，颜色、字体、边框、圆角与装饰最终都转换为 PlainDeck 元素。生成后每张卡的背景、编号、标题和正文都可以继续在 Web 画布拖动和编辑。
+
+`add-table` 接受 Markdown pipe table、CSV、TSV、二维 JSON 数组、对象数组，或 `{ "title", "columns", "rows" }`。第一行是表头；建议不超过 8 列、12 个数据行。`rules` 是默认的学术表格样式，`grid` 适合参数矩阵，`stripes` 适合逐行比较。
 
 ## Operations
 
@@ -84,6 +87,17 @@ Markdown 使用 `# 主标题`、`## 卡片标题`、描述和可选的 `icon_nam
       ]
     }
   },
+  {
+    "op": "add-table-slide",
+    "style": "rules",
+    "content": {
+      "title": "本文方法在两个指标上同时改进",
+      "columns": ["Method", "Accuracy ↑", "Latency ↓"],
+      "rows": [["Baseline", "82.4", "41 ms"], ["PlainDeck", "89.7", "28 ms"]],
+      "alignments": ["left", "right", "right"],
+      "source": "Table 2"
+    }
+  },
   { "op": "duplicate-slide", "slide": "./slides/001-intro.json", "id": "intro-copy" },
   { "op": "rename-slide", "slide": "./slides/002-results.json", "name": "Key results" },
   { "op": "move-slide", "slide": "./slides/002-results.json", "after": "./slides/001-intro.json" },
@@ -111,7 +125,7 @@ Markdown 使用 `# 主标题`、`## 卡片标题`、描述和可选的 `icon_nam
 
 `set-element` 不能修改元素的 `id` 或 `type`。`move-element` 与 `move-slide` 使用稳定 ID/路径及 `before` 或 `after`，不暴露数组索引。不存在的页面或元素、重复元素 ID、非法 patch、删除最后一页等都会使整批操作失败；操作在内存中全部完成并通过全量 schema 校验后，CLI 才会写盘。Web 编辑器也把交互动作转换为同一组 operations 后再更新历史与保存。
 
-可用布局：`blank`、`title-body`、`section`、`statement`、`metric`、`two-column`、`image-right`、`three-cards`、`summary-cards`，以及论文解读族 `paper-figure`、`paper-table`、`versus`、`contributions`、`limits`、`closing`。
+可用布局：`blank`、`title-body`、`section`、`statement`、`metric`、`two-column`、`image-right`、`three-cards`、`summary-cards`、`hook-statement`、`prose-panel`、`takeaway`，以及论文解读族 `paper-figure`、`paper-table`、`versus`、`contributions`、`limits`、`closing`。
 
 ## TypeScript API
 
@@ -140,7 +154,7 @@ await renderPng(result.document, { projectPath: './my-deck', output: './dist/sli
 await renderPdf(result.document, { projectPath: './my-deck', output: './dist/deck.pdf' })
 ```
 
-`createDeckTemplate('showcase', { title: 'My story', theme: 'studio-cobalt' })` 与 CLI `init` 使用同一个模板工厂，因此 Web 默认项目、Agent API 与命令行不会产生三套不同的设计。
+`createDeckTemplate('nature-methods', { title: 'My method' })` 创建 Web 默认使用的证据优先学术方案；CLI/API 也调用同一个模板工厂。CLI 无参数 `init` 仍保留 `showcase`，以避免破坏已有脚本。
 
 `plaindeck/core` 公开 schema、类型、migration、canonical serializer、布局和主题预设。`plaindeck/render` 包含浏览器安全的纯 HTML renderer 与所有输出共用的 presentation model；文件系统、资源嵌入和 Playwright 渲染能力从包根入口 `plaindeck` 导出。React 页面组件由 `plaindeck/react` 导出，Remotion 时间轴由 `plaindeck/remotion` 导出（同一 npm 包的子路径，React 与 remotion 为可选 peer 依赖）。
 

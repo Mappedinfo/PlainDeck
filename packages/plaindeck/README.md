@@ -24,18 +24,20 @@ Each example below is a real five-slide PlainDeck project generated through `ini
 
 ```bash
 plaindeck init ./pitch --template pitch --theme night-citrus
+plaindeck init ./paper-talk --template nature-methods
 plaindeck apply ./my-deck --ops changes.json --dry-run --json
 plaindeck add-slide ./my-deck --layout image-right --name "Results"
 plaindeck styles --search editorial
 cat brief.md | plaindeck add-cards ./my-deck --content - --style editorialMagazine --name "Weekly brief"
+cat benchmark.md | plaindeck add-table ./my-deck --data - --style rules --name "Benchmark"
 plaindeck render ./my-deck --format html --output dist/deck.html
 plaindeck render ./my-deck --format png --output dist/slides
 plaindeck render ./my-deck --format pdf --output dist/deck.pdf
 ```
 
-`init` defaults to the five-slide `showcase` template and the `studio-cobalt` theme. Templates are `showcase`, `pitch`, `blank`, and `paper-reading` (an eight-slide paper walkthrough: problem, contributions, figure/table evidence, comparison, limitations, takeaway; defaults to `night-citrus`). Color systems include `studio-cobalt`, `night-citrus`, `ink-rose`, `paper-signal`, `night-blue`, `field-notes`, `editorial-blue`, and `poster-red`.
+`init` preserves the five-slide `showcase` / `studio-cobalt` default. Templates also include `nature-methods` (a seven-slide evidence-led methods talk), `paper-reading`, `pitch`, and `blank`. `nature-methods` and `paper-reading` default to the light `nature-editorial` theme. Nine color systems are available.
 
-`add-cards` turns Juya-style Markdown or JSON into a responsive 1–8 card slide. `styles` exposes 174 native recipes batch-compiled from the MIT-licensed Juya template catalog into 27 categories and 10 PlainDeck composition variants. Parsing, recipes, and layout live in the public core, so CLI-created cards are the same editable elements shown by the Web editor and every renderer.
+`add-table` parses Markdown, CSV, TSV, or JSON into a semantic, editable table slide with `rules`, `grid`, or `stripes` styling. `add-cards` turns Juya-style Markdown or JSON into a responsive 1–8 card slide. Both commands use the same operation kernel and renderers as the Web editor. `styles` exposes 174 native recipes batch-compiled from the MIT-licensed Juya catalog.
 
 HTML output is a standalone Web presentation with keyboard navigation, progress, slide names, and fullscreen. PNG/PDF use the same layout renderer in document mode.
 
@@ -102,7 +104,7 @@ await renderPdf(deck, { projectPath: './my-deck', output: './dist/deck.pdf' })
 
 For React and video output, the same package ships `plaindeck/react` and `plaindeck/remotion` subpath entries (with `react`, `react-dom` and `remotion` as optional peer dependencies). They use the same layout implementation as HTML/PNG/PDF; Remotion only interprets optional animation and camera metadata.
 
-See the [Agent API and operation contract](https://github.com/Mappedinfo/PlainDeck/blob/main/docs/agent-api.md) for the complete v0.3 interface, including document-level automatic footers and readable motion. The project schema remains `0.1`.
+See the [Agent API and operation contract](https://github.com/Mappedinfo/PlainDeck/blob/main/docs/agent-api.md) for the v0.5 interface, including native tables, document-level automatic footers, and readable motion. The project schema remains `0.1`.
 
 ## License
 

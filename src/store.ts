@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { applyOperations, layoutPresets, type DeckDocument, type DeckFooter, type DeckOperation, type LayoutPresetId, type SlideElement, type SlideMotion, type SummaryCardContent, type Theme } from 'plaindeck/core'
+import { applyOperations, layoutPresets, type DeckDocument, type DeckFooter, type DeckOperation, type LayoutPresetId, type SlideElement, type SlideMotion, type SummaryCardContent, type TableContent, type TableStyle, type Theme } from 'plaindeck/core'
 import { createSampleDocument } from './core/sample'
 import { alignmentPatch } from './core/geometry'
 import type { DirectoryHandle } from './storage/browserStorage'
@@ -35,6 +35,7 @@ interface EditorState {
   duplicateSelected(): void
   addSlide(layoutId?: LayoutPresetId): void
   addSummarySlide(content: SummaryCardContent, style?: string): void
+  addTableSlide(content: TableContent, style?: TableStyle): void
   duplicateSlide(): void
   deleteSlide(): void
   moveSlide(direction: -1 | 1): void
@@ -97,6 +98,7 @@ export const useEditor = create<EditorState>((set, get) => ({
     if (type === 'text') element = { id: uid('text'), type, frame: { x: 160, y: 160, w: 600, h: 120 }, text: '双击编辑文字', fontSize: 36 }
     else if (type === 'image') element = { id: uid('image'), type, frame: { x: 200, y: 200, w: 560, h: 360 }, src: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200', fit: 'cover', alt: 'placeholder' }
     else if (type === 'shape') element = { id: uid('shape'), type, frame: { x: 240, y: 220, w: 420, h: 240 }, shape: 'rounded-rectangle', fill: state.document.theme.colors.accent, radius: 24, text: '双击添加文字', textColor: state.document.theme.colors.background, fontSize: 30, fontWeight: 700, align: 'center', verticalAlign: 'middle' }
+    else if (type === 'table') element = { id: uid('table'), type, frame: { x: 120, y: 220, w: 1360, h: 440 }, cells: [['方法', '设置', '结果'], ['Baseline', '默认', '82.4'], ['PlainDeck', '完整模型', '89.7']], headerRows: 1, columnWidths: [1.5, 1.2, 1], alignments: ['left', 'left', 'right'], style: 'rules', fontSize: 23, headerFill: state.document.theme.colors.surface, stripeFill: state.document.theme.colors.surface, ruleColor: state.document.theme.colors.muted, accentColor: state.document.theme.colors.accent, ruleWidth: 2, cellPadding: 18 }
     else element = { id: uid('line'), type, frame: { x: 240, y: 360, w: 560, h: 8 }, color: state.document.theme.colors.text, strokeWidth: 4 }
     commitOperations(state, [{ op: 'add-element', slide: state.activeSlidePath, element }], `添加${type}`); set({ selectedIds: [element.id] })
   },
@@ -127,6 +129,11 @@ export const useEditor = create<EditorState>((set, get) => ({
     const state = get(); const id = uid('summary')
     const result = commitOperations(state, [{ op: 'add-summary-slide', id, content, style, name: content.title, after: state.activeSlidePath }], '从结构化内容生成卡片页')
     const path = result.changedPaths.find(item => item.startsWith('./slides/')); if (path) set({ activeSlidePath: path, selectedIds: [] })
+  },
+  addTableSlide: (content, style = 'rules') => {
+    const state = get(); const id = uid('table')
+    const result = commitOperations(state, [{ op: 'add-table-slide', id, content, style, name: content.title, after: state.activeSlidePath }], '从结构化数据生成原生表格页')
+    const path = result.changedPaths.find(item => item.startsWith('./slides/')); if (path) set({ activeSlidePath: path, selectedIds: ['table'] })
   },
   duplicateSlide: () => {
     const state = get(); const source = state.document.slides[state.activeSlidePath]; const id = uid(source.id)

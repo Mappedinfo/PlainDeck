@@ -60,7 +60,7 @@ describe('editor command history', () => {
     useEditor.getState().applyTheme(theme)
     const state = useEditor.getState(); const cover = state.document.slides[state.activeSlidePath]
     expect(cover.background).toEqual({ color: '#101714' })
-    expect(cover.elements.find(element => element.id === 'accent-panel')).toMatchObject({ type: 'shape', fill: '#D8FF52' })
+    expect(cover.elements.find(element => element.id === 'accent-rule')).toMatchObject({ type: 'shape', fill: '#D8FF52' })
     expect([...state.dirtyPaths]).toEqual(['./theme.json', ...state.document.deck.slides])
   })
   it('renames only the active slide and records history', () => {
@@ -107,6 +107,13 @@ describe('editor command history', () => {
     useEditor.getState().addElement('shape')
     const state = useEditor.getState(); const shape = state.document.slides[state.activeSlidePath].elements.at(-1)
     expect(shape).toMatchObject({ type: 'shape', text: '双击添加文字', align: 'center', verticalAlign: 'middle' })
+  })
+  it('creates a native table page through the shared operation kernel', () => {
+    useEditor.getState().addTableSlide({ title: '关键结果', columns: ['方法', '分数'], rows: [['Base', '82.4'], ['Ours', '89.7']], alignments: ['left', 'right'] }, 'rules')
+    const state = useEditor.getState(); const slide = state.document.slides[state.activeSlidePath]
+    expect(slide).toMatchObject({ layoutRef: 'table/rules', name: '关键结果' })
+    expect(slide.elements.find(element => element.id === 'table')).toMatchObject({ type: 'table', cells: [['方法', '分数'], ['Base', '82.4'], ['Ours', '89.7']] })
+    expect(state.selectedIds).toEqual(['table'])
   })
   it('adds imported images through the public operation kernel', () => {
     const path = useEditor.getState().activeSlidePath

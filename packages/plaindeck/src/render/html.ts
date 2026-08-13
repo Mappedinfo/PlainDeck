@@ -1,5 +1,5 @@
 import type { DeckDocument, SlideElement } from '../core/schema.js'
-import { elementFrameStyle, footerPresentation, imageContentStyle, lineContentStyle, shapeContentStyle, shapeLabelStyle, slideStyle, textContentStyle, type PresentationStyle } from './presentation.js'
+import { elementFrameStyle, footerPresentation, imageContentStyle, lineContentStyle, shapeContentStyle, shapeLabelStyle, slideStyle, tableCellStyle, tableColumnWidths, tableContentStyle, textContentStyle, type PresentationStyle } from './presentation.js'
 
 export interface HtmlRenderOptions {
   slidePaths?: string[]
@@ -29,6 +29,14 @@ function elementHtml(element: SlideElement, theme: DeckDocument['theme'], resolv
   if (element.type === 'shape') {
     const label = `<div class="shape-label" style="${escapeAttribute(styleHtml(shapeLabelStyle(element, theme)))}"><span>${escapeHtml(element.text ?? '')}</span></div>`
     return `<div ${attributes}><div class="shape-content" style="${escapeAttribute(styleHtml(shapeContentStyle(element)))}">${label}</div></div>`
+  }
+  if (element.type === 'table') {
+    const columns = tableColumnWidths(element).map(width => `<col style="width:${escapeAttribute(width)}">`).join('')
+    const rows = element.cells.map((row, rowIndex) => `<tr>${row.map((cell, columnIndex) => {
+      const tag = rowIndex < element.headerRows ? 'th' : 'td'
+      return `<${tag} data-row="${rowIndex}" data-column="${columnIndex}" style="${escapeAttribute(styleHtml(tableCellStyle(element, theme, rowIndex, columnIndex)))}">${escapeHtml(cell)}</${tag}>`
+    }).join('')}</tr>`).join('')
+    return `<div ${attributes}><table class="table-content table-${escapeAttribute(element.style)}" style="${escapeAttribute(styleHtml(tableContentStyle(element, theme)))}"><colgroup>${columns}</colgroup><tbody>${rows}</tbody></table></div>`
   }
   const arrow = element.arrowEnd ? `<span style="position:absolute;right:-1px;top:${-element.strokeWidth * 2 - 3}px;width:0;height:0;border-left:${element.strokeWidth * 4}px solid ${escapeAttribute(element.color)};border-top:${element.strokeWidth * 2 + 3}px solid transparent;border-bottom:${element.strokeWidth * 2 + 3}px solid transparent"></span>` : ''
   return `<div ${attributes}><div class="line-content" style="${escapeAttribute(styleHtml(lineContentStyle(element)))}">${arrow}</div></div>`

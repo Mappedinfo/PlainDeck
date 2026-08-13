@@ -137,23 +137,25 @@ PlainDeck 的 npm 包提供 TypeScript API、`plaindeck` 命令和 HTML/PNG/PDF 
 ```bash
 npm install plaindeck
 npx plaindeck init ./my-deck --title "生成式 AI 简介"
+npx plaindeck init ./paper-talk --template nature-methods --title "方法标题"
 npx plaindeck inspect ./my-deck --json
 npx plaindeck add-cards ./my-deck --content brief.md --name "Weekly brief"
 npx plaindeck styles --search "社论"
 npx plaindeck add-cards ./my-deck --content brief.md --style editorialMagazine
+npx plaindeck add-table ./my-deck --data benchmark.md --style rules
 npx plaindeck apply ./my-deck --ops changes.json --dry-run --json
 npx plaindeck apply ./my-deck --ops changes.json
 npx plaindeck render ./my-deck --format html --output deck.html
 ```
 
-`init` 默认创建一套可直接播放的五页编辑型模板，也可选择 `pitch`、`blank` 和 8 套内置配色。`add-cards` 可把 AI 整理出的 Markdown 或 JSON 直接变成 1–8 张自适应信息卡；`styles` 提供从 Juya News Card 批量迁移的 174 个原生视觉配方，Web 工具栏可以按名称和 27 个分类检索。所有配方最终仍是普通形状、文字和线条。推荐闭环是 `init → inspect → operations → validate → dry-run → apply → render`。网页编辑器的元素、页面、图层与主题修改也会转换为同一组 operations，因此 CLI 和画布共享同一个文档变更内核。HTML 默认嵌入本地图片并生成带方向键、进度和全屏控制的 Web 演示；外部图片默认不联网。PNG/PDF 渲染需要 Playwright Chromium：
+`init` 默认保留五页 `showcase` 契约，也可选择证据优先的七页 `nature-methods`、`paper-reading`、`pitch` 或 `blank`；网页版默认打开 `nature-methods`。九套内置配色新增浅色 `nature-editorial`。`add-table` 可把 Markdown、CSV、TSV 或 JSON 转成原生可编辑表格；`add-cards` 可把 Markdown 或 JSON 变成 1–8 张自适应信息卡；`styles` 提供 174 个原生视觉配方。CLI 和画布都通过同一组 operations 修改文档，HTML、PNG/PDF、React 与 Remotion 共用渲染规则。完整的设计审视见 [`docs/nature-design-review.md`](./docs/nature-design-review.md)。
 
 ```bash
 npm install playwright
 npx playwright install chromium
 ```
 
-公共 API 与操作格式见 [`docs/agent-api.md`](./docs/agent-api.md)，npm 包说明见 [`packages/plaindeck/README.md`](./packages/plaindeck/README.md)。v0.3 不包含 HTTP API、MCP、serve/watch 或 PPTX 导入导出；项目 schema 仍保持 `0.1` 兼容。
+公共 API 与操作格式见 [`docs/agent-api.md`](./docs/agent-api.md)，npm 包说明见 [`packages/plaindeck/README.md`](./packages/plaindeck/README.md)。v0.5 不包含 HTTP API、MCP、serve/watch 或 PPTX 导入导出；项目 schema 仍保持 `0.1` 兼容。
 
 ## React 与 Remotion：一页内容，所有输出
 
@@ -179,9 +181,9 @@ Web 工具栏显示的版本号直接读取 `packages/plaindeck/package.json`。
 ## 已实现的 MVP 能力
 
 - Zod schema、`0.1` schema version、迁移入口和 canonical JSON serializer；
-- 页面新建、重命名、复制、删除、排序，文本、图片、矩形和线条元素；
+- 页面新建、重命名、复制、删除、排序，文本、图片、矩形、线条和原生表格元素；
 - 本地图片文件选择、画布定位拖放和剪贴板粘贴，目录项目自动写入 `assets/`；
-- 9 种页面布局骨架、图片占位、1–8 张结构化摘要卡、174 个原生视觉配方、8 套默认配色与自定义主题颜色；
+- 18 种页面布局骨架、`nature-methods` 学术方案、图片占位、结构化摘要卡、原生表格、174 个视觉配方、9 套默认配色与自定义主题颜色；
 - 形状内文字、双击编辑、字号、颜色与对齐方式；
 - 文档级左、中、右页脚编辑器，支持自定义文字、自动日期、页码、总页数、文档标题与页面名称；
 - 可选的逐元素进入动画与页面镜头 JSON，Web 属性面板可视化编辑；

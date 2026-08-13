@@ -19,6 +19,7 @@ describe('PlainDeck renderer', () => {
       { op: 'add-slide', id: 'render-fixture', layout: 'three-cards', name: 'Render <check>' },
       { op: 'add-element', slide: './slides/001-intro.json', element: { id: 'placeholder', type: 'image', frame: { x: 0, y: 0, w: 100, h: 100 }, src: 'placeholder:image', fit: 'contain' } },
       { op: 'add-element', slide: './slides/001-intro.json', element: { id: 'arrow', type: 'line', frame: { x: 0, y: 120, w: 100, h: 20 }, color: '#123456', strokeWidth: 4, arrowEnd: true } },
+      { op: 'add-element', slide: './slides/001-intro.json', element: { id: 'benchmark', type: 'table', frame: { x: 120, y: 180, w: 800, h: 260 }, cells: [['Method', 'Score'], ['Base', '82.4'], ['Ours', '89.7']], headerRows: 1, alignments: ['left', 'right'], style: 'rules', accentColor: '#A63C3C' } },
       { op: 'set-footer', footer: { left: { type: 'text', text: 'Lab <notes>' }, center: { type: 'date' }, right: { type: 'page-of-count' }, fontSize: 15, color: '#765432' } },
     ])
     const html = renderHtml(result.document, { date: '2026-08-03' })
@@ -31,6 +32,8 @@ describe('PlainDeck renderer', () => {
     expect(html).toContain('#FFF8E9')
     expect(html).toContain('background:#E85538;border-color:transparent')
     expect(html).toContain('border-left:16px solid #123456')
+    expect(html).toContain('class="table-content table-rules"')
+    expect(html).toContain('<th data-row="0" data-column="0"')
     expect(html).toContain('class="slide-footer"')
     expect(html).toContain('Lab &lt;notes&gt;')
     expect(html).toContain('2026-08-03')

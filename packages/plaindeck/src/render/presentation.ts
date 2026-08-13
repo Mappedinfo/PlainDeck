@@ -328,6 +328,53 @@ export function lineContentStyle(element: Extract<SlideElement, { type: 'line' }
   }
 }
 
+export function tableColumnWidths(element: Extract<SlideElement, { type: 'table' }>): string[] {
+  const columns = element.cells[0]?.length ?? 0
+  const weights = element.columnWidths ?? Array.from({ length: columns }, () => 1)
+  const total = weights.reduce((sum, value) => sum + value, 0) || 1
+  return weights.map(value => `${value / total * 100}%`)
+}
+
+export function tableContentStyle(element: Extract<SlideElement, { type: 'table' }>, theme: DeckDocument['theme']): PresentationStyle {
+  const ruleColor = element.ruleColor ?? theme.colors.muted
+  const ruleWidth = element.ruleWidth ?? 2
+  return {
+    width: '100%', height: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', borderSpacing: 0,
+    fontFamily: element.fontFamily ?? theme.fonts.body,
+    fontSize: element.fontSize ?? Math.max(16, theme.fontSizes.body * 0.82),
+    lineHeight: 1.25, color: element.textColor ?? theme.colors.text,
+    borderTop: element.style === 'grid' ? undefined : `${ruleWidth * 1.5}px solid ${element.accentColor ?? theme.colors.accent}`,
+    borderBottom: element.style === 'grid' ? undefined : `${ruleWidth * 1.5}px solid ${ruleColor}`,
+  }
+}
+
+export function tableCellStyle(element: Extract<SlideElement, { type: 'table' }>, theme: DeckDocument['theme'], rowIndex: number, columnIndex: number): PresentationStyle {
+  const header = rowIndex < element.headerRows
+  const lastHeader = rowIndex === element.headerRows - 1
+  const highlighted = element.highlightRows?.includes(rowIndex) ?? false
+  const ruleColor = element.ruleColor ?? theme.colors.muted
+  const accent = element.accentColor ?? theme.colors.accent
+  const ruleWidth = element.ruleWidth ?? 2
+  const style: PresentationStyle = {
+    padding: element.cellPadding ?? 18,
+    textAlign: element.alignments?.[columnIndex] ?? (columnIndex === 0 ? 'left' : 'right'),
+    verticalAlign: 'middle', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', boxSizing: 'border-box',
+    fontWeight: header || columnIndex === 0 ? 700 : 400,
+    color: header ? element.headerTextColor ?? element.textColor ?? theme.colors.text : element.textColor ?? theme.colors.text,
+    background: header ? element.headerFill ?? theme.colors.surface ?? theme.colors.background
+      : highlighted || (element.style === 'stripes' && (rowIndex - element.headerRows) % 2 === 1) ? element.stripeFill ?? theme.colors.surface ?? theme.colors.background : 'transparent',
+    outline: 'none',
+  }
+  if (element.style === 'grid') {
+    style.border = `${ruleWidth}px solid ${ruleColor}`
+  } else {
+    style.borderLeft = 'none'; style.borderRight = 'none'; style.borderTop = 'none'
+    style.borderBottom = lastHeader ? `${ruleWidth * 1.5}px solid ${accent}` : `${Math.max(1, ruleWidth * 0.5)}px solid ${ruleColor}`
+  }
+  if (highlighted && columnIndex === 0) style.boxShadow = `inset ${Math.max(4, ruleWidth * 2)}px 0 ${accent}`
+  return style
+}
+
 export function slideStyle(document: DeckDocument, path: string): PresentationStyle {
   return {
     position: 'relative', width: document.deck.canvas.width, height: document.deck.canvas.height,

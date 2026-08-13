@@ -77,9 +77,44 @@ export const LineElementSchema = ElementBase.extend({
   arrowEnd: z.boolean().optional(),
 })
 
+const TableElementBaseSchema = ElementBase.extend({
+  type: z.literal('table'),
+  cells: z.array(z.array(z.string()).min(1)).min(1).max(50),
+  headerRows: z.number().int().nonnegative().default(1),
+  columnWidths: z.array(z.number().positive()).optional(),
+  alignments: z.array(z.enum(['left', 'center', 'right'])).optional(),
+  style: z.enum(['rules', 'grid', 'stripes']).default('rules'),
+  fontSize: z.number().positive().optional(),
+  fontFamily: z.string().min(1).optional(),
+  textColor: z.string().optional(),
+  headerTextColor: z.string().optional(),
+  headerFill: z.string().optional(),
+  stripeFill: z.string().optional(),
+  ruleColor: z.string().optional(),
+  accentColor: z.string().optional(),
+  ruleWidth: z.number().positive().optional(),
+  cellPadding: z.number().nonnegative().optional(),
+  highlightRows: z.array(z.number().int().nonnegative()).optional(),
+})
+
+const validateTableElement = (element: z.infer<typeof TableElementBaseSchema>, context: z.RefinementCtx) => {
+  const columns = element.cells[0]?.length ?? 0
+  element.cells.forEach((row, index) => {
+    if (row.length !== columns) context.addIssue({ code: 'custom', path: ['cells', index], message: `表格第 ${index + 1} 行有 ${row.length} 列，第一行有 ${columns} 列。` })
+  })
+  if (element.headerRows > element.cells.length) context.addIssue({ code: 'custom', path: ['headerRows'], message: '表头行数不能超过总行数。' })
+  if (element.columnWidths && element.columnWidths.length !== columns) context.addIssue({ code: 'custom', path: ['columnWidths'], message: '列宽数量必须与表格列数一致。' })
+  if (element.alignments && element.alignments.length !== columns) context.addIssue({ code: 'custom', path: ['alignments'], message: '对齐方式数量必须与表格列数一致。' })
+  element.highlightRows?.forEach((row, index) => {
+    if (row >= element.cells.length) context.addIssue({ code: 'custom', path: ['highlightRows', index], message: '高亮行索引超出表格范围。' })
+  })
+}
+
+export const TableElementSchema = TableElementBaseSchema.superRefine(validateTableElement)
+
 export const ElementSchema = z.discriminatedUnion('type', [
-  TextElementSchema, ImageElementSchema, ShapeElementSchema, LineElementSchema,
-])
+  TextElementSchema, ImageElementSchema, ShapeElementSchema, LineElementSchema, TableElementBaseSchema,
+]).superRefine((element, context) => { if (element.type === 'table') validateTableElement(element, context) })
 
 export const SlideSchema = z.object({
   id: z.string().min(1),

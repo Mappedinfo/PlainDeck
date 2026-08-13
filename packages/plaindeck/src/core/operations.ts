@@ -4,8 +4,9 @@ import { ElementSchema, FooterSchema, SlideMotionSchema, ThemeSchema, assertDocu
 import { applyDocumentTheme } from './theme.js'
 import { createSummaryCardElements, SummaryCardContentSchema } from './summary-cards.js'
 import { getDesignRecipe } from './design-recipes.js'
+import { createTableSlideElements, TableContentSchema } from './tables.js'
 
-const LayoutIdSchema = z.enum(['blank', 'title-body', 'section', 'statement', 'metric', 'two-column', 'image-right', 'three-cards', 'summary-cards', 'paper-figure', 'paper-table', 'versus', 'contributions', 'limits', 'closing'])
+const LayoutIdSchema = z.enum(['blank', 'title-body', 'section', 'statement', 'metric', 'two-column', 'image-right', 'three-cards', 'summary-cards', 'paper-figure', 'paper-table', 'versus', 'contributions', 'limits', 'closing', 'hook-statement', 'prose-panel', 'takeaway'])
 const SlidePathSchema = z.string().startsWith('./slides/').endsWith('.json')
 const ColorPatchSchema = z.object({
   background: z.string().optional(), text: z.string().optional(), muted: z.string().optional(), accent: z.string().optional(), surface: z.string().optional(),
@@ -18,6 +19,7 @@ export const DeckOperationSchema = z.discriminatedUnion('op', [
   z.object({ op: z.literal('move-element'), slide: SlidePathSchema, element: z.string().min(1), before: z.string().min(1).optional(), after: z.string().min(1).optional() }).strict(),
   z.object({ op: z.literal('add-slide'), layout: LayoutIdSchema.default('blank'), name: z.string().min(1).optional(), after: SlidePathSchema.optional(), id: z.string().regex(/^[a-zA-Z0-9_-]+$/).optional() }).strict(),
   z.object({ op: z.literal('add-summary-slide'), content: SummaryCardContentSchema, style: z.string().min(1).optional(), name: z.string().min(1).optional(), after: SlidePathSchema.optional(), id: z.string().regex(/^[a-zA-Z0-9_-]+$/).optional() }).strict(),
+  z.object({ op: z.literal('add-table-slide'), content: TableContentSchema, style: z.enum(['rules', 'grid', 'stripes']).default('rules'), name: z.string().min(1).optional(), after: SlidePathSchema.optional(), id: z.string().regex(/^[a-zA-Z0-9_-]+$/).optional() }).strict(),
   z.object({ op: z.literal('duplicate-slide'), slide: SlidePathSchema, id: z.string().regex(/^[a-zA-Z0-9_-]+$/).optional(), name: z.string().min(1).optional() }).strict(),
   z.object({ op: z.literal('rename-slide'), slide: SlidePathSchema, name: z.string().trim().min(1) }).strict(),
   z.object({ op: z.literal('set-slide-motion'), slide: SlidePathSchema, motion: SlideMotionSchema.nullable() }).strict(),
@@ -123,6 +125,21 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
         layoutRef: recipe ? `summary-cards/${recipe.id}` : 'summary-cards',
         background: { color: slideTheme.colors.background },
         elements: createSummaryCardElements(operation.content, slideTheme, document.deck.canvas, recipe),
+      }
+      changed.add('deck.json'); changed.add(path)
+    } else if (operation.op === 'add-table-slide') {
+      const id = operation.id ?? `table-${globalThis.crypto.randomUUID().slice(0, 8)}`
+      if (Object.values(document.slides).some(slide => slide.id === id)) throw new Error(`页面 ID 已存在：${id}`)
+      const path = uniqueSlidePath(document, id)
+      const afterIndex = operation.after ? document.deck.slides.indexOf(operation.after) : document.deck.slides.length - 1
+      if (operation.after && afterIndex < 0) throw new Error(`页面不存在：${operation.after}`)
+      document.deck.slides.splice(afterIndex + 1, 0, path)
+      document.slides[path] = {
+        id,
+        name: operation.name ?? operation.content.title,
+        layoutRef: `table/${operation.style}`,
+        background: { color: document.theme.colors.background },
+        elements: createTableSlideElements(operation.content, document.theme, document.deck.canvas, operation.style),
       }
       changed.add('deck.json'); changed.add(path)
     } else if (operation.op === 'duplicate-slide') {
