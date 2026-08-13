@@ -1,6 +1,6 @@
 # PlainDeck Agent API 与 CLI
 
-PlainDeck v0.5.0 面向 Agent 的推荐工作流是：
+PlainDeck v0.6.0 面向 Agent 的推荐工作流是：
 
 ```text
 init → inspect → operations → validate → dry-run → apply → render

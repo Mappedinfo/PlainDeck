@@ -1,6 +1,6 @@
 {
   "name": "plaindeck",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Git-native slide format, Agent API, CLI, and renderer",
   "type": "module",
   "license": "MIT",
