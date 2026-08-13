@@ -1,5 +1,5 @@
 {
-  "name": "plaindeck-mcp",
+  "name": "@mappedinfo/plaindeck-mcp",
   "version": "0.6.1",
   "description": "MCP server for PlainDeck: agent-native slide decks — init, validate, inspect, apply operations, add cards/tables, render",
   "type": "module",

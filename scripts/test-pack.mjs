@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path'
 const root = resolve(import.meta.dirname, '..')
 const packages = [
   { workspace: 'plaindeck', manifest: 'packages/plaindeck/package.json', notices: true },
-  { workspace: 'plaindeck-mcp', manifest: 'packages/plaindeck-mcp/package.json', notices: true },
+  { workspace: '@mappedinfo/plaindeck-mcp', manifest: 'packages/plaindeck-mcp/package.json', notices: true },
 ]
 const expectedVersion = JSON.parse(readFileSync(join(root, packages[0].manifest), 'utf8')).version
 const work = mkdtempSync(join(tmpdir(), 'plaindeck-pack-test-'))
@@ -66,7 +66,7 @@ try {
   const mcpCli = join(installRoot, 'node_modules', '.bin', process.platform === 'win32' ? 'plaindeck-mcp.cmd' : 'plaindeck-mcp')
   const mcpVersion = run(mcpCli, ['--version'], { cwd: installRoot })
   if (mcpVersion !== expectedVersion) throw new Error(`unexpected plaindeck-mcp version: ${mcpVersion}; expected ${expectedVersion}`)
-  const mcpTools = run(process.execPath, ['--input-type=module', '-e', "import { createPlainDeckServer } from 'plaindeck-mcp'; const server = createPlainDeckServer(); console.log(typeof server.registerTool)"], { cwd: installRoot })
+  const mcpTools = run(process.execPath, ['--input-type=module', '-e', "import { createPlainDeckServer } from '@mappedinfo/plaindeck-mcp'; const server = createPlainDeckServer(); console.log(typeof server.registerTool)"], { cwd: installRoot })
   if (mcpTools !== 'function') throw new Error(`unexpected plaindeck-mcp exports: ${mcpTools}`)
   process.stdout.write(`✓ installed and exercised ${tarballs.length} PlainDeck ${expectedVersion} tarballs\n`)
 } finally {

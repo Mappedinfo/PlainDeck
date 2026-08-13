@@ -18,7 +18,7 @@ Usage:
   plaindeck-mcp --help     显示本帮助
 
 DeepSeek Harness 接入：
-  npm install --global plaindeck-mcp
+  npm install --global @mappedinfo/plaindeck-mcp
   dsh web --patch "$PWD/packages/plaindeck-mcp/plaindeck.cordis.yml"
 `)
   process.exit(0)

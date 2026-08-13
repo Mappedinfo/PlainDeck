@@ -9,8 +9,8 @@
   "scripts": {
     "dev": "npm run build:packages && vite",
     "build": "npm run build:packages && tsc -b && vite build",
-    "build:package": "npm run build -w plaindeck -w plaindeck-mcp",
-    "build:packages": "npm run build -w plaindeck -w plaindeck-mcp",
+    "build:package": "npm run build -w plaindeck -w @mappedinfo/plaindeck-mcp",
+    "build:packages": "npm run build -w plaindeck -w @mappedinfo/plaindeck-mcp",
     "preview": "vite preview",
     "test": "npm run build:packages && vitest run",
     "test:pack": "node scripts/test-pack.mjs",

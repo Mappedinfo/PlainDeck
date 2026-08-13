@@ -20,7 +20,7 @@ The server wraps the PlainDeck Agent API (the same operations the Web canvas and
 ## Install
 
 ```sh
-npm install --global plaindeck-mcp
+npm install --global @mappedinfo/plaindeck-mcp
 ```
 
 Requires Node.js ≥ 22. PNG/PDF rendering additionally needs:
@@ -61,7 +61,7 @@ Every step leaves a plain JSON diff that humans can review in Git.
 ## Development
 
 ```sh
-npm run build -w plaindeck-mcp   # compile dist/
+npm run build -w @mappedinfo/plaindeck-mcp   # compile dist/
 npm test                         # workspace vitest (includes packages/plaindeck-mcp/test)
-npx @modelcontextprotocol/inspector plaindeck-mcp   # interactive inspection
+npx @modelcontextprotocol/inspector @mappedinfo/plaindeck-mcp   # interactive inspection
 ```
