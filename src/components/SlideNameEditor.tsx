@@ -8,9 +8,11 @@ interface Props {
 export function SlideNameEditor({ name, onCommit }: Props) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(name)
+  const [draftSource, setDraftSource] = useState(name)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => setDraft(name), [name])
+  // Sync the draft to an external rename without an effect (render-time adjustment).
+  if (draftSource !== name) { setDraftSource(name); setDraft(name) }
   useEffect(() => { if (editing) inputRef.current?.select() }, [editing])
 
   const commit = () => {

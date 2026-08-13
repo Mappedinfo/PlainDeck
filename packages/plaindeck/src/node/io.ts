@@ -2,6 +2,7 @@ import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { dirname, isAbsolute, relative, resolve } from 'node:path'
 import { createSavePlan } from '../core/save-plan.js'
 import { migrateDeck } from '../core/migration.js'
+import { PROJECT_PATHS } from '../core/project-paths.js'
 import { DeckSchema, SlideSchema, ThemeSchema, assertDocument, type DeckDocument, type Slide } from '../core/schema.js'
 
 function projectFile(root: string, file: string) {
@@ -19,7 +20,7 @@ async function readJson(root: string, file: string) {
 
 export async function loadDeck(projectPath: string): Promise<DeckDocument> {
   const root = resolve(projectPath)
-  const deck = migrateDeck(await readJson(root, 'deck.json'))
+  const deck = migrateDeck(await readJson(root, PROJECT_PATHS.deck))
   const theme = ThemeSchema.parse(await readJson(root, deck.theme))
   const slides: Record<string, Slide> = {}
   for (const path of deck.slides) slides[path] = SlideSchema.parse(await readJson(root, path))

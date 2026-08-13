@@ -1,5 +1,6 @@
 import type { SlideElement, Theme } from './schema.js'
 import { createSummaryCardElements } from './summary-cards.js'
+import { BRAND_ACCENT } from './brand.js'
 
 export type LayoutPresetId = 'blank' | 'title-body' | 'section' | 'statement' | 'metric' | 'two-column' | 'image-right' | 'three-cards' | 'summary-cards' | 'paper-figure' | 'paper-table' | 'versus' | 'contributions' | 'limits' | 'closing' | 'hook-statement' | 'prose-panel' | 'takeaway'
 
@@ -84,7 +85,7 @@ export const themePresets: ThemePreset[] = [
   themePreset('studio-cobalt', '钴蓝工作室', '编辑感、鲜明、现代', { background: '#F2F0E8', text: '#102A43', muted: '#667085', accent: '#FF5A4F' }),
   themePreset('night-citrus', '午夜柑橘', '深色、锐利、舞台感', { background: '#101714', text: '#F6F3E8', muted: '#9FAB9F', accent: '#D8FF52' }),
   themePreset('ink-rose', '墨色玫瑰', '克制、时尚、高对比', { background: '#171319', text: '#FFF7F2', muted: '#BAAEB6', accent: '#FF6B8A' }),
-  themePreset('paper-signal', '纸张信号', '温暖、直接', { background: '#FFF8E9', text: '#20211D', muted: '#706F67', accent: '#E85538' }, { title: 'Georgia, Charter, "Songti SC", "Noto Serif SC", serif', body: 'Avenir Next, Aptos, "PingFang SC", "Noto Sans SC", sans-serif', mono: 'SFMono-Regular, Consolas, monospace' }),
+  themePreset('paper-signal', '纸张信号', '温暖、直接', { background: '#FFF8E9', text: '#20211D', muted: '#706F67', accent: BRAND_ACCENT }, { title: 'Georgia, Charter, "Songti SC", "Noto Serif SC", serif', body: 'Avenir Next, Aptos, "PingFang SC", "Noto Sans SC", sans-serif', mono: 'SFMono-Regular, Consolas, monospace' }),
   themePreset('night-blue', '深夜蓝图', '技术、沉静', { background: '#111820', text: '#F3F7F5', muted: '#8C9AA3', accent: '#36B7D4' }),
   themePreset('field-notes', '田野笔记', '自然、克制', { background: '#F1F0E7', text: '#203027', muted: '#6E786F', accent: '#547A5A' }, { title: 'Georgia, Charter, "Songti SC", "Noto Serif SC", serif', body: 'Avenir Next, Aptos, "PingFang SC", "Noto Sans SC", sans-serif', mono: 'SFMono-Regular, Consolas, monospace' }),
   themePreset('editorial-blue', '编辑蓝', '清晰、理性', { background: '#F3F6F7', text: '#17242C', muted: '#6F7C83', accent: '#235D83' }),
@@ -98,7 +99,8 @@ export function getThemePreset(id: string): ThemePreset | undefined {
 const imagePlaceholder = 'placeholder:image'
 const frame = (x: number, y: number, w: number, h: number) => ({ x, y, w, h })
 
-const BASE_CANVAS = { width: 1600, height: 900 }
+/** Design base canvas every preset is authored against; layouts scale to other canvases. */
+export const BASE_CANVAS = { width: 1600, height: 900 }
 
 /** Create preset layout elements, scaled uniformly when the target canvas differs from the 1600×900 design base. */
 export function createLayoutElements(layoutId: LayoutPresetId, theme: Theme, canvas = BASE_CANVAS): SlideElement[] {

@@ -1,5 +1,5 @@
 import type { DeckDocument, Slide, Theme } from 'plaindeck/core'
-import { DeckSchema, SlideSchema, ThemeSchema, assertDocument, canonicalJson, createSavePlan, migrateDeck } from 'plaindeck/core'
+import { DeckSchema, SlideSchema, ThemeSchema, assertDocument, canonicalJson, createSavePlan, GITIGNORE_TEMPLATE, migrateDeck, PROJECT_PATHS } from 'plaindeck/core'
 
 export type DirectoryHandle = FileSystemDirectoryHandle
 const baselines = new WeakMap<DirectoryHandle, Map<string, string>>()
@@ -57,19 +57,15 @@ export async function writeImageAsset(root: DirectoryHandle, file: File): Promis
   const extensionByType: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif', 'image/svg+xml': 'svg' }
   const extension = extensionByType[file.type] ?? file.name.match(/\.([a-zA-Z0-9]+)$/)?.[1]?.toLowerCase() ?? 'image'
   const base = file.name.replace(/\.[^.]+$/, '').normalize('NFKD').replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'image'
-  const path = `./assets/${base}-${crypto.randomUUID().slice(0, 8)}.${extension}`
+  const path = `${PROJECT_PATHS.assetsDir}${base}-${crypto.randomUUID().slice(0, 8)}.${extension}`
   const handle = await fileHandle(root, path, true); const writable = await handle.createWritable(); await writable.write(file); await writable.close()
   const urls = assetUrls.get(root) ?? new Map<string, string>(); urls.set(path, URL.createObjectURL(file)); assetUrls.set(root, urls)
   return path
 }
 
-async function readJson(root: DirectoryHandle, path: string): Promise<unknown> {
-  return JSON.parse(await readText(root, path))
-}
-
 export async function readProject(root: DirectoryHandle): Promise<DeckDocument> {
   const baseline = new Map<string, string>()
-  const deckText = await readText(root, 'deck.json'); baseline.set('deck.json', deckText)
+  const deckText = await readText(root, PROJECT_PATHS.deck); baseline.set(PROJECT_PATHS.deck, deckText)
   const deck = migrateDeck(JSON.parse(deckText))
   const themeText = await readText(root, deck.theme); baseline.set(deck.theme, themeText)
   const theme = ThemeSchema.parse(JSON.parse(themeText))
@@ -90,7 +86,7 @@ async function writeChecked(root: DirectoryHandle, path: string, content: string
   const baseline = baselines.get(root)
   const expected = baseline?.get(path)
   if (expected !== undefined) {
-    let current = ''
+    let current: string
     try { current = await readText(root, path) } catch { throw new Error(`文件在外部被删除，已停止覆盖：${path}`) }
     if (current !== expected) throw new Error(`检测到外部修改，已停止自动保存：${path}`)
   } else if (await pathExists(root, path)) throw new Error(`目标文件已存在，已停止覆盖：${path}`)
@@ -114,16 +110,16 @@ export async function writeProject(root: DirectoryHandle, document: DeckDocument
   for (const write of plan.writes) await writeChecked(root, write.path, write.content)
   for (const path of plan.deletions) await removeChecked(root, path)
   if (!paths) {
-    await root.getDirectoryHandle('assets', { create: true })
-    await root.getDirectoryHandle('exports', { create: true })
-    await writeChecked(root, 'theme.css', themeCss(document.theme))
-    await writeChecked(root, '.gitignore', 'exports/*\n!exports/.gitkeep\n.DS_Store\n')
+    await root.getDirectoryHandle(PROJECT_PATHS.assetsDir.replace(/^\.\//, ''), { create: true })
+    await root.getDirectoryHandle(PROJECT_PATHS.exportsDir, { create: true })
+    await writeChecked(root, PROJECT_PATHS.themeCss, themeCss(document.theme))
+    await writeChecked(root, PROJECT_PATHS.gitignore, GITIGNORE_TEMPLATE)
   }
 }
 
 export function projectInitializationPaths(document: DeckDocument): string[] {
   const checked = assertDocument(document)
-  return ['deck.json', checked.deck.theme, ...checked.deck.slides, 'theme.css', '.gitignore']
+  return [PROJECT_PATHS.deck, checked.deck.theme, ...checked.deck.slides, PROJECT_PATHS.themeCss, PROJECT_PATHS.gitignore]
 }
 
 export async function initializeProject(root: DirectoryHandle, document: DeckDocument): Promise<void> {

@@ -2,7 +2,7 @@
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { stdin, stderr, stdout } from 'node:process'
-import { applyOperations, createDeckTemplate, createSavePlan, deckTemplatePresets, designRecipes, inspectDeck, layoutPresets, parseSummaryCards, parseTableContent, searchDesignRecipes, tableStyles, themePresets, validateDeck, type DeckTemplateId, type TableStyle } from './core/index.js'
+import { applyOperations, createDeckTemplate, createSavePlan, deckTemplatePresets, designRecipes, GITIGNORE_TEMPLATE, inspectDeck, layoutPresets, parseSummaryCards, parseTableContent, PROJECT_PATHS, searchDesignRecipes, tableStyles, themePresets, validateDeck, type DeckTemplateId, type TableStyle } from './core/index.js'
 import { loadDeck, prepareDocumentAssets, renderPdf, renderPng, saveDeck } from './node/index.js'
 import { renderHtml } from './render/index.js'
 import packageMetadata from '../package.json' with { type: 'json' }
@@ -80,16 +80,16 @@ async function run() {
     if (!deckTemplatePresets.some(item => item.id === template)) throw new UsageError(`未知模板 ${template}。可用模板：${deckTemplatePresets.map(item => item.id).join(', ')}`)
     if (!themePresets.some(item => item.id === theme)) throw new UsageError(`未知主题 ${theme}。可用主题：${themePresets.map(item => item.id).join(', ')}`)
     const document = createDeckTemplate(template as DeckTemplateId, { title: option('--title'), id: option('--id'), theme })
-    const plannedPaths = [...createSavePlan(document).targets, '.gitignore']
+    const plannedPaths = [...createSavePlan(document).targets, PROJECT_PATHS.gitignore]
     const collisions: string[] = []
     for (const path of plannedPaths) if (await exists(join(root, path.replace(/^\.\//, '')))) collisions.push(path)
     if (collisions.length) throw new UsageError(`目标目录包含将被创建的文件：${collisions.join('、')}。init 已停止，请使用空目录。`)
     const changedPaths = await saveDeck(root, document)
-    const ignore = join(root, '.gitignore')
+    const ignore = join(root, PROJECT_PATHS.gitignore)
     if (!await exists(ignore)) {
       await mkdir(root, { recursive: true })
-      await writeFile(ignore, 'exports/*\n.DS_Store\n', 'utf8')
-      changedPaths.push('.gitignore')
+      await writeFile(ignore, GITIGNORE_TEMPLATE, 'utf8')
+      changedPaths.push(PROJECT_PATHS.gitignore)
     }
     emit({ ok: true, project: root, title: document.deck.title, template, theme, slides: document.deck.slides.length, changedPaths }, `✓ 已创建 ${document.deck.title} · ${document.deck.slides.length} 页 · ${template} / ${theme}`)
     return
@@ -123,7 +123,7 @@ async function run() {
     if (!layoutPresets.some(preset => preset.id === layout)) throw new UsageError(`未知布局 ${layout}。可用布局：${layoutPresets.map(preset => preset.id).join(', ')}`)
     const result = applyOperations(await loadDeck(root), [{ op: 'add-slide', layout, name: option('--name') }])
     await saveDeck(root, result.document, result.changedPaths)
-    const addedPath = result.changedPaths.find(path => path.startsWith('./slides/'))
+    const addedPath = result.changedPaths.find(path => path.startsWith(PROJECT_PATHS.slidesDir))
     emit({ ok: true, changedPaths: result.changedPaths, slide: addedPath }, `✓ 已添加页面 ${addedPath}`)
     return
   }
@@ -136,7 +136,7 @@ async function run() {
     if (style && !designRecipes.some(recipe => recipe.id === style)) throw new UsageError(`未知设计配方 ${style}。运行 plaindeck styles --search <query> 查找。`)
     const result = applyOperations(await loadDeck(root), [{ op: 'add-summary-slide', content, style, name: option('--name'), after: option('--after') }])
     await saveDeck(root, result.document, result.changedPaths)
-    const addedPath = result.changedPaths.find(path => path.startsWith('./slides/'))
+    const addedPath = result.changedPaths.find(path => path.startsWith(PROJECT_PATHS.slidesDir))
     emit({ ok: true, changedPaths: result.changedPaths, slide: addedPath, cards: content.cards.length, style: style ?? null }, `✓ 已添加结构化卡片页 ${addedPath} · ${content.cards.length} 个要点${style ? ` · ${style}` : ''}`)
     return
   }
@@ -150,7 +150,7 @@ async function run() {
     if (!tableStyles.includes(style as TableStyle)) throw new UsageError(`未知表格样式 ${style}。可用样式：${tableStyles.join(', ')}`)
     const result = applyOperations(await loadDeck(root), [{ op: 'add-table-slide', content, style: style as TableStyle, name: option('--name'), after: option('--after') }])
     await saveDeck(root, result.document, result.changedPaths)
-    const addedPath = result.changedPaths.find(path => path.startsWith('./slides/'))
+    const addedPath = result.changedPaths.find(path => path.startsWith(PROJECT_PATHS.slidesDir))
     emit({ ok: true, changedPaths: result.changedPaths, slide: addedPath, rows: content.rows.length, columns: content.columns.length, style }, `✓ 已添加原生表格页 ${addedPath} · ${content.rows.length} 行 × ${content.columns.length} 列 · ${style}`)
     return
   }

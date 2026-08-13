@@ -108,6 +108,12 @@ describe('editor command history', () => {
     const state = useEditor.getState(); const shape = state.document.slides[state.activeSlidePath].elements.at(-1)
     expect(shape).toMatchObject({ type: 'shape', text: '双击添加文字', align: 'center', verticalAlign: 'middle' })
   })
+  it('adds an image element with a local inline placeholder (no network dependency)', () => {
+    useEditor.getState().addElement('image')
+    const state = useEditor.getState(); const image = state.document.slides[state.activeSlidePath].elements.at(-1)
+    expect(image).toMatchObject({ type: 'image', fit: 'cover' })
+    expect(image?.type === 'image' ? image.src : '').toMatch(/^data:image\/svg\+xml,/)
+  })
   it('creates a native table page through the shared operation kernel', () => {
     useEditor.getState().addTableSlide({ title: '关键结果', columns: ['方法', '分数'], rows: [['Base', '82.4'], ['Ours', '89.7']], alignments: ['left', 'right'] }, 'rules')
     const state = useEditor.getState(); const slide = state.document.slides[state.activeSlidePath]

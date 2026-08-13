@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { BRAND_ACCENT } from './brand.js'
+import { PROJECT_PATHS } from './project-paths.js'
 
 export const FrameSchema = z.object({
   x: z.number().int(), y: z.number().int(), w: z.number().int().positive(), h: z.number().int().positive(),
@@ -56,7 +58,7 @@ export const ImageElementSchema = ElementBase.extend({
 export const ShapeElementSchema = ElementBase.extend({
   type: z.literal('shape'),
   shape: z.enum(['rectangle', 'rounded-rectangle', 'ellipse']).default('rectangle'),
-  fill: z.string().default('#E85538'),
+  fill: z.string().default(BRAND_ACCENT),
   stroke: z.string().optional(),
   strokeWidth: z.number().nonnegative().optional(),
   radius: z.number().nonnegative().optional(),
@@ -160,7 +162,7 @@ export const DeckSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
   canvas: z.object({ width: z.number().int().positive(), height: z.number().int().positive() }),
-  theme: z.string().default('./theme.json'),
+  theme: z.string().default(PROJECT_PATHS.theme),
   footer: FooterSchema.optional(),
   slides: z.array(z.string()).min(1),
 })

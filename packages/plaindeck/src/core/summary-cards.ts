@@ -16,7 +16,7 @@ export const SummaryCardContentSchema = z.object({
 export type SummaryCard = z.infer<typeof SummaryCardSchema>
 export type SummaryCardContent = z.infer<typeof SummaryCardContentSchema>
 
-const iconPattern = /^[a-z][a-z0-9_,\-]{0,79}$/i
+const iconPattern = /^[a-z][a-z0-9_,-]{0,79}$/i
 
 function stripFence(input: string) {
   const trimmed = input.trim()

@@ -1,7 +1,7 @@
 import { Image as ImageIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { PlainDeckElementContent, PlainDeckFooter } from 'plaindeck/react'
-import { type Frame, type Slide, type SlideElement } from 'plaindeck/core'
+import { PROJECT_PATHS, type Frame, type Slide, type SlideElement } from 'plaindeck/core'
 import { elementFrameStyle, slideStyle } from 'plaindeck/render'
 import { framePlacement, moveFrame, resizeFrame } from '../core/geometry'
 import { useEditor } from '../store'
@@ -12,20 +12,29 @@ interface SurfaceProps { slide: Slide; interactive?: boolean; zoom: number }
 function ElementView({ element, interactive, zoom }: { element: SlideElement; interactive: boolean; zoom: number }) {
   const { document, directory, selectedIds, select, updateElement } = useEditor()
   const selected = selectedIds.includes(element.id)
+  const sourcePath = element.type === 'image' ? element.src : ''
   const [draft, setDraft] = useState<Frame | null>(null)
   const [editing, setEditing] = useState(false)
-  const [imageSrc, setImageSrc] = useState(element.type === 'image' && !element.src.startsWith('./assets/') ? element.src : '')
-  const sourcePath = element.type === 'image' ? element.src : ''
+  const [imageSrc, setImageSrc] = useState(() => sourcePath.startsWith(PROJECT_PATHS.assetsDir) ? '' : sourcePath)
   const start = useRef<{ x: number; y: number; frame: Frame; mode: 'move' | 'resize' } | null>(null)
   const frame = draft ?? element.frame
   const canvas = document.deck.canvas
   const placement = framePlacement(frame, canvas)
 
-  useEffect(() => setDraft(null), [element.frame.x, element.frame.y, element.frame.w, element.frame.h])
+  // Reset the drag draft when the committed frame changes (render-time adjustment, no effect).
+  const frameKey = `${element.frame.x},${element.frame.y},${element.frame.w},${element.frame.h}`
+  const [draftFrameKey, setDraftFrameKey] = useState(frameKey)
+  if (draftFrameKey !== frameKey) { setDraftFrameKey(frameKey); setDraft(null) }
+  // Local assets render via resolved object URLs; everything else renders the src directly.
+  const localAsset = sourcePath.startsWith(PROJECT_PATHS.assetsDir) && Boolean(directory)
+  const [imageSource, setImageSource] = useState<{ path: string; dir: typeof directory }>({ path: sourcePath, dir: directory })
+  if (imageSource.path !== sourcePath || imageSource.dir !== directory) {
+    setImageSource({ path: sourcePath, dir: directory })
+    setImageSrc(localAsset ? '' : sourcePath)
+  }
   useEffect(() => {
-    if (!sourcePath) return
-    if (!sourcePath.startsWith('./assets/') || !directory) { setImageSrc(sourcePath); return }
-    let active = true; setImageSrc('')
+    if (!sourcePath || !sourcePath.startsWith(PROJECT_PATHS.assetsDir) || !directory) return
+    let active = true
     resolveAssetUrl(directory, sourcePath).then(url => { if (active) setImageSrc(url) }).catch(() => { if (active) setImageSrc(sourcePath) })
     return () => { active = false }
   }, [directory, sourcePath])

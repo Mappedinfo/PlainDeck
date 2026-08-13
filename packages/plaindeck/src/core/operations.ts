@@ -5,9 +5,10 @@ import { applyDocumentTheme } from './theme.js'
 import { createSummaryCardElements, SummaryCardContentSchema } from './summary-cards.js'
 import { getDesignRecipe } from './design-recipes.js'
 import { createTableSlideElements, TableContentSchema } from './tables.js'
+import { PROJECT_PATHS } from './project-paths.js'
 
 const LayoutIdSchema = z.enum(['blank', 'title-body', 'section', 'statement', 'metric', 'two-column', 'image-right', 'three-cards', 'summary-cards', 'paper-figure', 'paper-table', 'versus', 'contributions', 'limits', 'closing', 'hook-statement', 'prose-panel', 'takeaway'])
-const SlidePathSchema = z.string().startsWith('./slides/').endsWith('.json')
+const SlidePathSchema = z.string().startsWith(PROJECT_PATHS.slidesDir).endsWith('.json')
 const ColorPatchSchema = z.object({
   background: z.string().optional(), text: z.string().optional(), muted: z.string().optional(), accent: z.string().optional(), surface: z.string().optional(),
 }).strict()
@@ -108,7 +109,7 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
       if (operation.after && afterIndex < 0) throw new Error(`页面不存在：${operation.after}`)
       document.deck.slides.splice(afterIndex + 1, 0, path)
       document.slides[path] = { id, name: operation.name ?? preset.name, layoutRef: operation.layout, elements: createLayoutElements(operation.layout, document.theme) }
-      changed.add('deck.json'); changed.add(path)
+      changed.add(PROJECT_PATHS.deck); changed.add(path)
     } else if (operation.op === 'add-summary-slide') {
       const id = operation.id ?? `summary-${globalThis.crypto.randomUUID().slice(0, 8)}`
       if (Object.values(document.slides).some(slide => slide.id === id)) throw new Error(`页面 ID 已存在：${id}`)
@@ -126,7 +127,7 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
         background: { color: slideTheme.colors.background },
         elements: createSummaryCardElements(operation.content, slideTheme, document.deck.canvas, recipe),
       }
-      changed.add('deck.json'); changed.add(path)
+      changed.add(PROJECT_PATHS.deck); changed.add(path)
     } else if (operation.op === 'add-table-slide') {
       const id = operation.id ?? `table-${globalThis.crypto.randomUUID().slice(0, 8)}`
       if (Object.values(document.slides).some(slide => slide.id === id)) throw new Error(`页面 ID 已存在：${id}`)
@@ -141,7 +142,7 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
         background: { color: document.theme.colors.background },
         elements: createTableSlideElements(operation.content, document.theme, document.deck.canvas, operation.style),
       }
-      changed.add('deck.json'); changed.add(path)
+      changed.add(PROJECT_PATHS.deck); changed.add(path)
     } else if (operation.op === 'duplicate-slide') {
       const source = requireSlide(document, operation.slide)
       const id = operation.id ?? `${source.id}-${globalThis.crypto.randomUUID().slice(0, 8)}`
@@ -150,7 +151,7 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
       const copy = structuredClone(source); copy.id = id; copy.name = operation.name ?? `${source.name ?? source.id} copy`
       document.deck.slides.splice(document.deck.slides.indexOf(operation.slide) + 1, 0, path)
       document.slides[path] = copy
-      changed.add('deck.json'); changed.add(path)
+      changed.add(PROJECT_PATHS.deck); changed.add(path)
     } else if (operation.op === 'rename-slide') {
       requireSlide(document, operation.slide).name = operation.name.trim()
       changed.add(operation.slide)
@@ -164,17 +165,17 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
       if (operation.before) requireSlide(document, operation.before)
       if (operation.after) requireSlide(document, operation.after)
       moveRelative(document.deck.slides, operation.slide, operation.before, operation.after)
-      changed.add('deck.json')
+      changed.add(PROJECT_PATHS.deck)
     } else if (operation.op === 'remove-slide') {
       if (document.deck.slides.length === 1) throw new Error('不能删除最后一页。')
       requireSlide(document, operation.slide)
       document.deck.slides = document.deck.slides.filter(path => path !== operation.slide)
       delete document.slides[operation.slide]
-      changed.add('deck.json'); changed.add(operation.slide)
+      changed.add(PROJECT_PATHS.deck); changed.add(operation.slide)
     } else if (operation.op === 'set-footer') {
       if (operation.footer) document.deck.footer = structuredClone(operation.footer)
       else delete document.deck.footer
-      changed.add('deck.json')
+      changed.add(PROJECT_PATHS.deck)
     } else {
       if ((operation.patch && operation.theme) || (!operation.patch && !operation.theme)) throw new Error('set-theme 必须且只能指定 patch 或 theme。')
       let theme = operation.theme

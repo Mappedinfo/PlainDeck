@@ -19,7 +19,7 @@ async function launchChromium(executablePath?: string) {
     const { chromium } = await import('playwright')
     return await chromium.launch({ headless: true, executablePath })
   } catch (error) {
-    throw new Error(`PNG/PDF 渲染需要 Playwright Chromium。请运行：npm install playwright && npx playwright install chromium\n${error instanceof Error ? error.message : String(error)}`)
+    throw new Error(`PNG/PDF 渲染需要 Playwright Chromium。请运行：npm install playwright && npx playwright install chromium\n${error instanceof Error ? error.message : String(error)}`, { cause: error })
   }
 }
 

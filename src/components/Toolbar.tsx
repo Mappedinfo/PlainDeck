@@ -1,4 +1,4 @@
-import { AlignCenter, AlignHorizontalDistributeCenter, AlignLeft, AlignRight, Box, Download, FilePlus2, FolderOpen, Image, LayoutDashboard, Minus, MousePointer2, Play, Redo2, Save, Square, Table2, Type, Undo2 } from 'lucide-react'
+import { Box, Download, FilePlus2, FolderOpen, Image, LayoutDashboard, Minus, MousePointer2, Play, Redo2, Save, Square, Table2, Type, Undo2 } from 'lucide-react'
 import { useEditor } from '../store'
 import { version as plainDeckVersion } from '../../packages/plaindeck/package.json'
 

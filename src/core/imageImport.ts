@@ -5,7 +5,7 @@ export const SUPPORTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', '
 
 export function validateImageFile(file: File) {
   if (!SUPPORTED_IMAGE_TYPES.includes(file.type)) throw new Error(`不支持的图片格式：${file.type || file.name}`)
-  if (file.size > MAX_IMAGE_BYTES) throw new Error(`图片超过 25 MB：${file.name}`)
+  if (file.size > MAX_IMAGE_BYTES) throw new Error(`图片超过 ${MAX_IMAGE_BYTES / 1024 / 1024} MB：${file.name}`)
 }
 
 export function fitImageFrame(

@@ -1,6 +1,6 @@
 {
   "name": "plaindeck",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Git-native slide format, Agent API, CLI, and renderer",
   "type": "module",
   "license": "MIT",
@@ -36,6 +36,10 @@
     "./core": {
       "types": "./dist/core/index.d.ts",
       "import": "./dist/core/index.js"
+    },
+    "./node": {
+      "types": "./dist/node/index.d.ts",
+      "import": "./dist/node/index.js"
     },
     "./render": {
       "types": "./dist/render/index.d.ts",

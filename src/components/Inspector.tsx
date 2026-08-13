@@ -1,12 +1,13 @@
 import { AlignCenter, AlignLeft, AlignRight, ArrowDownToLine, ArrowLeftToLine, ArrowRightToLine, ArrowUpToLine, Image, LocateFixed, Minus, Search, Square, Table2, Type } from 'lucide-react'
 import { parseTableCells, tableCellsToTsv, themePresets, type DeckFooter, type ElementAnimation, type FooterSlot, type SlideElement, type TableStyle } from 'plaindeck/core'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { centerFrame, framePlacement } from '../core/geometry'
 import { useEditor } from '../store'
 
 function Numeric({ label, value, min, step, onChange }: { label: string; value: number; min?: number; step?: number; onChange: (value: number) => void }) {
   const [draft, setDraft] = useState(String(value))
-  useEffect(() => setDraft(String(value)), [value])
+  const [draftSource, setDraftSource] = useState(value)
+  if (draftSource !== value) { setDraftSource(value); setDraft(String(value)) }
   const commit = () => {
     const next = Number(draft)
     if (draft.trim() && Number.isFinite(next) && (min === undefined || next >= min)) onChange(next)
@@ -17,14 +18,16 @@ function Numeric({ label, value, min, step, onChange }: { label: string; value: 
 
 function DraftTextarea({ value, rows, label, placeholder, onCommit }: { value: string; rows: number; label: string; placeholder?: string; onCommit: (value: string) => void }) {
   const [draft, setDraft] = useState(value)
-  useEffect(() => setDraft(value), [value])
+  const [draftSource, setDraftSource] = useState(value)
+  if (draftSource !== value) { setDraftSource(value); setDraft(value) }
   return <label className="field"><span>{label}</span><textarea rows={rows} value={draft} placeholder={placeholder} onChange={event => setDraft(event.target.value)} onBlur={() => { if (draft !== value) onCommit(draft) }} /></label>
 }
 
 function TableGridEditor({ element, onCommit }: { element: Extract<SlideElement, { type: 'table' }>; onCommit: (cells: string[][]) => void }) {
   const value = tableCellsToTsv(element.cells)
   const [draft, setDraft] = useState(value); const [error, setError] = useState('')
-  useEffect(() => { setDraft(value); setError('') }, [value])
+  const [draftSource, setDraftSource] = useState(value)
+  if (draftSource !== value) { setDraftSource(value); setDraft(value); setError('') }
   const commit = () => {
     if (draft === value) return
     try { const cells = parseTableCells(draft); onCommit(cells); setError('') }
@@ -86,7 +89,8 @@ function FooterEditor() {
 export function Inspector() {
   const state = useEditor(); const slide = state.document.slides[state.activeSlidePath]
   const [elementQuery, setElementQuery] = useState('')
-  useEffect(() => setElementQuery(''), [state.activeSlidePath])
+  const [querySource, setQuerySource] = useState(state.activeSlidePath)
+  if (querySource !== state.activeSlidePath) { setQuerySource(state.activeSlidePath); setElementQuery('') }
   const selected = slide.elements.filter(element => state.selectedIds.includes(element.id)); const element = selected.length === 1 ? selected[0] : null
   const visibleElements = slide.elements.filter(item => `${item.id} ${typeNames[item.type]} ${elementName(item)}`.toLowerCase().includes(elementQuery.trim().toLowerCase()))
   const patch = (value: Partial<SlideElement>, label?: string) => element && state.updateElement(element.id, value, label)

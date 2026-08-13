@@ -155,7 +155,7 @@ npm install playwright
 npx playwright install chromium
 ```
 
-公共 API 与操作格式见 [`docs/agent-api.md`](./docs/agent-api.md)，npm 包说明见 [`packages/plaindeck/README.md`](./packages/plaindeck/README.md)。v0.5 不包含 HTTP API、MCP、serve/watch 或 PPTX 导入导出；项目 schema 仍保持 `0.1` 兼容。
+公共 API 与操作格式见 [`docs/agent-api.md`](./docs/agent-api.md)，npm 包说明见 [`packages/plaindeck/README.md`](./packages/plaindeck/README.md)。v0.6 不包含 HTTP API、MCP、serve/watch 或 PPTX 导入导出；项目 schema 仍保持 `0.1` 兼容。
 
 ## React 与 Remotion：一页内容，所有输出
 
@@ -177,6 +177,17 @@ import { PlainDeckTimeline } from 'plaindeck/remotion'
 动画仍是可审查的普通 JSON；静态渲染器忽略动画字段并保持完全相同的最终版式，Remotion 按帧解释它。字幕与音频继续由视频项目作为独立时间轴图层叠加，不会复制页面内容。完整说明和 paper-to-Bilibili 接入方式见 [`docs/remotion.md`](./docs/remotion.md)。
 
 Web 工具栏显示的版本号直接读取 `packages/plaindeck/package.json`。发布时只需更新 npm 包版本，Web 构建会自动同步，无需再修改界面源码。
+
+## MCP Server：让 Agent 直接制作幻灯片
+
+[`plaindeck-mcp`](./packages/plaindeck-mcp/README.md) 把 PlainDeck Agent API 封装为 [Model Context Protocol](https://modelcontextprotocol.io/) 工具：`init`、`validate`、`inspect`、`apply_operations`、`add_cards`、`add_table`、`render`、`styles`。任何 MCP 客户端（DeepSeek Harness、Claude Code、Codex 等）都可以让 Agent 从研究笔记直接生成、修改并渲染一份可被 Git 审查的幻灯片项目。
+
+```sh
+npm install --global plaindeck-mcp
+
+# DeepSeek Harness 接入（工具以 mcp__plaindeck__* 出现）
+dsh web --patch "$PWD/packages/plaindeck-mcp/plaindeck.cordis.yml"
+```
 
 ## 已实现的 MVP 能力
 
@@ -205,6 +216,13 @@ PlainDeck 默认不加载统计脚本。若需要统计公开网站的页面访�
 - `BAIDU_ANALYTICS_ID`：百度统计站点代码中的 32 位站点 ID。
 
 配置后重新运行 Pages 工作流即可生效。统计代码只在生产构建中启用；PlainDeck 不会上报幻灯片内容、编辑操作、文件名或本地目录信息。删除变量并重新部署即可关闭。
+
+### 环境变量
+
+本地开发与构建从 `.env.local` 读取配置（模板见 [`.env.example`](./.env.example)，真实值不要提交到仓库）：
+
+- `VITE_BASE_PATH`：部署基础路径，默认 `/PlainDeck/`。自定义域名或根路径部署时设为 `/`；其他子路径按需设置（注意首尾斜杠）。影响构建产物路径、PWA manifest 的 `start_url`/`scope` 与 e2e 测试的 baseURL。
+- `VITE_GOOGLE_ANALYTICS_ID` / `VITE_BAIDU_ANALYTICS_ID`：站点分析 ID（仅生产构建启用），也可通过上方的 GitHub Actions 变量注入。
 
 完整格式说明见 [`docs/project-format.md`](./docs/project-format.md)，项目目标与设计背景见 [`PlainDeck_项目计划书_v0.1.md`](./PlainDeck_项目计划书_v0.1.md)。
 

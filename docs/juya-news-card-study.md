@@ -15,4 +15,4 @@ PlainDeck 没有复制 174 个 React 运行时组件，而是通过 `scripts/mig
 - `plaindeck styles` 与 `add-cards --style <id>`：让 Agent 无需读取 React 代码即可检索和应用视觉风格；
 - `npm run styles:migrate` / `npm run styles:check`：可重复生成并检查目录是否与同级 `juya-news-card` 仓库一致。
 
-保留的边界：迁移是基于设计 token 与构图特征的 PlainDeck 原生重建，不承诺对每个 React/CSS 像素级复刻。PlainDeck v0.4.0 仍不内置 LLM 服务或密钥管理。AI/Agent 负责依据来源生成结构化初稿，PlainDeck 负责验证格式、排版、人工精调和所有输出。这延续了项目的 Local-first 与单内核原则。
+保留的边界：迁移是基于设计 token 与构图特征的 PlainDeck 原生重建，不承诺对每个 React/CSS 像素级复刻。PlainDeck v0.6.0 仍不内置 LLM 服务或密钥管理。AI/Agent 负责依据来源生成结构化初稿，PlainDeck 负责验证格式、排版、人工精调和所有输出。这延续了项目的 Local-first 与单内核原则。

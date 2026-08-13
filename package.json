@@ -1,7 +1,7 @@
 {
   "name": "plaindeck-web",
   "private": true,
-  "version": "0.6.0",
+  "version": "0.6.1",
   "type": "module",
   "workspaces": [
     "packages/*"
@@ -9,8 +9,8 @@
   "scripts": {
     "dev": "npm run build:packages && vite",
     "build": "npm run build:packages && tsc -b && vite build",
-    "build:package": "npm run build -w plaindeck",
-    "build:packages": "npm run build -w plaindeck",
+    "build:package": "npm run build -w plaindeck -w plaindeck-mcp",
+    "build:packages": "npm run build -w plaindeck -w plaindeck-mcp",
     "preview": "vite preview",
     "test": "npm run build:packages && vitest run",
     "test:pack": "node scripts/test-pack.mjs",
@@ -20,26 +20,37 @@
     "test:remotion": "npm run build:packages && node scripts/render-remotion-demo.mjs",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "typecheck": "npm run build:packages && tsc -b --pretty false"
+    "typecheck": "npm run build:packages && tsc -b --pretty false",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "jszip": "^3.10.1",
     "lucide-react": "^0.468.0",
-    "plaindeck": "0.6.0",
+    "plaindeck": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zod": "4.4.3",
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.49.1",
     "@remotion/cli": "4.0.504",
     "@types/node": "^22.20.1",
     "@types/react": "^19.0.3",
     "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^10.8.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.4",
+    "globals": "^17.11.0",
     "jsdom": "^25.0.1",
+    "prettier": "^3.9.6",
     "typescript": "~5.7.2",
+    "typescript-eslint": "^8.67.0",
     "vite": "^6.0.5",
     "vite-plugin-pwa": "^0.21.1",
     "vitest": "^4.1.10"

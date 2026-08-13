@@ -24,7 +24,7 @@ function initializeGoogleAnalytics(measurementId: string) {
 
   appendScript('plaindeck-google-analytics', `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`)
   analyticsWindow.dataLayer = analyticsWindow.dataLayer ?? []
-  analyticsWindow.gtag = function gtag() { analyticsWindow.dataLayer?.push(arguments) }
+  analyticsWindow.gtag = function gtag(...args: unknown[]) { analyticsWindow.dataLayer?.push(args) }
   analyticsWindow.gtag('js', new Date())
   analyticsWindow.gtag('config', measurementId, {
     send_page_view: true,

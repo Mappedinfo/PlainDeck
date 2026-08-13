@@ -1,8 +1,15 @@
 import { create } from 'zustand'
 import { applyOperations, layoutPresets, type DeckDocument, type DeckFooter, type DeckOperation, type LayoutPresetId, type SlideElement, type SlideMotion, type SummaryCardContent, type TableContent, type TableStyle, type Theme } from 'plaindeck/core'
 import { createSampleDocument } from './core/sample'
+import { PLACEHOLDER_IMAGE_SRC } from './core/placeholder'
 import { alignmentPatch } from './core/geometry'
 import type { DirectoryHandle } from './storage/browserStorage'
+
+/** Canvas zoom limits — single source for the editor zoom range and steps. */
+export const ZOOM_INITIAL = .58
+export const ZOOM_MIN = .2
+export const ZOOM_MAX = 1.25
+export const ZOOM_STEP = .05
 
 type SaveState = 'demo' | 'dirty' | 'saving' | 'saved' | 'error'
 interface Snapshot { document: DeckDocument; label: string }
@@ -62,7 +69,7 @@ function commitOperations(state: EditorState, operations: DeckOperation[], label
 }
 
 export const useEditor = create<EditorState>((set, get) => ({
-  document: initialDocument, activeSlidePath: initialDocument.deck.slides[0], selectedIds: [], zoom: .58,
+  document: initialDocument, activeSlidePath: initialDocument.deck.slides[0], selectedIds: [], zoom: ZOOM_INITIAL,
   saveState: 'demo', error: null, directory: null, dirtyPaths: new Set(), dirtyRevisions: new Map(), revision: 0, persistedRevision: 0, past: [], future: [],
   setDocument: (document, directory = null) => set({ document, directory, activeSlidePath: document.deck.slides[0], selectedIds: [], past: [], future: [], dirtyPaths: new Set(), dirtyRevisions: new Map(), revision: 0, persistedRevision: 0, saveState: directory ? 'saved' : 'demo', error: null }),
   restoreDocument: (document, revision = 1) => {
@@ -76,7 +83,7 @@ export const useEditor = create<EditorState>((set, get) => ({
     commitOperations(state, [{ op: 'rename-slide', slide: state.activeSlidePath, name: next }], '重命名页面')
   },
   select: selectedIds => set({ selectedIds }),
-  setZoom: zoom => set({ zoom: Math.min(1.25, Math.max(.2, zoom)) }),
+  setZoom: zoom => set({ zoom: Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, zoom)) }),
   setSaveState: (saveState, error = null) => set({ saveState, error }),
   commitDocument: (document, label, paths) => set(state => {
     const revision = state.revision + 1
@@ -96,7 +103,7 @@ export const useEditor = create<EditorState>((set, get) => ({
     const state = get()
     let element: SlideElement
     if (type === 'text') element = { id: uid('text'), type, frame: { x: 160, y: 160, w: 600, h: 120 }, text: '双击编辑文字', fontSize: 36 }
-    else if (type === 'image') element = { id: uid('image'), type, frame: { x: 200, y: 200, w: 560, h: 360 }, src: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200', fit: 'cover', alt: 'placeholder' }
+    else if (type === 'image') element = { id: uid('image'), type, frame: { x: 200, y: 200, w: 560, h: 360 }, src: PLACEHOLDER_IMAGE_SRC, fit: 'cover', alt: 'placeholder' }
     else if (type === 'shape') element = { id: uid('shape'), type, frame: { x: 240, y: 220, w: 420, h: 240 }, shape: 'rounded-rectangle', fill: state.document.theme.colors.accent, radius: 24, text: '双击添加文字', textColor: state.document.theme.colors.background, fontSize: 30, fontWeight: 700, align: 'center', verticalAlign: 'middle' }
     else if (type === 'table') element = { id: uid('table'), type, frame: { x: 120, y: 220, w: 1360, h: 440 }, cells: [['方法', '设置', '结果'], ['Baseline', '默认', '82.4'], ['PlainDeck', '完整模型', '89.7']], headerRows: 1, columnWidths: [1.5, 1.2, 1], alignments: ['left', 'left', 'right'], style: 'rules', fontSize: 23, headerFill: state.document.theme.colors.surface, stripeFill: state.document.theme.colors.surface, ruleColor: state.document.theme.colors.muted, accentColor: state.document.theme.colors.accent, ruleWidth: 2, cellPadding: 18 }
     else element = { id: uid('line'), type, frame: { x: 240, y: 360, w: 560, h: 8 }, color: state.document.theme.colors.text, strokeWidth: 4 }

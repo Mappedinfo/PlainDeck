@@ -5,7 +5,8 @@ import { join, resolve } from 'node:path'
 
 const root = resolve(import.meta.dirname, '..')
 const packages = [
-  { workspace: 'plaindeck', manifest: 'packages/plaindeck/package.json' },
+  { workspace: 'plaindeck', manifest: 'packages/plaindeck/package.json', notices: true },
+  { workspace: 'plaindeck-mcp', manifest: 'packages/plaindeck-mcp/package.json', notices: true },
 ]
 const expectedVersion = JSON.parse(readFileSync(join(root, packages[0].manifest), 'utf8')).version
 const work = mkdtempSync(join(tmpdir(), 'plaindeck-pack-test-'))
@@ -24,8 +25,8 @@ try {
     if (manifest.version !== expectedVersion) throw new Error(`${manifest.name} version ${manifest.version} does not match ${expectedVersion}`)
     const packed = JSON.parse(run(npm, ['pack', '-w', item.workspace, '--json', '--pack-destination', work]))[0]
     if (!packed.files.some(file => file.path === 'LICENSE')) throw new Error(`${manifest.name} tarball is missing LICENSE`)
-    if (manifest.name === 'plaindeck' && !packed.files.some(file => file.path === 'THIRD_PARTY_NOTICES.md')) {
-      throw new Error('plaindeck tarball is missing THIRD_PARTY_NOTICES.md')
+    if (item.notices && !packed.files.some(file => file.path === 'THIRD_PARTY_NOTICES.md')) {
+      throw new Error(`${manifest.name} tarball is missing THIRD_PARTY_NOTICES.md`)
     }
     const forbidden = packed.files.map(file => file.path).filter(path => /(^|\/)(\.env|test-results|playwright-report|src)(\/|$)/.test(path))
     if (forbidden.length) throw new Error(`${manifest.name} tarball includes forbidden files: ${forbidden.join(', ')}`)
@@ -39,8 +40,8 @@ try {
   const cli = join(installRoot, 'node_modules', '.bin', process.platform === 'win32' ? 'plaindeck.cmd' : 'plaindeck')
   const version = run(cli, ['--version'], { cwd: installRoot })
   if (version !== expectedVersion) throw new Error(`unexpected CLI version: ${version}; expected ${expectedVersion}`)
-  const exportsCheck = run(process.execPath, ['--input-type=module', '-e', "import { createDeckTemplate, validateDeck } from 'plaindeck'; import { DeckSchema, parseTableContent } from 'plaindeck/core'; import { renderHtml } from 'plaindeck/render'; import { PlainDeckSlide } from 'plaindeck/react'; import { PlainDeckTimeline, elementAnimationStyle } from 'plaindeck/remotion'; console.log([typeof createDeckTemplate, typeof validateDeck, typeof DeckSchema.parse, typeof parseTableContent, typeof renderHtml, typeof PlainDeckSlide, typeof PlainDeckTimeline, typeof elementAnimationStyle].join(','))"], { cwd: installRoot })
-  if (exportsCheck !== 'function,function,function,function,function,function,function,function') throw new Error(`unexpected package exports: ${exportsCheck}`)
+  const exportsCheck = run(process.execPath, ['--input-type=module', '-e', "import { createDeckTemplate, validateDeck } from 'plaindeck'; import { DeckSchema, parseTableContent } from 'plaindeck/core'; import { renderHtml } from 'plaindeck/render'; import { loadDeck } from 'plaindeck/node'; import { PlainDeckSlide } from 'plaindeck/react'; import { PlainDeckTimeline, elementAnimationStyle } from 'plaindeck/remotion'; console.log([typeof createDeckTemplate, typeof validateDeck, typeof DeckSchema.parse, typeof parseTableContent, typeof renderHtml, typeof loadDeck, typeof PlainDeckSlide, typeof PlainDeckTimeline, typeof elementAnimationStyle].join(','))"], { cwd: installRoot })
+  if (exportsCheck !== 'function,function,function,function,function,function,function,function,function') throw new Error(`unexpected package exports: ${exportsCheck}`)
   const created = join(work, 'created-deck')
   const initialized = JSON.parse(run(cli, ['init', created, '--title', 'Packed CLI deck', '--template', 'showcase', '--theme', 'studio-cobalt', '--json'], { cwd: installRoot }))
   if (!initialized.ok || initialized.slides !== 5) throw new Error(`packed CLI init failed: ${JSON.stringify(initialized)}`)
@@ -62,6 +63,11 @@ try {
   const tableHtml = join(work, 'table.html')
   run(cli, ['render', created, '--format', 'html', '--output', tableHtml, '--json'], { cwd: installRoot })
   if (!readFileSync(tableHtml, 'utf8').includes('class="table-content table-rules"')) throw new Error('packed CLI table did not reach standalone HTML output')
+  const mcpCli = join(installRoot, 'node_modules', '.bin', process.platform === 'win32' ? 'plaindeck-mcp.cmd' : 'plaindeck-mcp')
+  const mcpVersion = run(mcpCli, ['--version'], { cwd: installRoot })
+  if (mcpVersion !== expectedVersion) throw new Error(`unexpected plaindeck-mcp version: ${mcpVersion}; expected ${expectedVersion}`)
+  const mcpTools = run(process.execPath, ['--input-type=module', '-e', "import { createPlainDeckServer } from 'plaindeck-mcp'; const server = createPlainDeckServer(); console.log(typeof server.registerTool)"], { cwd: installRoot })
+  if (mcpTools !== 'function') throw new Error(`unexpected plaindeck-mcp exports: ${mcpTools}`)
   process.stdout.write(`✓ installed and exercised ${tarballs.length} PlainDeck ${expectedVersion} tarballs\n`)
 } finally {
   rmSync(work, { recursive: true, force: true })

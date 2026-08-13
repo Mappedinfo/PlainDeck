@@ -23,11 +23,11 @@ describe('analytics', () => {
 
     const script = document.getElementById('plaindeck-google-analytics') as HTMLScriptElement
     expect(script.src).toBe('https://www.googletagmanager.com/gtag/js?id=G-ABC1234567')
-    const queue = (window as typeof window & { dataLayer: IArguments[] }).dataLayer
+    const queue = (window as typeof window & { dataLayer: unknown[][] }).dataLayer
     expect(queue).toHaveLength(2)
-    expect(Array.isArray(queue[0])).toBe(false)
-    expect([...queue[0]]).toEqual(['js', expect.any(Date)])
-    expect([...queue[1]]).toEqual(['config', 'G-ABC1234567', expect.objectContaining({ send_page_view: true })])
+    expect(Array.isArray(queue[0])).toBe(true)
+    expect(queue[0]).toEqual(['js', expect.any(Date)])
+    expect(queue[1]).toEqual(['config', 'G-ABC1234567', expect.objectContaining({ send_page_view: true })])
   })
 
   it('loads Baidu Analytics for a valid site ID', () => {

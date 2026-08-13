@@ -37,7 +37,7 @@ function ExportDialog({ onClose }: { onClose: () => void }) {
 }
 
 export default function App() {
-  const state = useEditor(); const [present, setPresent] = useState(false); const [exporting, setExporting] = useState(false); const [addingCards, setAddingCards] = useState(false); const [addingTable, setAddingTable] = useState(false); const [updateReady, setUpdateReady] = useState(false); const [draggingImage, setDraggingImage] = useState(false); const [imageNotice, setImageNotice] = useState(''); const [recovery, setRecovery] = useState<Awaited<ReturnType<typeof restoreFromOpfs>>>(null); const zipRef = useRef<HTMLInputElement>(null); const imageRef = useRef<HTMLInputElement>(null); const canvasRef = useRef<HTMLElement>(null); const applyUpdateRef = useRef<ApplyUpdate>(null); const saveLoopRef = useRef<ReturnType<typeof createSaveLoop> | null>(null)
+  const state = useEditor(); const [present, setPresent] = useState(false); const [exporting, setExporting] = useState(false); const [addingCards, setAddingCards] = useState(false); const [addingTable, setAddingTable] = useState(false); const [updateReady, setUpdateReady] = useState(false); const [draggingImage, setDraggingImage] = useState(false); const [imageNotice, setImageNotice] = useState(''); const [recovery, setRecovery] = useState<Awaited<ReturnType<typeof restoreFromOpfs>>>(null); const zipRef = useRef<HTMLInputElement>(null); const imageRef = useRef<HTMLInputElement>(null); const canvasRef = useRef<HTMLElement>(null); const applyUpdateRef = useRef<ApplyUpdate>(null)
   const fitCanvas = useCallback(() => {
     const workspace = canvasRef.current
     if (!workspace) return
@@ -68,7 +68,7 @@ export default function App() {
     const rect = surface.getBoundingClientRect(); const canvas = useEditor.getState().document.deck.canvas
     return { x: (clientX - rect.left) * canvas.width / rect.width, y: (clientY - rect.top) * canvas.height / rect.height }
   }, [])
-  if (!saveLoopRef.current) saveLoopRef.current = createSaveLoop({
+  const [saveLoop] = useState(() => createSaveLoop({
     hasPending: () => useEditor.getState().dirtyRevisions.size > 0,
     saveOnce: async () => {
       const current = useEditor.getState(); const captured = new Map(current.dirtyRevisions); const paths = new Set(captured.keys()); const document = structuredClone(current.document); const directory = current.directory
@@ -82,8 +82,8 @@ export default function App() {
       if (directory && !useEditor.getState().dirtyRevisions.size) await clearRecoveryFromOpfs()
     },
     onError: error => { useEditor.getState().setSaveState('error', error instanceof Error ? error.message : String(error)) },
-  })
-  const save = useCallback(() => saveLoopRef.current!.request(), [])
+  }))
+  const save = useCallback(() => saveLoop.request(), [saveLoop])
 
   useEffect(() => { if (state.saveState !== 'dirty') return; const timer = setTimeout(save, 700); return () => clearTimeout(timer) }, [state.document, state.saveState, save])
   useEffect(() => { const update = (event: Event) => { const applyUpdate = (event as CustomEvent<ApplyUpdate>).detail; if (typeof applyUpdate !== 'function') return; applyUpdateRef.current = applyUpdate; setUpdateReady(true) }; addEventListener('plaindeck-update', update); return () => removeEventListener('plaindeck-update', update) }, [])
@@ -103,7 +103,7 @@ export default function App() {
     const key = (event: KeyboardEvent) => {
       if ((event.target as HTMLElement).isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes((event.target as HTMLElement).tagName)) return
       const editor = useEditor.getState(); const mod = event.metaKey || event.ctrlKey
-      if (mod && event.key.toLowerCase() === 'z') { event.preventDefault(); event.shiftKey ? editor.redo() : editor.undo() }
+      if (mod && event.key.toLowerCase() === 'z') { event.preventDefault(); if (event.shiftKey) editor.redo(); else editor.undo() }
       if (mod && event.key.toLowerCase() === 'y') { event.preventDefault(); editor.redo() }
       if (mod && event.key.toLowerCase() === 'd') { event.preventDefault(); editor.duplicateSelected() }
       if (mod && event.key.toLowerCase() === 's') { event.preventDefault(); save() }

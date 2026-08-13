@@ -1,5 +1,5 @@
 import { CloudOff, GitBranch, Github, Minus, Plus } from 'lucide-react'
-import { useEditor } from '../store'
+import { useEditor, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from '../store'
 
 export function StatusBar() {
   const { document, zoom, setZoom, saveState, directory, error } = useEditor()
@@ -12,6 +12,6 @@ export function StatusBar() {
     <a className="source-link" href="https://github.com/Mappedinfo/PlainDeck" target="_blank" rel="noreferrer" aria-label="在 GitHub 查看 PlainDeck 源码" title="GitHub · Mappedinfo/PlainDeck"><Github /> SOURCE</a>
     <span className="status-spacer" />
     <span>{document.deck.canvas.width} × {document.deck.canvas.height}</span>
-    <button onClick={() => setZoom(zoom - .05)}><Minus /></button><input aria-label="画布缩放" type="range" min="20" max="125" value={zoom * 100} onChange={e => setZoom(Number(e.target.value) / 100)} /><button onClick={() => setZoom(zoom + .05)}><Plus /></button><strong>{Math.round(zoom * 100)}%</strong>
+    <button onClick={() => setZoom(zoom - ZOOM_STEP)}><Minus /></button><input aria-label="画布缩放" type="range" min={ZOOM_MIN * 100} max={ZOOM_MAX * 100} step={ZOOM_STEP * 100} value={zoom * 100} onChange={e => setZoom(Number(e.target.value) / 100)} /><button onClick={() => setZoom(zoom + ZOOM_STEP)}><Plus /></button><strong>{Math.round(zoom * 100)}%</strong>
   </footer>
 }

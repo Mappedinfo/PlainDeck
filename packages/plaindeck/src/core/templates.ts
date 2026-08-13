@@ -1,5 +1,6 @@
 import { assertDocument, type DeckDocument, type Slide, type SlideElement, type Theme } from './schema.js'
 import { createLayoutElements, getThemePreset, type LayoutPresetId } from './presets.js'
+import { PROJECT_PATHS } from './project-paths.js'
 
 export type DeckTemplateId = 'showcase' | 'pitch' | 'blank' | 'paper-reading' | 'nature-methods'
 
@@ -212,9 +213,9 @@ export function createDeckTemplate(templateId: DeckTemplateId = 'showcase', opti
   const title = options.title?.trim() || (templateId === 'pitch' ? 'A focused idea, ready to move.' : templateId === 'blank' ? 'Untitled presentation' : templateId === 'paper-reading' ? '论文标题：一句话说清核心贡献' : templateId === 'nature-methods' ? '方法标题：一句话说清解决了什么' : 'Make the idea visible.')
   const id = options.id?.trim() || slug(title)
   if (templateId === 'blank') {
-    const path = './slides/001-cover.json'
+    const path = `${PROJECT_PATHS.slidesDir}001-cover.json`
     return assertDocument({
-      deck: { schemaVersion: '0.1', id, title, canvas: { width: 1600, height: 900 }, theme: './theme.json', slides: [path] }, theme,
+      deck: { schemaVersion: '0.1', id, title, canvas: { width: 1600, height: 900 }, theme: PROJECT_PATHS.theme, slides: [path] }, theme,
       slides: { [path]: { id: 'cover', name: 'Cover', layoutRef: 'section', background: { color: theme.colors.background }, elements: [
         text('kicker', 'PLAINDECK / NEW STORY', 88, 76, 760, 40, { fontSize: 18, fontWeight: 800, color: theme.colors.accent }),
         text('title', title, 88, 256, 1280, 220, { styleRef: 'slide-title', fontSize: 86, fontWeight: 800, color: theme.colors.text }),
@@ -226,7 +227,7 @@ export function createDeckTemplate(templateId: DeckTemplateId = 'showcase', opti
   }
   const slides = templateId === 'paper-reading' ? paperReadingSlides(theme, title) : templateId === 'nature-methods' ? natureMethodsSlides(theme, title) : storySlides(templateId, theme, title)
   return assertDocument({
-    deck: { schemaVersion: '0.1', id, title, canvas: { width: 1600, height: 900 }, theme: './theme.json', slides: Object.keys(slides) },
+    deck: { schemaVersion: '0.1', id, title, canvas: { width: 1600, height: 900 }, theme: PROJECT_PATHS.theme, slides: Object.keys(slides) },
     theme, slides,
   })
 }

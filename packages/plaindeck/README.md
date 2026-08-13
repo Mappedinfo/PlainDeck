@@ -104,7 +104,7 @@ await renderPdf(deck, { projectPath: './my-deck', output: './dist/deck.pdf' })
 
 For React and video output, the same package ships `plaindeck/react` and `plaindeck/remotion` subpath entries (with `react`, `react-dom` and `remotion` as optional peer dependencies). They use the same layout implementation as HTML/PNG/PDF; Remotion only interprets optional animation and camera metadata.
 
-See the [Agent API and operation contract](https://github.com/Mappedinfo/PlainDeck/blob/main/docs/agent-api.md) for the v0.5 interface, including native tables, document-level automatic footers, and readable motion. The project schema remains `0.1`.
+See the [Agent API and operation contract](https://github.com/Mappedinfo/PlainDeck/blob/main/docs/agent-api.md) for the v0.6 interface, including native tables, document-level automatic footers, and readable motion. The project schema remains `0.1`.
 
 ## License
 

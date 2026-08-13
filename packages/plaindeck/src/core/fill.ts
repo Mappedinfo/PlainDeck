@@ -1,8 +1,6 @@
-import { createLayoutElements } from './presets.js'
+import { BASE_CANVAS, createLayoutElements } from './presets.js'
 import { estimateTextWidth } from '../render/presentation.js'
 import type { SlideElement, Theme } from './schema.js'
-
-const BASE_CANVAS = { width: 1600, height: 900 }
 
 export interface PaperFigureContent {
   kicker?: string
@@ -141,7 +139,7 @@ export function fillHookStatement(content: StatementContent, theme: Theme, canva
   return elements
 }
 
-export interface ProsePanelContent extends StatementContent {}
+export type ProsePanelContent = StatementContent
 
 /**
  * Fill the prose-panel preset: heading, hairline, a surface card holding the
