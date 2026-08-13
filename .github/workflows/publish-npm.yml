@@ -55,12 +55,3 @@ jobs:
           else
             npm publish -w plaindeck --access public --provenance
           fi
-      - name: Publish plaindeck-mcp with provenance
-        if: github.ref_type == 'tag'
-        run: |
-          VERSION=$(node -p "require('./packages/plaindeck-mcp/package.json').version")
-          if npm view "@mappedinfo/plaindeck-mcp@${VERSION}" version >/dev/null 2>&1; then
-            echo "plaindeck-mcp@${VERSION} is already published; skipping"
-          else
-            npm publish -w @mappedinfo/plaindeck-mcp --access public --provenance
-          fi

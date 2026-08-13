@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { createPlainDeckServer } from '../src/index.js'
+import { createPlainDeckServer } from '../src/mcp/index.js'
 
 const root = mkdtempSync(join(tmpdir(), 'plaindeck-mcp-test-'))
 const project = join(root, 'deck')

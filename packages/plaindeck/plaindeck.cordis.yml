@@ -1,10 +1,10 @@
 # Opt-in integration: PlainDeck MCP server for DeepSeek Harness (dsh).
 #
-# Install the server first (it ships as an npm package):
-#   npm install --global @mappedinfo/plaindeck-mcp
+# The MCP server ships inside the plaindeck npm package:
+#   npm install --global plaindeck
 #
 # Enable with:
-#   dsh web --patch "$PWD/packages/plaindeck-mcp/plaindeck.cordis.yml"
+#   dsh web --patch "$PWD/packages/plaindeck/plaindeck.cordis.yml"
 #
 # The model then sees PlainDeck tools as `mcp__plaindeck__<tool>`
 # (init / validate / inspect / apply_operations / add_cards / add_table /

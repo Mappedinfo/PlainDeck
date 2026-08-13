@@ -180,13 +180,13 @@ Web 工具栏显示的版本号直接读取 `packages/plaindeck/package.json`。
 
 ## MCP Server：让 Agent 直接制作幻灯片
 
-[`plaindeck-mcp`](./packages/plaindeck-mcp/README.md) 把 PlainDeck Agent API 封装为 [Model Context Protocol](https://modelcontextprotocol.io/) 工具：`init`、`validate`、`inspect`、`apply_operations`、`add_cards`、`add_table`、`render`、`styles`。任何 MCP 客户端（DeepSeek Harness、Claude Code、Codex 等）都可以让 Agent 从研究笔记直接生成、修改并渲染一份可被 Git 审查的幻灯片项目。
+[`plaindeck/mcp`](./packages/plaindeck/README.md#mcp-server) 把 PlainDeck Agent API 封装为 [Model Context Protocol](https://modelcontextprotocol.io/) 工具（`init` / `validate` / `inspect` / `apply_operations` / `add_cards` / `add_table` / `render` / `styles`），随 `plaindeck` 包一起分发（`plaindeck-mcp` 命令行）。任何 MCP 客户端（DeepSeek Harness、Claude Code、Codex 等）都可以让 Agent 从研究笔记直接生成、修改并渲染一份可被 Git 审查的幻灯片项目。
 
 ```sh
-npm install --global @mappedinfo/plaindeck-mcp
+npm install --global plaindeck
 
 # DeepSeek Harness 接入（工具以 mcp__plaindeck__* 出现）
-dsh web --patch "$PWD/packages/plaindeck-mcp/plaindeck.cordis.yml"
+dsh web --patch "$PWD/packages/plaindeck/plaindeck.cordis.yml"
 ```
 
 ## 已实现的 MVP 能力

@@ -4,11 +4,15 @@
  * apply operations / add cards / add tables / render) as MCP tools so any
  * MCP-capable agent — including DeepSeek Harness via the `dsh-mcp-client`
  * bridge — can create, review, and iterate slide decks on disk.
+ *
+ * Import from the `plaindeck/mcp` subpath; the `plaindeck-mcp` bin is
+ * provided by the same package.
  */
 import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { ZodError, z } from 'zod'
 import {
   applyOperations,
@@ -26,10 +30,10 @@ import {
   type DeckDocument,
   type DeckTemplateId,
   type TableStyle,
-} from 'plaindeck/core'
-import { loadDeck, prepareDocumentAssets, renderPdf, renderPng, saveDeck } from 'plaindeck/node'
-import { renderHtml } from 'plaindeck/render'
-import packageMetadata from '../package.json' with { type: 'json' }
+} from '../core/index.js'
+import { loadDeck, prepareDocumentAssets, renderPdf, renderPng, saveDeck } from '../node/index.js'
+import { renderHtml } from '../render/index.js'
+import packageMetadata from '../../package.json' with { type: 'json' }
 
 const json = (value: unknown) => JSON.stringify(value, null, 2)
 
@@ -365,9 +369,8 @@ export function createPlainDeckServer(): McpServer {
   return server
 }
 
-/** Connect the server to stdio — used by the `plaindeck-mcp` binary. */
+/** Connect the server to stdio — used by the `plaindeck-mcp` bin. */
 export async function runStdioServer(): Promise<void> {
-  const { StdioServerTransport } = await import('@modelcontextprotocol/sdk/server/stdio.js')
   const server = createPlainDeckServer()
   await server.connect(new StdioServerTransport())
 }

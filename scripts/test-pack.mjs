@@ -6,7 +6,6 @@ import { join, resolve } from 'node:path'
 const root = resolve(import.meta.dirname, '..')
 const packages = [
   { workspace: 'plaindeck', manifest: 'packages/plaindeck/package.json', notices: true },
-  { workspace: '@mappedinfo/plaindeck-mcp', manifest: 'packages/plaindeck-mcp/package.json', notices: true },
 ]
 const expectedVersion = JSON.parse(readFileSync(join(root, packages[0].manifest), 'utf8')).version
 const work = mkdtempSync(join(tmpdir(), 'plaindeck-pack-test-'))
@@ -40,8 +39,8 @@ try {
   const cli = join(installRoot, 'node_modules', '.bin', process.platform === 'win32' ? 'plaindeck.cmd' : 'plaindeck')
   const version = run(cli, ['--version'], { cwd: installRoot })
   if (version !== expectedVersion) throw new Error(`unexpected CLI version: ${version}; expected ${expectedVersion}`)
-  const exportsCheck = run(process.execPath, ['--input-type=module', '-e', "import { createDeckTemplate, validateDeck } from 'plaindeck'; import { DeckSchema, parseTableContent } from 'plaindeck/core'; import { renderHtml } from 'plaindeck/render'; import { loadDeck } from 'plaindeck/node'; import { PlainDeckSlide } from 'plaindeck/react'; import { PlainDeckTimeline, elementAnimationStyle } from 'plaindeck/remotion'; console.log([typeof createDeckTemplate, typeof validateDeck, typeof DeckSchema.parse, typeof parseTableContent, typeof renderHtml, typeof loadDeck, typeof PlainDeckSlide, typeof PlainDeckTimeline, typeof elementAnimationStyle].join(','))"], { cwd: installRoot })
-  if (exportsCheck !== 'function,function,function,function,function,function,function,function,function') throw new Error(`unexpected package exports: ${exportsCheck}`)
+  const exportsCheck = run(process.execPath, ['--input-type=module', '-e', "import { createDeckTemplate, validateDeck } from 'plaindeck'; import { DeckSchema, parseTableContent } from 'plaindeck/core'; import { renderHtml } from 'plaindeck/render'; import { loadDeck } from 'plaindeck/node'; import { createPlainDeckServer } from 'plaindeck/mcp'; import { PlainDeckSlide } from 'plaindeck/react'; import { PlainDeckTimeline, elementAnimationStyle } from 'plaindeck/remotion'; console.log([typeof createDeckTemplate, typeof validateDeck, typeof DeckSchema.parse, typeof parseTableContent, typeof renderHtml, typeof loadDeck, typeof createPlainDeckServer, typeof PlainDeckSlide, typeof PlainDeckTimeline, typeof elementAnimationStyle].join(','))"], { cwd: installRoot })
+  if (exportsCheck !== 'function,function,function,function,function,function,function,function,function,function') throw new Error(`unexpected package exports: ${exportsCheck}`)
   const created = join(work, 'created-deck')
   const initialized = JSON.parse(run(cli, ['init', created, '--title', 'Packed CLI deck', '--template', 'showcase', '--theme', 'studio-cobalt', '--json'], { cwd: installRoot }))
   if (!initialized.ok || initialized.slides !== 5) throw new Error(`packed CLI init failed: ${JSON.stringify(initialized)}`)
@@ -66,8 +65,8 @@ try {
   const mcpCli = join(installRoot, 'node_modules', '.bin', process.platform === 'win32' ? 'plaindeck-mcp.cmd' : 'plaindeck-mcp')
   const mcpVersion = run(mcpCli, ['--version'], { cwd: installRoot })
   if (mcpVersion !== expectedVersion) throw new Error(`unexpected plaindeck-mcp version: ${mcpVersion}; expected ${expectedVersion}`)
-  const mcpTools = run(process.execPath, ['--input-type=module', '-e', "import { createPlainDeckServer } from '@mappedinfo/plaindeck-mcp'; const server = createPlainDeckServer(); console.log(typeof server.registerTool)"], { cwd: installRoot })
-  if (mcpTools !== 'function') throw new Error(`unexpected plaindeck-mcp exports: ${mcpTools}`)
+  const mcpTools = run(process.execPath, ['--input-type=module', '-e', "import { createPlainDeckServer } from 'plaindeck/mcp'; const server = createPlainDeckServer(); console.log(typeof server.registerTool)"], { cwd: installRoot })
+  if (mcpTools !== 'function') throw new Error(`unexpected plaindeck/mcp exports: ${mcpTools}`)
   process.stdout.write(`✓ installed and exercised ${tarballs.length} PlainDeck ${expectedVersion} tarballs\n`)
 } finally {
   rmSync(work, { recursive: true, force: true })

@@ -1,7 +1,7 @@
 {
   "name": "plaindeck",
-  "version": "0.6.1",
-  "description": "Git-native slide format, Agent API, CLI, and renderer",
+  "version": "0.7.0",
+  "description": "Git-native slide format, Agent API, CLI, MCP server, and renderer",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -17,7 +17,10 @@
     "git",
     "json",
     "ai-agent",
-    "cli"
+    "cli",
+    "mcp",
+    "model-context-protocol",
+    "dsh-plugin"
   ],
   "engines": {
     "node": ">=22"
@@ -26,7 +29,8 @@
     "dist",
     "README.md",
     "LICENSE",
-    "THIRD_PARTY_NOTICES.md"
+    "THIRD_PARTY_NOTICES.md",
+    "plaindeck.cordis.yml"
   ],
   "exports": {
     ".": {
@@ -52,10 +56,15 @@
     "./remotion": {
       "types": "./dist/remotion/index.d.ts",
       "import": "./dist/remotion/index.js"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/index.d.ts",
+      "import": "./dist/mcp/index.js"
     }
   },
   "bin": {
-    "plaindeck": "dist/cli.js"
+    "plaindeck": "dist/cli.js",
+    "plaindeck-mcp": "dist/mcp/cli.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -63,6 +72,7 @@
     "prepack": "npm run build"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "zod": "4.4.3"
   },
   "peerDependencies": {

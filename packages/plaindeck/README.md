@@ -104,7 +104,24 @@ await renderPdf(deck, { projectPath: './my-deck', output: './dist/deck.pdf' })
 
 For React and video output, the same package ships `plaindeck/react` and `plaindeck/remotion` subpath entries (with `react`, `react-dom` and `remotion` as optional peer dependencies). They use the same layout implementation as HTML/PNG/PDF; Remotion only interprets optional animation and camera metadata.
 
-See the [Agent API and operation contract](https://github.com/Mappedinfo/PlainDeck/blob/main/docs/agent-api.md) for the v0.6 interface, including native tables, document-level automatic footers, and readable motion. The project schema remains `0.1`.
+## MCP server
+
+The same package ships an MCP server (`plaindeck/mcp` subpath, `plaindeck-mcp` bin) exposing the Agent API as Model Context Protocol tools: `init`, `validate`, `inspect`, `apply_operations`, `add_cards`, `add_table`, `render`, `styles`. Any MCP client — DeepSeek Harness, Claude Code, Codex — can scaffold, edit, validate, and render decks; every step lands as a reviewable JSON diff.
+
+```bash
+npm install --global plaindeck
+plaindeck-mcp   # stdio server
+```
+
+DeepSeek Harness integration (tools appear as `mcp__plaindeck__*`):
+
+```sh
+dsh web --patch "$PWD/packages/plaindeck/plaindeck.cordis.yml"
+```
+
+Or merge the overlay file's single `insert` patch into `$DSH_HOME/cordis.patch.yml` to keep it across runs. All tools take absolute project paths. The server depends on `@modelcontextprotocol/sdk`, which npm installs automatically.
+
+See the [Agent API and operation contract](https://github.com/Mappedinfo/PlainDeck/blob/main/docs/agent-api.md) for the v0.7 interface, including native tables, document-level automatic footers, readable motion, and the MCP tool contract. The project schema remains `0.1`.
 
 ## License
 

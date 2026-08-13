@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import packageMetadata from '../package.json' with { type: 'json' }
+import packageMetadata from '../../package.json' with { type: 'json' }
 import { runStdioServer } from './index.js'
 
 const args = process.argv.slice(2)
@@ -11,6 +11,7 @@ if (args.includes('--help') || args.includes('-h')) {
   process.stdout.write(`plaindeck-mcp ${packageMetadata.version}
 
 PlainDeck MCP server — agent-native slide decks over the Model Context Protocol.
+Ships inside the plaindeck package (import from 'plaindeck/mcp').
 
 Usage:
   plaindeck-mcp            启动 stdio MCP server（供 dsh / Claude / Codex 等客户端连接）
@@ -18,8 +19,8 @@ Usage:
   plaindeck-mcp --help     显示本帮助
 
 DeepSeek Harness 接入：
-  npm install --global @mappedinfo/plaindeck-mcp
-  dsh web --patch "$PWD/packages/plaindeck-mcp/plaindeck.cordis.yml"
+  npm install --global plaindeck
+  dsh web --patch "$PWD/packages/plaindeck/plaindeck.cordis.yml"
 `)
   process.exit(0)
 }

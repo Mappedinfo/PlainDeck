@@ -4,6 +4,21 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [v0.7.0] - 2026-08-13
+
+### 新增
+
+- **MCP server 合并进 `plaindeck` 包**：`plaindeck/mcp` 子路径 + `plaindeck-mcp` 命令行随主包分发（照 `plaindeck/react` 合并先例），工具集：`init` / `validate` / `inspect` / `apply_operations` / `add_cards` / `add_table` / `render` / `styles`。依赖 `@modelcontextprotocol/sdk`（npm 自动安装），附 `plaindeck.cordis.yml` 一行接入 DeepSeek Harness（`dsh web --patch`）。
+- 独立的 `@mappedinfo/plaindeck-mcp@0.6.1` 包已弃用（npm deprecate），指引用户改用 `plaindeck`。
+
+### 重构
+
+- 删除 `packages/plaindeck-mcp` workspace；发布工作流、`test-pack`、build 脚本回归单包单 tag；`test-pack` 增加 `plaindeck/mcp` 导出面与 `plaindeck-mcp` bin 的打包验证。
+
+### 工程化
+
+- `plaindeck` 包关键字补充 MCP 相关；THIRD_PARTY_NOTICES 补充 `@modelcontextprotocol/sdk` 与 `zod`。
+
 ## [v0.6.1] - 2026-08-13
 
 ### 新增
@@ -82,7 +97,8 @@ All notable changes to this project are documented in this file. The format is b
 
 - CLI 生成的演示画廊（demo/）。
 
-[Unreleased]: https://github.com/Mappedinfo/PlainDeck/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/Mappedinfo/PlainDeck/compare/v0.7.0...HEAD
+[v0.7.0]: https://github.com/Mappedinfo/PlainDeck/compare/v0.6.1...v0.7.0
 [v0.6.1]: https://github.com/Mappedinfo/PlainDeck/compare/v0.6.0...v0.6.1
 [v0.6.0]: https://github.com/Mappedinfo/PlainDeck/compare/v0.3.0...v0.6.0
 [v0.3.0]: https://github.com/Mappedinfo/PlainDeck/compare/v0.2.5...v0.3.0
