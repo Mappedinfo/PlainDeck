@@ -15,6 +15,8 @@ exports/
 
 `theme.json` 是主题的唯一 source of truth。`theme.css` 是新建项目和 ZIP 导出时生成的辅助文件，当前编辑器与 renderer 不读取它，不应手动维护。
 
+内置主题（COLOR STYLES 面板与 CLI `--theme`）中的四套——`palette-vermillion`（宣纸与朱砂）、`palette-ice-magenta`（冰蓝与品红）、`palette-jade-ivory`（翡翠与象牙）、`palette-jade-night`（翡翠夜）——采用 Mappedinfo 开源的[色卡实验室 Palette Lab](https://mappedinfo.github.io/palette-lab/) 学术配色档案（15 色 / 8 组搭配 / WCAG 对比度）。Agent 可直接读取机器可读档案 [llms.txt](https://mappedinfo.github.io/palette-lab/llms.txt) 与 [llms-full.txt](https://mappedinfo.github.io/palette-lab/llms-full.txt) 获取逐色指标与使用建议。
+
 多文件保存先写主题和页面内容，最后写 `deck.json` 作为 commit point；删除页面时会在新的 `deck.json` 落盘后删除旧页面文件。浏览器自动保存按路径 revision 确认写入结果，保存期间产生的新修改不会被旧任务清除。
 
 `layoutRef` 只记录新建页面时采用的布局名称，布局中的占位内容会立即展开为普通 `elements`，之后可以自由编辑，不依赖隐藏模板。图片占位使用可读的 `"src": "placeholder:image"`，设置真实路径或 URL 后即变为普通图片元素。

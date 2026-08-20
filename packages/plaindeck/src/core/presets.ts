@@ -90,6 +90,11 @@ export const themePresets: ThemePreset[] = [
   themePreset('field-notes', '田野笔记', '自然、克制', { background: '#F1F0E7', text: '#203027', muted: '#6E786F', accent: '#547A5A' }, { title: 'Georgia, Charter, "Songti SC", "Noto Serif SC", serif', body: 'Avenir Next, Aptos, "PingFang SC", "Noto Sans SC", sans-serif', mono: 'SFMono-Regular, Consolas, monospace' }),
   themePreset('editorial-blue', '编辑蓝', '清晰、理性', { background: '#F3F6F7', text: '#17242C', muted: '#6F7C83', accent: '#235D83' }),
   themePreset('poster-red', '海报红黑', '高对比、强表达', { background: '#F1EBDF', text: '#171715', muted: '#706A62', accent: '#C93428' }),
+  // 色卡实验室 Palette Lab 主题（https://mappedinfo.github.io/palette-lab/ · 机器可读档案 llms-full.txt）
+  themePreset('palette-vermillion', '宣纸与朱砂', '宣纸底、朱砂点睛，学术严谨感首选', { background: '#F5E6D0', text: '#20211D', muted: '#6F685A', accent: '#9E1D1C' }, { title: 'Georgia, Charter, "Songti SC", "Noto Serif SC", serif', body: 'Avenir Next, Aptos, "PingFang SC", "Noto Sans SC", sans-serif', mono: 'SFMono-Regular, Consolas, monospace' }),
+  themePreset('palette-ice-magenta', '冰蓝与品红', '冷色冰面托起品红，阴性/阳性对照', { background: '#F1F6FF', text: '#1F2733', muted: '#6A7686', accent: '#EE1969' }),
+  themePreset('palette-jade-ivory', '翡翠与象牙', '深翡翠与象牙白，克制清爽留白', { background: '#FBFFF2', text: '#232B25', muted: '#6E7A6F', accent: '#008E6B' }, { title: 'Georgia, Charter, "Songti SC", "Noto Serif SC", serif', body: 'Avenir Next, Aptos, "PingFang SC", "Noto Sans SC", sans-serif', mono: 'SFMono-Regular, Consolas, monospace' }),
+  themePreset('palette-jade-night', '翡翠夜', '翡翠底、象牙字，琥珀强调的深色舞台', { background: '#008E6B', text: '#FBFFF2', muted: '#C6E5D9', accent: '#FFD15D' }),
 ]
 
 export function getThemePreset(id: string): ThemePreset | undefined {

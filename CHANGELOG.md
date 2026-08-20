@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### 新增
+
+- **采用色卡实验室 Palette Lab 配色**：品牌主色改为珊瑚 `#E97A46`（源自 [Palette Lab](https://mappedinfo.github.io/palette-lab/)，机器可读档案 [llms-full.txt](https://mappedinfo.github.io/palette-lab/llms-full.txt)），编辑器界面换用其色板（珊瑚强调、琥珀悬停、宣纸纸面、朱砂表格强调、象牙预览）。
+- 内置主题新增四套 Palette Lab 学术配色：`palette-vermillion`（宣纸与朱砂）、`palette-ice-magenta`（冰蓝与品红）、`palette-jade-ivory`（翡翠与象牙）、`palette-jade-night`（翡翠夜），CLI `--theme` 与画布 COLOR STYLES 面板可直接选用。
+- 编辑器状态栏与主题面板新增「色卡实验室 Palette Lab」推广入口。
+
 ## [v0.7.0] - 2026-08-13
 
 ### 新增

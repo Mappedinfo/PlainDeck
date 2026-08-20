@@ -23,6 +23,8 @@ PlainDeck 是一个以用户操作为先的幻灯片编辑器：你在浏览器�
   <a href="https://www.npmjs.com/package/plaindeck">npm 包</a>
   ·
   <a href="https://github.com/Mappedinfo/PlainDeck">查看源码</a>
+  ·
+  <a href="https://mappedinfo.github.io/palette-lab/"><strong>色卡实验室</strong></a>
 </p>
 
 ## 用 CLI 生成的真实演示
@@ -46,6 +48,19 @@ PlainDeck 是一个以用户操作为先的幻灯片编辑器：你在浏览器�
 一句更短的介绍：
 
 > **用户用画布编辑，AI 读写内容，Git 记录每一次变化。**
+
+## 配色来自 色卡实验室 Palette Lab
+
+PlainDeck 的编辑器界面与内置主题统一采用 Mappedinfo 开源学术配色档案 [色卡实验室 Palette Lab](https://mappedinfo.github.io/palette-lab/)（15 色、8 组搭配、逐色 WCAG 对比度解析）：
+
+- 编辑器界面：珊瑚 `#E97A46` 主强调、琥珀 `#FFD15D` 悬停强调、宣纸 `#F5E6D0` 纸面与对话框、朱砂 `#9E1D1C` 表格强调、象牙 `#FBFFF2` 数据预览。
+- 内置主题：新增 `palette-vermillion`（宣纸与朱砂）、`palette-ice-magenta`（冰蓝与品红）、`palette-jade-ivory`（翡翠与象牙）、`palette-jade-night`（翡翠夜）四套，可在画布右侧 COLOR STYLES 面板或 CLI `--theme` 直接选用：
+
+```bash
+npx plaindeck init ./my-deck --theme palette-vermillion
+```
+
+- Agent 与 AI 工具可直接读取机器可读档案：[llms.txt](https://mappedinfo.github.io/palette-lab/llms.txt)（站点入口）与 [llms-full.txt](https://mappedinfo.github.io/palette-lab/llms-full.txt)（完整颜色表、对比度矩阵与使用建议）。
 
 ## 为什么不直接使用 PPTX 或 PDF？
 
@@ -148,7 +163,7 @@ npx plaindeck apply ./my-deck --ops changes.json
 npx plaindeck render ./my-deck --format html --output deck.html
 ```
 
-`init` 默认保留五页 `showcase` 契约，也可选择证据优先的七页 `nature-methods`、`paper-reading`、`pitch` 或 `blank`；网页版默认打开 `nature-methods`。九套内置配色新增浅色 `nature-editorial`。`add-table` 可把 Markdown、CSV、TSV 或 JSON 转成原生可编辑表格；`add-cards` 可把 Markdown 或 JSON 变成 1–8 张自适应信息卡；`styles` 提供 174 个原生视觉配方。CLI 和画布都通过同一组 operations 修改文档，HTML、PNG/PDF、React 与 Remotion 共用渲染规则。完整的设计审视见 [`docs/nature-design-review.md`](./docs/nature-design-review.md)。
+`init` 默认保留五页 `showcase` 契约，也可选择证据优先的七页 `nature-methods`、`paper-reading`、`pitch` 或 `blank`；网页版默认打开 `nature-methods`。十三套内置配色中，四套来自开源的[色卡实验室 Palette Lab](https://mappedinfo.github.io/palette-lab/)（宣纸与朱砂、冰蓝与品红、翡翠与象牙、翡翠夜）。`add-table` 可把 Markdown、CSV、TSV 或 JSON 转成原生可编辑表格；`add-cards` 可把 Markdown 或 JSON 变成 1–8 张自适应信息卡；`styles` 提供 174 个原生视觉配方。CLI 和画布都通过同一组 operations 修改文档，HTML、PNG/PDF、React 与 Remotion 共用渲染规则。完整的设计审视见 [`docs/nature-design-review.md`](./docs/nature-design-review.md)。
 
 ```bash
 npm install playwright
@@ -194,7 +209,7 @@ dsh web --patch "$PWD/packages/plaindeck/plaindeck.cordis.yml"
 - Zod schema、`0.1` schema version、迁移入口和 canonical JSON serializer；
 - 页面新建、重命名、复制、删除、排序，文本、图片、矩形、线条和原生表格元素；
 - 本地图片文件选择、画布定位拖放和剪贴板粘贴，目录项目自动写入 `assets/`；
-- 18 种页面布局骨架、`nature-methods` 学术方案、图片占位、结构化摘要卡、原生表格、174 个视觉配方、9 套默认配色与自定义主题颜色；
+- 18 种页面布局骨架、`nature-methods` 学术方案、图片占位、结构化摘要卡、原生表格、174 个视觉配方、13 套默认配色（源自[色卡实验室 Palette Lab](https://mappedinfo.github.io/palette-lab/)）与自定义主题颜色；
 - 形状内文字、双击编辑、字号、颜色与对齐方式；
 - 文档级左、中、右页脚编辑器，支持自定义文字、自动日期、页码、总页数、文档标题与页面名称；
 - 可选的逐元素进入动画与页面镜头 JSON，Web 属性面板可视化编辑；

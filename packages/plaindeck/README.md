@@ -35,7 +35,7 @@ plaindeck render ./my-deck --format png --output dist/slides
 plaindeck render ./my-deck --format pdf --output dist/deck.pdf
 ```
 
-`init` preserves the five-slide `showcase` / `studio-cobalt` default. Templates also include `nature-methods` (a seven-slide evidence-led methods talk), `paper-reading`, `pitch`, and `blank`. `nature-methods` and `paper-reading` default to the light `nature-editorial` theme. Nine color systems are available.
+`init` preserves the five-slide `showcase` / `studio-cobalt` default. Templates also include `nature-methods` (a seven-slide evidence-led methods talk), `paper-reading`, `pitch`, and `blank`. `nature-methods` and `paper-reading` default to the light `nature-editorial` theme. Thirteen color systems are available, including four adopted from the open-source [Palette Lab · 色卡实验室](https://mappedinfo.github.io/palette-lab/) academic color archive (`palette-vermillion` 宣纸与朱砂, `palette-ice-magenta` 冰蓝与品红, `palette-jade-ivory` 翡翠与象牙, `palette-jade-night` 翡翠夜; machine-readable archive at [llms-full.txt](https://mappedinfo.github.io/palette-lab/llms-full.txt)).
 
 `add-table` parses Markdown, CSV, TSV, or JSON into a semantic, editable table slide with `rules`, `grid`, or `stripes` styling. `add-cards` turns Juya-style Markdown or JSON into a responsive 1–8 card slide. Both commands use the same operation kernel and renderers as the Web editor. `styles` exposes 174 native recipes batch-compiled from the MIT-licensed Juya catalog.
 
