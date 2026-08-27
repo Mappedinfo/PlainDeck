@@ -4,6 +4,19 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [v0.9.0] - 2026-08-27
+
+### 新增
+
+- **流程图模板 `flowchart`（5 页，中英双语）**：封面（输入→分支→回环节点装饰）、「横向流程图」流水线页、「判断分支图」条件 + 是/否分支 + 回环路径页、画图纪律检查清单页、收尾金句页。`plaindeck init --template flowchart` 或 `createDeckTemplate('flowchart', { lang })` 即可使用。
+- **两个新布局预设**：`process-flow`（四步节点流水线，起点/终点实心锚定）与 `decision-branch`（判断菱形位 + Yes 箭头 + 失败回环括号），全部用 schema 原生的形状色条与右向箭头线构成，静态导出与编辑器表现一致；节点与箭头自带阶梯式 `fade-up/scale` 入场动画（Remotion/Web 播放生效，静态导出不受影响）。
+- 布局选择器为两个新布局增加缩略图示意。
+
+### 优化
+
+- 布局选择器面板在预设增多后改为限高滚动（20 个预设不再越过画布标题区）；z-index 提升避免遮挡。
+- 文档同步：包 README 模板清单补充 flowchart 与双语文案说明；agent-api 的 init 模板参数与 locale 目录函数（`layoutPresetsFor` 等）用法。
+
 ## [v0.8.0] - 2026-08-27
 
 ### 新增
