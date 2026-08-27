@@ -4,11 +4,28 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [v0.8.0] - 2026-08-27
+
 ### 新增
 
+- **演示文稿内容按浏览器语言自动切换**：新增 `resolveLocale()`（`plaindeck/core`），把 BCP-47 语言标签归一化为 `zh` / `en`（其余一律回退英语）。编辑器打开时的示例项目、`createDeckTemplate({ lang })` 五个模板的全部文案、18 种布局的占位文字、新页面的布局命名，现在都会跟随浏览器语言；CLI / MCP 不传 `lang` 时保持中文不变。
+- **语言手动切换闭环**：编辑器工具栏新增语言按钮（虚线框 = 自动检测态），点击循环 自动检测 → EN → 中；未动过的纯示例文档会即时替换为新语言的 demo，手动选择持久化到 localStorage（`rememberDeckLocale`）。
+- **预设元数据双语目录**：新增 `layoutPresetsFor(locale)` / `getLayoutPreset(id, locale)` / `themePresetsFor(locale)` / `deckTemplatePresetsFor(locale)`，「图文并排 ↔ Image + text」「钴蓝工作室 ↔ Cobalt studio」等名称与描述随 locale 输出；原数组保持不变，CLI/MCP 零影响。
+- **结构化双语错误 `PlainDeckError(code, { zh, en })`**：内核 45 处 throw 点全部迁移（operations/schema/templates/render/node/mcp 等）。`.message` 保持中文原句（向后兼容），新增 `.code`（机器可读错误码）、`.localized` 与 `.for(locale)`，Agent/MCP 消费者可按码分支或取目标语言句子。附 `errorMessage(error, locale?)` 工具函数。
+- 编辑器错误提示本地化：图片校验、目录权限、ZIP 缺失、外部修改保护等全部经 `LocalizedError` 按当前界面语言出句；切换语言后待显示的错误提示也跟随。
 - **采用色卡实验室 Palette Lab 配色**：品牌主色改为珊瑚 `#E97A46`（源自 [Palette Lab](https://mappedinfo.github.io/palette-lab/)，机器可读档案 [llms-full.txt](https://mappedinfo.github.io/palette-lab/llms-full.txt)），编辑器界面换用其色板（珊瑚强调、琥珀悬停、宣纸纸面、朱砂表格强调、象牙预览）。
 - 内置主题新增四套 Palette Lab 学术配色：`palette-vermillion`（宣纸与朱砂）、`palette-ice-magenta`（冰蓝与品红）、`palette-jade-ivory`（翡翠与象牙）、`palette-jade-night`（翡翠夜），CLI `--theme` 与画布 COLOR STYLES 面板可直接选用。
 - 编辑器状态栏与主题面板新增「色卡实验室 Palette Lab」推广入口。
+
+### 性能
+
+- jszip 改为动态 `import()` 按需加载：ZIP 导入/导出时才下载解析，启动主包 −99 KB（gzip −31 KB，约 −15%）。
+
+### 重构
+
+- Web 编辑器 UI 全量 i18n：新增 `src/i18n/` 字典（英文 canonical + 类型强平价的中文对照，约 220 键）与 `useT()` 响应式 hook，覆盖组件文案、aria 标签、操作历史标签、对话框与提示；两份字典结构不一致会在类型检查/测试中直接报错。
+- `store.ts` 单文件拆分为 `store/types.ts`（接口与常量）、`store/history.ts`(undo/redo/commit/clearDirty 切片)、`store/index.ts`（组装），对外导入路径 `'../store'` 与行为不变。
+- e2e 测试按浏览器语言分组钉扎（中文标签流程固定 zh-CN，另设 en-US 组验证语言检测与切换循环）；playwright 端口支持 `E2E_PORT` 覆盖，避免与本机其他 preview 服务冲突。
 
 ## [v0.7.0] - 2026-08-13
 
