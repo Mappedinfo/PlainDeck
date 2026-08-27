@@ -4,6 +4,18 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [v0.10.0] - 2026-08-27
+
+### 新增
+
+- **课程讲义模板 `course-lecture`（6 页，中英双语，field-notes 主题）**：封面、路线图三卡、概念类比大字页、例证原图页、常见误区页、复述式回顾。
+- **数据故事模板 `data-story`（6 页，中英双语，night-citrus 主题）**：数字先行封面（口径→对照→结论节点装饰）、结论先行 hook 页、关键指标页、方法对照页、三条要点卡与收尾金句。
+- **在线示例库（GitHub Pages `/PlainDeck/renders/`）**：9 套演示 deck 的可播放 HTML、PDF 与封面 PNG 一站式浏览——覆盖全部内置模板（flowchart / data-story / course-lecture 各有中英双版本）。编辑器状态栏新增 SAMPLES 入口；PWA 预缓存排除 renders 目录避免体积膨胀；`demo/renders/` 同步刷新全部 PDF 与封面图。
+
+### 文档
+
+- 包 README 补充示例库链接与两个新模板说明。
+
 ## [v0.9.0] - 2026-08-27
 
 ### 新增
