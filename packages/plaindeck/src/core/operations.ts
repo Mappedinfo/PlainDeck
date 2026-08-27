@@ -9,7 +9,7 @@ import { createTableSlideElements, TableContentSchema } from './tables.js'
 import { PROJECT_PATHS } from './project-paths.js'
 import type { DeckLocale } from './i18n.js'
 
-const LayoutIdSchema = z.enum(['blank', 'title-body', 'section', 'statement', 'metric', 'two-column', 'image-right', 'three-cards', 'summary-cards', 'paper-figure', 'paper-table', 'versus', 'contributions', 'limits', 'closing', 'hook-statement', 'prose-panel', 'takeaway'])
+const LayoutIdSchema = z.enum(['blank', 'title-body', 'section', 'statement', 'metric', 'two-column', 'image-right', 'three-cards', 'summary-cards', 'paper-figure', 'paper-table', 'versus', 'contributions', 'limits', 'closing', 'hook-statement', 'prose-panel', 'takeaway', 'process-flow', 'decision-branch'])
 const SlidePathSchema = z.string().startsWith(PROJECT_PATHS.slidesDir).endsWith('.json')
 const ColorPatchSchema = z.object({
   background: z.string().optional(), text: z.string().optional(), muted: z.string().optional(), accent: z.string().optional(), surface: z.string().optional(),

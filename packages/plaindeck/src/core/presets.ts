@@ -3,7 +3,7 @@ import { createSummaryCardElements } from './summary-cards.js'
 import { BRAND_ACCENT } from './brand.js'
 import type { DeckLocale } from './i18n.js'
 
-export type LayoutPresetId = 'blank' | 'title-body' | 'section' | 'statement' | 'metric' | 'two-column' | 'image-right' | 'three-cards' | 'summary-cards' | 'paper-figure' | 'paper-table' | 'versus' | 'contributions' | 'limits' | 'closing' | 'hook-statement' | 'prose-panel' | 'takeaway'
+export type LayoutPresetId = 'blank' | 'title-body' | 'section' | 'statement' | 'metric' | 'two-column' | 'image-right' | 'three-cards' | 'summary-cards' | 'paper-figure' | 'paper-table' | 'versus' | 'contributions' | 'limits' | 'closing' | 'hook-statement' | 'prose-panel' | 'takeaway' | 'process-flow' | 'decision-branch'
 
 export interface ThemePreset {
   id: string
@@ -40,6 +40,8 @@ export const layoutMeta = {
     'hook-statement': ['开场论断页', '超大标题 + 引导/支撑两句，右侧幽灵页码'],
     'prose-panel': ['正文面板页', '标题 + 面板卡片正文，右侧幽灵页码'],
     takeaway: ['编号要点收尾', '分号切条成编号要点，底部 END 收束'],
+    'process-flow': ['横向流程图', '四步节点加箭头，画清一条流水线'],
+    'decision-branch': ['判断分支图', '条件判断 + 是/否分支 + 回环路径'],
   },
   en: {
     blank: ['Blank page', 'Start from a completely clean canvas'],
@@ -60,6 +62,8 @@ export const layoutMeta = {
     'hook-statement': ['Hook statement', 'Oversized claim with lead and support lines plus a ghost page number'],
     'prose-panel': ['Prose panel', 'Heading with a panel-card body and a ghost page number'],
     takeaway: ['Numbered takeaways', 'Semicolon-split numbered points ending with END'],
+    'process-flow': ['Process flow', 'Four nodes with arrows — one pipeline at a glance'],
+    'decision-branch': ['Decision branch', 'A condition with yes/no branches and a loop-back path'],
   },
 } satisfies Record<DeckLocale, Record<LayoutPresetId, [string, string]>>
 
@@ -82,6 +86,8 @@ export const layoutPresets: LayoutPreset[] = [
   { id: 'hook-statement', name: '开场论断页', description: '超大标题 + 引导/支撑两句，右侧幽灵页码' },
   { id: 'prose-panel', name: '正文面板页', description: '标题 + 面板卡片正文，右侧幽灵页码' },
   { id: 'takeaway', name: '编号要点收尾', description: '分号切条成编号要点，底部 END 收束' },
+  { id: 'process-flow', name: '横向流程图', description: '四步节点加箭头，画清一条流水线' },
+  { id: 'decision-branch', name: '判断分支图', description: '条件判断 + 是/否分支 + 回环路径' },
 ]
 
 /** Layout presets with display metadata for one locale; element builders still use zh-neutral ids. */
@@ -284,6 +290,20 @@ const layoutCopy = {
     takeawayQuote: 'Compress the whole paper into one sentence worth taking away.',
     cardsFallbackTitle: 'Three parallel points',
     cardsFallbackHint: 'Double-click to edit',
+    flowTitle: 'Four steps, one glance',
+    flowStages: ['Gather inputs', 'Process', 'Verify', 'Deliver'],
+    flowStart: 'Start',
+    flowEnd: 'End',
+    flowTakeaway: 'Every step needs explicit inputs and outputs.',
+    branchTitle: 'Branch and loop back: make the failure path visible',
+    branchQuestion: 'Is the evidence strong enough?',
+    branchYes: 'Yes',
+    branchNo: 'No',
+    branchAdopt: 'Adopt the approach',
+    branchVerify: 'Validate at small scale',
+    branchShip: 'Ship it',
+    branchLoopNote: 'If it fails, return to the previous step and strengthen the evidence.',
+    branchTakeaway: 'Draw the “no” exit on the diagram instead of hiding it.',
   },
   zh: {
     titleBodyTitle: '点击输入标题',
@@ -343,6 +363,20 @@ const layoutCopy = {
     takeawayQuote: '把整篇论文压缩成一句可以被带走的话。',
     cardsFallbackTitle: '三个并列要点',
     cardsFallbackHint: '双击编辑卡片文字',
+    flowTitle: '四步流程，一眼看完',
+    flowStages: ['收集输入', '加工处理', '验证结果', '交付产出'],
+    flowStart: '起点',
+    flowEnd: '终点',
+    flowTakeaway: '每一步都要有明确的输入与输出。',
+    branchTitle: '分支与回环：让失败路径可见',
+    branchQuestion: '证据足够充分吗？',
+    branchYes: '是',
+    branchNo: '否',
+    branchAdopt: '采纳方案',
+    branchVerify: '小范围验证',
+    branchShip: '正式发布',
+    branchLoopNote: '不通过就回到上一步，重做并补充证据。',
+    branchTakeaway: '把“不行”的出口画在图上，而不是藏在心里。',
   },
 } satisfies Record<DeckLocale, Record<string, unknown>>
 
@@ -507,6 +541,51 @@ function buildLayoutElements(layoutId: LayoutPresetId, theme: Theme, locale: Dec
     { id: 'attribution', type: 'text', frame: frame(100, 864, 1000, 30), text: t.attribution, fontSize: 20, fontWeight: 600, color: muted },
     { id: 'end', type: 'text', frame: frame(1350, 864, 150, 30), text: 'END', fontSize: 20, fontWeight: 700, fontFamily: mono, align: 'right', color: accent },
   ]
+  if (layoutId === 'process-flow') {
+    const flowNode = (id: string, index: number, x: number, w: number, emphasized = false): SlideElement[] => [
+      { id: `stage-${id}`, type: 'text', frame: frame(x, 300, w, 40), text: `STEP ${index}`, fontSize: 17, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2, ...(index > 1 ? { animation: { enter: 'fade-up', delayFrames: index * 8, durationFrames: 16 } } : { animation: { enter: 'fade-up', durationFrames: 16 } }) },
+      { id: `node-${id}`, type: 'shape', frame: frame(x, 356, w, 176), shape: 'rounded-rectangle', fill: emphasized ? text : surface, radius: 18, stroke: emphasized ? text : muted, strokeWidth: 2, text: t.flowStages[index - 1], textColor: emphasized ? background : text, fontSize: 28, fontWeight: 700, align: 'center', verticalAlign: 'middle', animation: { enter: 'scale', delayFrames: 4 + index * 8, durationFrames: 18 } },
+    ]
+    const arrow = (id: string, x: number): SlideElement => ({ id, type: 'line', frame: frame(x, 444, 56, 4), color: muted, strokeWidth: 3, arrowEnd: true, animation: { enter: 'fade', delayFrames: 14 * 1, durationFrames: 14 } })
+    const boxes = [88, 474, 860, 1246]
+    return [
+      { id: 'kicker', type: 'text', frame: frame(88, 64, 700, 34), text: 'FLOW / PIPELINE', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2 },
+      title('title', t.flowTitle, 88, 112, 1300, 64, 44),
+      ...boxes.flatMap((x, index) => flowNode(String(index + 1), index + 1, x, 266, index === 0 || index === 3)),
+      arrow('arrow-1', 362),
+      arrow('arrow-2', 748),
+      arrow('arrow-3', 1134),
+      { id: 'edge-start', type: 'text', frame: frame(88, 552, 266, 32), text: t.flowStart.toUpperCase(), fontSize: 15, fontWeight: 700, fontFamily: mono, color: muted, letterSpacing: 2 },
+      { id: 'edge-end', type: 'text', frame: frame(1246, 552, 266, 32), text: t.flowEnd.toUpperCase(), fontSize: 15, fontWeight: 700, fontFamily: mono, color: muted, align: 'right', letterSpacing: 2 },
+      { id: 'takeaway-bar', type: 'shape', frame: frame(88, 740, 6, 56), shape: 'rectangle', fill: accent },
+      body('takeaway', t.flowTakeaway, 114, 750, 1398, 52),
+    ]
+  }
+  if (layoutId === 'decision-branch') {
+    const flowNode = (id: string, label: string, x: number, w: number, h = 150): SlideElement => ({ id, type: 'shape', frame: frame(x, 330, w, h), shape: 'rounded-rectangle', fill: surface, radius: 18, stroke: muted, strokeWidth: 2, text: label, textColor: text, fontSize: 26, fontWeight: 700, align: 'center', verticalAlign: 'middle' })
+    const arrow = (id: string, x: number, y = 398, w = 52): SlideElement => ({ id, type: 'line', frame: frame(x, y, w, 4), color: muted, strokeWidth: 3, arrowEnd: true })
+    const strip = (id: string, x: number, y: number, w: number, h: number): SlideElement => ({ id, type: 'shape', frame: frame(x, y, w, h), shape: 'rectangle', fill: muted, opacity: .75 })
+    return [
+      { id: 'kicker', type: 'text', frame: frame(88, 64, 700, 34), text: 'FLOW / BRANCH + LOOP-BACK', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2 },
+      title('title', t.branchTitle, 88, 112, 1350, 64, 44),
+      flowNode('adopt', t.branchAdopt, 168, 270),
+      arrow('a-pass-1', 446),
+      { id: 'decision', type: 'shape', frame: frame(510, 312, 360, 186), shape: 'rounded-rectangle', fill: background, radius: 24, stroke: accent, strokeWidth: 3, text: t.branchQuestion, textColor: text, fontSize: 28, fontWeight: 800, align: 'center', verticalAlign: 'middle' },
+      { id: 'label-yes', type: 'text', frame: frame(884, 344, 56, 34), text: t.branchYes, fontSize: 17, fontWeight: 700, fontFamily: mono, color: accent },
+      arrow('a-yes', 878, 398, 64),
+      flowNode('verify', t.branchVerify, 950, 264),
+      arrow('a-ship', 1222),
+      flowNode('ship', t.branchShip, 1282, 218),
+      strip('loop-v1', 687, 498, 6, 152),
+      { id: 'label-no', type: 'text', frame: frame(703, 508, 220, 34), text: t.branchNo, fontSize: 17, fontWeight: 700, fontFamily: mono, color: accent },
+      strip('loop-h', 108, 650, 579, 6),
+      strip('loop-v2', 108, 406, 6, 244),
+      arrow('a-loop-back', 120, 412, 42),
+      body('loop-note', t.branchLoopNote, 238, 674, 900, 44),
+      { id: 'takeaway-bar', type: 'shape', frame: frame(88, 740, 6, 56), shape: 'rectangle', fill: accent },
+      body('takeaway', t.branchTakeaway, 114, 750, 1398, 52),
+    ]
+  }
   return [
     title('title', t.cardsFallbackTitle, 80, 64, 1440, 90, 54),
     ...[0, 1, 2].map((index): SlideElement => ({

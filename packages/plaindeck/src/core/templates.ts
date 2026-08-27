@@ -4,7 +4,7 @@ import { PROJECT_PATHS } from './project-paths.js'
 import { resolveLocale, type DeckLocale } from './i18n.js'
 
 import { PlainDeckError } from './errors.js'
-export type DeckTemplateId = 'showcase' | 'pitch' | 'blank' | 'paper-reading' | 'nature-methods'
+export type DeckTemplateId = 'showcase' | 'pitch' | 'blank' | 'paper-reading' | 'nature-methods' | 'flowchart'
 
 export interface DeckTemplatePreset {
   id: DeckTemplateId
@@ -22,6 +22,7 @@ export interface CreateDeckTemplateOptions {
 }
 
 export const deckTemplatePresets: DeckTemplatePreset[] = [
+  { id: 'flowchart', name: 'Flow diagrams', description: '五页流程叙事：流水线、判断分支、回环与检查清单', slideCount: 5 },
   { id: 'showcase', name: 'Editorial showcase', description: '五页叙事骨架，适合介绍、报告与作品展示', slideCount: 5 },
   { id: 'pitch', name: 'Focused pitch', description: '问题、方案、证据与行动的五页提案', slideCount: 5 },
   { id: 'blank', name: 'Minimal start', description: '只有一张精心排版的封面', slideCount: 1 },
@@ -34,6 +35,7 @@ const deckTemplateMeta = {
     showcase: ['Five-slide narrative skeleton for intros, reports and showcases'],
     pitch: ['A five-slide proposal: problem, solution, evidence and action'],
     blank: ['Just one beautifully typeset cover'],
+    flowchart: ['Five slides that draw the process: pipeline, decision branch, loop-back and checklist'],
     'paper-reading': ['Eight pages for reading a paper: problem, contributions, evidence, comparison, limits and takeaway'],
     'nature-methods': ['Evidence-led methods talk: question, process, figures, boundaries and conclusion'],
   },
@@ -284,10 +286,80 @@ function natureMethodsSlides(theme: Theme, title: string, locale: DeckLocale): R
 }
 
 const defaultTitles: Record<DeckLocale, Partial<Record<DeckTemplateId, string>>> = {
-  zh: { 'paper-reading': '论文标题：一句话说清核心贡献', 'nature-methods': '方法标题：一句话说清解决了什么' },
-  en: { 'paper-reading': 'Paper headline: the core contribution in one sentence', 'nature-methods': 'Methods headline: what was solved, in one clear sentence' },
+  zh: { 'paper-reading': '论文标题：一句话说清核心贡献', 'nature-methods': '方法标题：一句话说清解决了什么', flowchart: '流程标题：把过程画成一张图' },
+  en: { 'paper-reading': 'Paper headline: the core contribution in one sentence', 'nature-methods': 'Methods headline: what was solved, in one clear sentence', flowchart: 'Flow headline: turn the process into one picture' },
 }
 
+function flowchartSlides(theme: Theme, title: string, locale: DeckLocale): Record<string, Slide> {
+  const c = theme.colors; const mono = theme.fonts.mono ?? theme.fonts.body
+  const copy = locale === 'zh' ? {
+    kicker: 'FLOWCHART / PROCESS AS DIAGRAM',
+    subtitle: '用节点、箭头与回环把隐性的过程显性化。',
+    hint: 'NODES · BRANCHES · LOOPS',
+    deckTitle: '流程图脚本',
+    cardsTitle: '画流程图的四条纪律',
+    card1Title: '一图一事',
+    card1Body: '一张图只回答一个问题；多条流水线就拆成多页。',
+    card2Title: '出口要画出来',
+    card2Body: '失败、打回与边界路径和成功路径同等重要，必须落在图上。',
+    card3Title: '回环要有终止条件',
+    card3Body: '每次循环都应减少不确定性，并写明何时停。',
+    closingQuote: '把过程画清楚，\n分歧自然就消失了。',
+    closingNext: '下一步：套用本模板的流水线页与分支页，替换为你真实的步骤。',
+  } : {
+    kicker: 'FLOWCHART / PROCESS AS DIAGRAM',
+    subtitle: 'Make the invisible process explicit with nodes, arrows and loop-backs.',
+    hint: 'NODES · BRANCHES · LOOPS',
+    deckTitle: 'Flow script',
+    cardsTitle: 'Four disciplines for drawing a process',
+    card1Title: 'One question per diagram',
+    card1Body: 'A single diagram answers a single question; split extra pipelines onto more pages.',
+    card2Title: 'Draw every exit',
+    card2Body: 'Failure, rejection and boundary paths matter as much as the happy path.',
+    card3Title: 'Loops need stopping rules',
+    card3Body: 'Each cycle should reduce uncertainty and say when to stop.',
+    closingQuote: 'When the process is drawn clearly,\ndisagreement fades on its own.',
+    closingNext: 'Next: reuse the pipeline and branch pages in this template with your real steps.',
+  }
+  const chipLabels = locale === 'zh' ? ['输入', '分支', '回环'] : ['Input', 'Branch', 'Loop']
+  const nodeChips: SlideElement[] = chipLabels.flatMap((label, index): SlideElement[] => {
+    const x = 510 + index * 196
+    return [
+      { id: `chip-${index + 1}`, type: 'shape', frame: frame(x, 584, 148, 60), shape: 'rounded-rectangle', radius: 14, fill: c.background, stroke: c.accent, strokeWidth: 2, text: label, textColor: c.accent, fontSize: 21, fontWeight: 700 },
+      ...(index < 2 ? [{ id: `chip-arrow-${index + 1}`, type: 'line', frame: frame(x + 156, 612, 32, 3), color: c.muted, strokeWidth: 2.5, arrowEnd: true } as SlideElement] : []),
+    ]
+  })
+  return {
+    './slides/001-cover.json': { id: 'cover', name: 'Cover', layoutRef: 'flow-cover', background: { color: c.background }, elements: [
+      shape('accent-panel', 0, 0, 420, 900, c.accent),
+      text('panel-mark', 'FLOW\nCHART', 62, 76, 320, 170, { fontSize: 56, fontWeight: 800, color: c.background }),
+      text('panel-index', '01 — 05', 62, 756, 280, 50, { fontSize: 20, fontWeight: 700, color: c.background, fontFamily: mono }),
+      text('kicker', copy.kicker, 510, 78, 880, 42, { fontSize: 18, fontWeight: 800, color: c.accent, fontFamily: mono, letterSpacing: 2 }),
+      text('title', title, 510, 188, 980, 260, { styleRef: 'slide-title', fontSize: 80, fontWeight: 800, color: c.text }),
+      shape('rule', 510, 470, 980, 4, c.text),
+      text('subtitle', copy.subtitle, 510, 512, 890, 120, { fontSize: 28, fontWeight: 500, color: c.muted }),
+      ...nodeChips,
+      text('hint', copy.hint, 510, 790, 900, 34, { fontSize: 16, fontWeight: 700, color: c.muted, fontFamily: mono, letterSpacing: 2 }),
+    ] },
+    './slides/002-pipeline.json': layoutSlide('pipeline', 'Pipeline', 'process-flow', theme, {}, locale),
+    './slides/003-branch.json': layoutSlide('branch', 'Branch & loop', 'decision-branch', theme, {}, locale),
+    './slides/004-discipline.json': (() => {
+      const slide = layoutSlide('discipline', 'Checklist', 'three-cards', theme, {
+        kicker: '04 / CHECKLIST',
+        title: copy.cardsTitle,
+      }, locale)
+      const titles = [copy.card1Title, copy.card2Title, copy.card3Title]
+      const bodies = [copy.card1Body, copy.card2Body, copy.card3Body]
+      const mapped = slide.elements.map(element => {
+        if (!element.id.startsWith('card-') || element.type !== 'shape') return element
+        const index = Number(element.id.slice(-1)) - 1
+        return { ...element, text: `0${index + 1}\n${titles[index]}\n${bodies[index]}`, fontSize: 24, fontWeight: 700 }
+      })
+      return { ...slide, elements: mapped }
+    })(),
+    './slides/005-closing.json': layoutSlide('closing', 'Closing', 'closing', theme, { quote: copy.closingQuote, attribution: copy.closingNext }, locale),
+  }
+}
 export function createDeckTemplate(templateId: DeckTemplateId = 'showcase', options: CreateDeckTemplateOptions = {}): DeckDocument {
   if (!deckTemplatePresets.some(template => template.id === templateId)) throw new PlainDeckError('unknown-template', { zh: `未知模板：${templateId}`, en: `Unknown template: ${templateId}` })
   const preset = typeof options.theme === 'string' ? getThemePreset(options.theme) : undefined
@@ -311,7 +383,7 @@ export function createDeckTemplate(templateId: DeckTemplateId = 'showcase', opti
       ] } },
     })
   }
-  const slides = templateId === 'paper-reading' ? paperReadingSlides(theme, title, locale) : templateId === 'nature-methods' ? natureMethodsSlides(theme, title, locale) : storySlides(templateId, theme, title, locale)
+  const slides = templateId === 'paper-reading' ? paperReadingSlides(theme, title, locale) : templateId === 'nature-methods' ? natureMethodsSlides(theme, title, locale) : templateId === 'flowchart' ? flowchartSlides(theme, title, locale) : storySlides(templateId, theme, title, locale)
   return assertDocument({
     deck: { schemaVersion: '0.1', id, title, canvas: { width: 1600, height: 900 }, theme: PROJECT_PATHS.theme, slides: Object.keys(slides) },
     theme, slides,

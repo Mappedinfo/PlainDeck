@@ -11,7 +11,7 @@ init → inspect → operations → validate → dry-run → apply → render
 ## CLI
 
 ```bash
-plaindeck init <project> [--title <title>] [--template showcase|pitch|blank|paper-reading|nature-methods] [--theme <id>] [--json]
+plaindeck init <project> [--title <title>] [--template showcase|pitch|blank|paper-reading|nature-methods|flowchart] [--theme <id>] [--json]
 plaindeck validate <project> [--json]
 plaindeck inspect <project> [--json]
 plaindeck apply <project> --ops <file|-> [--dry-run] [--json]
@@ -154,7 +154,7 @@ await renderPng(result.document, { projectPath: './my-deck', output: './dist/sli
 await renderPdf(result.document, { projectPath: './my-deck', output: './dist/deck.pdf' })
 ```
 
-`createDeckTemplate('nature-methods', { title: 'My method' })` 创建 Web 默认使用的证据优先学术方案；CLI/API 也调用同一个模板工厂。CLI 无参数 `init` 仍保留 `showcase`，以避免破坏已有脚本。
+`createDeckTemplate('nature-methods', { title: 'My method' })` 创建 Web 默认使用的证据优先学术方案；CLI/API 也调用同一个模板工厂。CLI 无参数 `init` 仍保留 `showcase`，以避免破坏已有脚本。 `flowchart` 模板（5 页）用 `process-flow`（横向流程图）与 `decision-branch`（判断分支 + 回环）两个新布局把过程叙事画成节点和箭头；所有模板支持 `{ lang: 'en' | 'zh' }` 双语文案，缺省为中文。布局目录可按语言取用：`layoutPresetsFor(locale)` / `getLayoutPreset(id, locale)`。
 
 `plaindeck/core` 公开 schema、类型、migration、canonical serializer、布局和主题预设。`plaindeck/render` 包含浏览器安全的纯 HTML renderer 与所有输出共用的 presentation model；文件系统、资源嵌入和 Playwright 渲染能力从包根入口 `plaindeck` 导出。React 页面组件由 `plaindeck/react` 导出，Remotion 时间轴由 `plaindeck/remotion` 导出（同一 npm 包的子路径，React 与 remotion 为可选 peer 依赖）。
 

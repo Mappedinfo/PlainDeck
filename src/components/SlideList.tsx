@@ -15,6 +15,8 @@ function LayoutDiagram({ id }: { id: LayoutPresetId }) {
     {id === 'two-column' && <><i className="diagram-column left" /><i className="diagram-column right" /></>}
     {id === 'image-right' && <><i className="diagram-copy left" /><i className="diagram-image" /></>}
     {id === 'three-cards' && <div className="diagram-cards"><i /><i /><i /></div>}
+    {id === 'process-flow' && <div className="diagram-cards"><i /><i /><i /><i /></div>}
+    {id === 'decision-branch' && <><i className="diagram-copy left" /><i className="diagram-metric" /><i className="diagram-column right" /></>}
     {id === 'summary-cards' && <div className="diagram-summary-cards"><i /><i /><i /><i /></div>}
     {id === 'blank' && <span>+</span>}
   </div>
