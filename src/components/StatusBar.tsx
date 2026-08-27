@@ -1,4 +1,4 @@
-import { CloudOff, GitBranch, Github, Minus, Palette, Plus } from 'lucide-react'
+import { CloudOff, GitBranch, Github, Images, Minus, Palette, Plus } from 'lucide-react'
 import { useEditor, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from '../store'
 import { useT } from '../i18n'
 
@@ -12,6 +12,7 @@ export function StatusBar() {
     <span><GitBranch /> {directory ? 'LOCAL DIRECTORY' : 'MEMORY / ZIP'}</span>
     <span><CloudOff /> LOCAL-FIRST</span>
     <a className="source-link" href="https://github.com/Mappedinfo/PlainDeck" target="_blank" rel="noreferrer" aria-label={t.statusBar.githubAria} title={t.statusBar.githubTitle}><Github /> SOURCE</a>
+    <a className="source-link" href={`${import.meta.env.BASE_URL}renders/`} target="_blank" rel="noreferrer" aria-label={t.statusBar.samplesAria} title={t.statusBar.samplesTitle}><Images /> SAMPLES</a>
     <a className="source-link palette-lab-link" href="https://mappedinfo.github.io/palette-lab/" target="_blank" rel="noreferrer" aria-label={t.statusBar.paletteAria} title={t.statusBar.paletteTitle}><Palette /> PALETTE LAB</a>
     <span className="status-spacer" />
     <span>{document.deck.canvas.width} × {document.deck.canvas.height}</span>

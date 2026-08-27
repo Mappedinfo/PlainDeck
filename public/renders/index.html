@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PlainDeck · 示例演示库 / Sample decks</title>
+<style>
+  :root { --bg:#141412; --panel:#1d1d19; --line:#3c3b35; --text:#e8e4da; --muted:#9a968a; --accent:#E97A46; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font:15px/1.6 "PingFang SC","Noto Sans SC",-apple-system,sans-serif; padding:48px 24px 80px; }
+  .wrap { max-width:1180px; margin:0 auto; }
+  .eyebrow { font:11px ui-monospace,monospace; letter-spacing:.18em; color:var(--accent); }
+  h1 { font-size:30px; letter-spacing:-.02em; margin:10px 0 6px; }
+  .lede { color:var(--muted); max-width:660px; margin-bottom:36px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:18px; }
+  .card { display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; transition:border-color .15s; }
+  .card:hover { border-color:var(--accent); }
+  .thumb { position:relative; display:block; aspect-ratio:16/9; background:#000; }
+  .thumb img { width:100%; height:100%; object-fit:cover; object-position:left top; display:block; }
+  .play { position:absolute; right:10px; bottom:10px; background:var(--accent); color:#fff; font-size:11px; font-weight:700; padding:5px 10px; border-radius:3px; text-decoration:none; }
+  .meta { padding:13px 15px 14px; display:flex; flex-direction:column; gap:8px; flex:1; }
+  .name { font-weight:700; font-size:14.5px; }
+  .tags { font:10.5px ui-monospace,monospace; color:var(--muted); letter-spacing:.06em; }
+  .links { margin-top:auto; display:flex; gap:16px; align-items:center; }
+  .links a { font-size:12.5px; color:var(--accent); text-decoration:none; font-weight:600; }
+  .links a:hover { text-decoration:underline; }
+  footer { margin-top:44px; color:var(--muted); font-size:12.5px; }
+  footer a { color:var(--accent); text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">PLAINDECK SAMPLES</div>
+  <h1>示例演示库 / Sample decks</h1>
+  <p class="lede">以下演示全部由 PlainDeck 模板生成：HTML 可直接在浏览器播放（方向键翻页、F 全屏），PDF 为静态打印版。每个项目本身都是一组可被 Git 审查的 JSON 文件。<br />Every deck below was generated from a PlainDeck template — the HTML plays in any browser, the PDF is the print view.</p>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>Made with <a href="../">PlainDeck editor</a> · templates via <code>plaindeck init --template flowchart|data-story|course-lecture</code> · GitHub: <a href="https://github.com/Mappedinfo/PlainDeck">Mappedinfo/PlainDeck</a></footer>
+</div>
+<script>
+const DECKS = [
+  ['flowchart-zh', '流程图脚本', 'FLOWCHART · STUDIO-COBALT · 5P'],
+  ['flowchart-en', 'Flow script (EN)', 'FLOWCHART · STUDIO-COBALT · 5P'],
+  ['data-story-zh', '数据故事', 'DATA-STORY · NIGHT-CITRUS · 6P'],
+  ['data-story-en', 'A data story (EN)', 'DATA-STORY · NIGHT-CITRUS · 6P'],
+  ['course-lecture-zh', '课程讲义', 'COURSE-LECTURE · FIELD-NOTES · 6P'],
+  ['how-the-internet-works', '互联网是怎么工作的', 'SHOWCASE · STUDIO-COBALT · 5P'],
+  ['generative-ai', '生成式 AI 正在改变什么', 'SUMMARY CARDS · 5P'],
+  ['how-learning-sticks', '记忆是如何留存的', 'NATURE-METHODS · NATURE-EDITORIAL · 7P'],
+  ['language-of-thought', '思维的语言，不是自然语言', 'PAPER-READING · NATURE-EDITORIAL · 8P'],
+]
+document.getElementById('grid').innerHTML = DECKS.map(([id, name, tags]) => `
+  <div class="card">
+    <a class="thumb" href="${id}.html"><img loading="lazy" src="${id}.png" alt="${name} 封面" /><span class="play">▶ PLAY</span></a>
+    <div class="meta">
+      <span class="name">${name}</span>
+      <span class="tags">${tags}</span>
+      <span class="links"><a href="${id}.html">HTML ▶ 在浏览器播放</a><a href="${id}.pdf">PDF ↓</a></span>
+    </div>
+  </div>`).join('')
+</script>
+</body>
+</html>

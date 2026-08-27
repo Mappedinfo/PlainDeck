@@ -39,7 +39,7 @@ plaindeck render ./my-deck --format pdf --output dist/deck.pdf
 
 `add-table` parses Markdown, CSV, TSV, or JSON into a semantic, editable table slide with `rules`, `grid`, or `stripes` styling. `add-cards` turns Juya-style Markdown or JSON into a responsive 1–8 card slide. Both commands use the same operation kernel and renderers as the Web editor. `styles` exposes 174 native recipes batch-compiled from the MIT-licensed Juya catalog.
 
-HTML output is a standalone Web presentation with keyboard navigation, progress, slide names, and fullscreen. PNG/PDF use the same layout renderer in document mode.
+HTML output is a standalone Web presentation with keyboard navigation, progress, slide names, and fullscreen. PNG/PDF use the same layout renderer in document mode. Rendered sample decks — playable HTML and PDF for every built-in template — live in the editor's [SAMPLES gallery](https://mappedinfo.github.io/PlainDeck/renders/) and under `demo/`.
 
 PNG and PDF rendering require Playwright Chromium:
 

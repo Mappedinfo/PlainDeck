@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
           scope: base,
           icons: [{ src: 'plaindeck-mark.svg', sizes: 'any', type: 'image/svg+xml' }]
         },
-        workbox: { globPatterns: ['**/*.{js,css,html,svg,woff2}'] }
+        workbox: { globPatterns: ['**/*.{js,css,html,svg,woff2}'], globIgnores: ['renders/**'] }
       })
     ]
   }

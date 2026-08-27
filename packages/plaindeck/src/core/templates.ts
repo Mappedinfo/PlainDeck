@@ -4,7 +4,7 @@ import { PROJECT_PATHS } from './project-paths.js'
 import { resolveLocale, type DeckLocale } from './i18n.js'
 
 import { PlainDeckError } from './errors.js'
-export type DeckTemplateId = 'showcase' | 'pitch' | 'blank' | 'paper-reading' | 'nature-methods' | 'flowchart'
+export type DeckTemplateId = 'showcase' | 'pitch' | 'blank' | 'paper-reading' | 'nature-methods' | 'flowchart' | 'data-story' | 'course-lecture'
 
 export interface DeckTemplatePreset {
   id: DeckTemplateId
@@ -23,6 +23,8 @@ export interface CreateDeckTemplateOptions {
 
 export const deckTemplatePresets: DeckTemplatePreset[] = [
   { id: 'flowchart', name: 'Flow diagrams', description: '五页流程叙事：流水线、判断分支、回环与检查清单', slideCount: 5 },
+  { id: 'data-story', name: 'Data story', description: '六页数据叙事：用关键数字与对照改变一个判断', slideCount: 6 },
+  { id: 'course-lecture', name: 'Course lecture', description: '六页课程讲义：目标、概念、例证、误区与回顾', slideCount: 6 },
   { id: 'showcase', name: 'Editorial showcase', description: '五页叙事骨架，适合介绍、报告与作品展示', slideCount: 5 },
   { id: 'pitch', name: 'Focused pitch', description: '问题、方案、证据与行动的五页提案', slideCount: 5 },
   { id: 'blank', name: 'Minimal start', description: '只有一张精心排版的封面', slideCount: 1 },
@@ -36,6 +38,8 @@ const deckTemplateMeta = {
     pitch: ['A five-slide proposal: problem, solution, evidence and action'],
     blank: ['Just one beautifully typeset cover'],
     flowchart: ['Five slides that draw the process: pipeline, decision branch, loop-back and checklist'],
+    'data-story': ['Six pages that let one number change one judgment: hook, metric, comparison and takeaways'],
+    'course-lecture': ['Six teaching pages: goals, one core concept, a worked example, pitfalls and recap'],
     'paper-reading': ['Eight pages for reading a paper: problem, contributions, evidence, comparison, limits and takeaway'],
     'nature-methods': ['Evidence-led methods talk: question, process, figures, boundaries and conclusion'],
   },
@@ -286,8 +290,8 @@ function natureMethodsSlides(theme: Theme, title: string, locale: DeckLocale): R
 }
 
 const defaultTitles: Record<DeckLocale, Partial<Record<DeckTemplateId, string>>> = {
-  zh: { 'paper-reading': '论文标题：一句话说清核心贡献', 'nature-methods': '方法标题：一句话说清解决了什么', flowchart: '流程标题：把过程画成一张图' },
-  en: { 'paper-reading': 'Paper headline: the core contribution in one sentence', 'nature-methods': 'Methods headline: what was solved, in one clear sentence', flowchart: 'Flow headline: turn the process into one picture' },
+  zh: { 'paper-reading': '论文标题：一句话说清核心贡献', 'nature-methods': '方法标题：一句话说清解决了什么', flowchart: '流程标题：把过程画成一张图', 'data-story': '数据故事：用一个数字改变判断', 'course-lecture': '课程讲义：把一个概念真正讲透' },
+  en: { 'paper-reading': 'Paper headline: the core contribution in one sentence', 'nature-methods': 'Methods headline: what was solved, in one clear sentence', flowchart: 'Flow headline: turn the process into one picture', 'data-story': 'A data story: change one judgment with one number', 'course-lecture': 'One lecture: teach a single concept until it sticks' },
 }
 
 function flowchartSlides(theme: Theme, title: string, locale: DeckLocale): Record<string, Slide> {
@@ -360,6 +364,116 @@ function flowchartSlides(theme: Theme, title: string, locale: DeckLocale): Recor
     './slides/005-closing.json': layoutSlide('closing', 'Closing', 'closing', theme, { quote: copy.closingQuote, attribution: copy.closingNext }, locale),
   }
 }
+function dataStorySlides(theme: Theme, title: string, locale: DeckLocale): Record<string, Slide> {
+  const c = theme.colors; const mono = theme.fonts.mono ?? theme.fonts.body
+  const copy = locale === 'zh' ? {
+    kicker: 'DATA STORY / NUMBERS FIRST',
+    subtitle: '一个数字、一次对照、一句结论。',
+    hookLead: '先给判断，再给数字：本页只论证一件事。',
+    hookSupport: '把最重要的结论写成超大标题。\n\n下面两段给出支撑：数据来源与口径，以及它为什么改变你此前的看法。',
+    metricTitle: '这组数字改变了什么判断',
+    cardsTitle: '三条要点撑起整个故事',
+    cardTitles: ['口径透明', '对照可信', '结论可执行'],
+    cardBodies: ['样本、时间段与统计方式全部写明，拒绝黑箱数字。', '有基线才有意义；没有对照的数字只是装饰。', '每个图表都要落到下一步行动或决策。'],
+    closingQuote: '让数字去说服，\n让人去做决定。',
+    closingNext: '下一步：替换占位数字与来源，核对每一个口径。',
+  } : {
+    kicker: 'DATA STORY / NUMBERS FIRST',
+    subtitle: 'One number, one comparison, one conclusion.',
+    hookLead: 'Judgment first, numbers second — this page argues exactly one thing.',
+    hookSupport: 'Write the most important conclusion as the oversized headline.\n\nThe two paragraphs below carry the support: where the data comes from and why it should change your prior view.',
+    metricTitle: 'What judgment does this number change?',
+    cardsTitle: 'Three points that hold the story together',
+    cardTitles: ['Transparent sourcing', 'Credible comparison', 'Actionable conclusion'],
+    cardBodies: ['State the sample, the window and the method; no black-box numbers.', 'A number means nothing without a baseline; comparisons make it evidence.', 'Every chart must land on a next action or decision.'],
+    closingQuote: 'Let the numbers persuade\nso people can decide.',
+    closingNext: 'Next: replace placeholder figures and sources, then verify every definition.',
+  }
+  const chipLabels = locale === 'zh' ? ['口径', '对照', '结论'] : ['Source', 'Compare', 'Conclude']
+  const nodeChips: SlideElement[] = chipLabels.flatMap((label, index): SlideElement[] => {
+    const x = 176 + index * 196
+    return [
+      { id: `chip-${index + 1}`, type: 'shape', frame: frame(x, 620, 148, 60), shape: 'rounded-rectangle', radius: 14, fill: c.background, stroke: c.accent, strokeWidth: 2, text: label, textColor: c.accent, fontSize: 21, fontWeight: 700 },
+      ...(index < 2 ? [{ id: `chip-arrow-${index + 1}`, type: 'line', frame: frame(x + 156, 648, 32, 3), color: c.muted, strokeWidth: 2.5, arrowEnd: true } as SlideElement] : []),
+    ]
+  })
+  return {
+    './slides/001-cover.json': { id: 'cover', name: 'Cover', layoutRef: 'data-cover', background: { color: c.background }, elements: [
+      { id: 'accent-rule', type: 'shape', frame: frame(132, 96, 8, 560), shape: 'rectangle', fill: c.accent },
+      text('kicker', copy.kicker, 176, 104, 880, 40, { fontSize: 18, fontWeight: 800, color: c.accent, fontFamily: mono, letterSpacing: 2 }),
+      text('title', title, 176, 200, 1180, 280, { styleRef: 'slide-title', fontSize: 78, fontWeight: 800, color: c.text }),
+      shape('rule', 176, 500, 1140, 4, c.text),
+      text('subtitle', copy.subtitle, 176, 542, 860, 110, { fontSize: 28, fontWeight: 500, color: c.muted }),
+      ...nodeChips,
+      text('hint', 'SOURCES · BASELINE · ACTION', 176, 790, 900, 34, { fontSize: 16, fontWeight: 700, color: c.muted, fontFamily: mono, letterSpacing: 2 }),
+    ] },
+    './slides/002-hook.json': layoutSlide('hook', 'Hook', 'hook-statement', theme, { heading: locale === 'zh' ? '结论先行：一页只论证一件事' : 'Conclusion first: one claim per slide', lead: copy.hookLead, support: copy.hookSupport }, locale),
+    './slides/003-metric.json': layoutSlide('metric', 'Key metric', 'metric', theme, {}, locale),
+    './slides/004-versus.json': layoutSlide('versus', 'Comparison', 'versus', theme, {}, locale),
+    './slides/005-points.json': (() => {
+      const slide = layoutSlide('points', 'Takeaways', 'three-cards', theme, { title: copy.cardsTitle }, locale)
+      return { ...slide, elements: slide.elements.map(element => {
+        if (!element.id.startsWith('card-') || element.type !== 'shape') return element
+        const index = Number(element.id.slice(-1)) - 1
+        return { ...element, text: `0${index + 1}\n${copy.cardTitles[index]}\n${copy.cardBodies[index]}`, fontSize: 24, fontWeight: 700 }
+      }) }
+    })(),
+    './slides/006-closing.json': layoutSlide('closing', 'Closing', 'closing', theme, { quote: copy.closingQuote, attribution: copy.closingNext }, locale),
+  }
+}
+
+function courseLectureSlides(theme: Theme, title: string, locale: DeckLocale): Record<string, Slide> {
+  const c = theme.colors; const mono = theme.fonts.mono ?? theme.fonts.body
+  const copy = locale === 'zh' ? {
+    kicker: 'LECTURE / TEACH IT CLEARLY',
+    subtitle: '目标 · 概念 · 例证 · 误区 · 回顾。',
+    goalsTitle: '这节课解决什么',
+    agendaTitle: '课程路线图',
+    conceptLead: '用一个生活类比打开概念。',
+    exampleKicker: '03 / WORKED EXAMPLE',
+    pitfallsTitle: '常见误区：在哪里最容易走偏',
+    recapQuote: '能用一句话讲给别人听，\n才算真的学会了。',
+    recapNext: '课后练习：向同学复述本节概念，并互相追问一个“为什么”。',
+    hint: 'GOALS · CONCEPT · EXAMPLE · RECAP',
+  } : {
+    kicker: 'LECTURE / TEACH IT CLEARLY',
+    subtitle: 'Goals · Concept · Example · Pitfalls · Recap.',
+    goalsTitle: 'What this session solves',
+    agendaTitle: 'The route map for today',
+    conceptLead: 'Open the concept with an everyday analogy.',
+    exampleKicker: '03 / WORKED EXAMPLE',
+    pitfallsTitle: 'Common pitfalls: where learners drift',
+    recapQuote: 'If you cannot explain it in one sentence,\nyou have not learned it yet.',
+    recapNext: 'Homework: retell today’s concept to a classmate and ask each other one “why”.',
+    hint: 'GOALS · CONCEPT · EXAMPLE · RECAP',
+  }
+  return {
+    './slides/001-cover.json': { id: 'cover', name: 'Cover', layoutRef: 'lecture-cover', background: { color: c.background }, elements: [
+      shape('accent-block', 0, 0, 1600, 14, c.accent),
+      text('kicker', copy.kicker, 132, 120, 880, 40, { fontSize: 18, fontWeight: 800, color: c.accent, letterSpacing: 2 }),
+      text('title', title, 132, 210, 1240, 260, { styleRef: 'slide-title', fontSize: 76, fontWeight: 800, color: c.text }),
+      shape('rule', 132, 494, 1336, 3, c.text),
+      text('subtitle', copy.subtitle, 132, 536, 900, 70, { fontSize: 28, fontWeight: 500, color: c.muted }),
+      text('page', '01', 1370, 738, 142, 50, { fontSize: 26, fontWeight: 700, color: c.accent, fontFamily: mono, align: 'right' }),
+      text('hint', copy.hint, 132, 780, 900, 34, { fontSize: 15, fontWeight: 700, color: c.muted, fontFamily: mono, letterSpacing: 2 }),
+    ] },
+    './slides/002-agenda.json': (() => {
+      const slide = layoutSlide('agenda', 'Agenda', 'three-cards', theme, { title: copy.agendaTitle }, locale)
+      return { ...slide, elements: slide.elements.map((element): SlideElement => {
+        if (!element.id.startsWith('card-') || element.type !== 'shape') return element
+        const index = Number(element.id.slice(-1)) - 1
+        const items = locale === 'zh'
+          ? [['01', '学习目标', '先说清这节课结束时你能做什么。'], ['02', '核心概念', '一个定义 + 一个类比 + 一张图。'], ['03', '巩固路径', '例证 → 练习 → 复述检验。']][index]
+          : [['01', 'Learning goal', 'State what you will be able to do afterwards.'], ['02', 'Core concept', 'One definition + one analogy + one diagram.'], ['03', 'Consolidation', 'Example → practice → retell it back.']][index]
+        return { ...element, text: `${items[0]}\n${items[1]}\n${items[2]}`, fontSize: 24 }
+      }) }
+    })(),
+    './slides/003-concept.json': layoutSlide('concept', 'Concept', 'hook-statement', theme, { lead: copy.conceptLead }, locale),
+    './slides/004-example.json': layoutSlide('example', 'Worked example', 'paper-figure', theme, { kicker: copy.exampleKicker }, locale),
+    './slides/005-pitfalls.json': layoutSlide('pitfalls', 'Pitfalls', 'limits', theme, { title: copy.pitfallsTitle }, locale),
+    './slides/006-recap.json': layoutSlide('recap', 'Recap', 'takeaway', theme, { quote: copy.recapQuote, attribution: copy.recapNext }, locale),
+  }
+}
 export function createDeckTemplate(templateId: DeckTemplateId = 'showcase', options: CreateDeckTemplateOptions = {}): DeckDocument {
   if (!deckTemplatePresets.some(template => template.id === templateId)) throw new PlainDeckError('unknown-template', { zh: `未知模板：${templateId}`, en: `Unknown template: ${templateId}` })
   const preset = typeof options.theme === 'string' ? getThemePreset(options.theme) : undefined
@@ -383,7 +497,7 @@ export function createDeckTemplate(templateId: DeckTemplateId = 'showcase', opti
       ] } },
     })
   }
-  const slides = templateId === 'paper-reading' ? paperReadingSlides(theme, title, locale) : templateId === 'nature-methods' ? natureMethodsSlides(theme, title, locale) : templateId === 'flowchart' ? flowchartSlides(theme, title, locale) : storySlides(templateId, theme, title, locale)
+  const slides = templateId === 'paper-reading' ? paperReadingSlides(theme, title, locale) : templateId === 'nature-methods' ? natureMethodsSlides(theme, title, locale) : templateId === 'flowchart' ? flowchartSlides(theme, title, locale) : templateId === 'data-story' ? dataStorySlides(theme, title, locale) : templateId === 'course-lecture' ? courseLectureSlides(theme, title, locale) : storySlides(templateId, theme, title, locale)
   return assertDocument({
     deck: { schemaVersion: '0.1', id, title, canvas: { width: 1600, height: 900 }, theme: PROJECT_PATHS.theme, slides: Object.keys(slides) },
     theme, slides,

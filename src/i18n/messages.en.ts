@@ -60,6 +60,8 @@ export const en = {
     githubTitle: 'GitHub · Mappedinfo/PlainDeck',
     paletteAria: 'Open the Palette Lab color archive',
     paletteTitle: 'Colors from Palette Lab · 15 colors / 8 pairings',
+    samplesAria: 'Browse sample decks and PDFs rendered with PlainDeck',
+    samplesTitle: 'Sample decks · playable HTML + PDF',
   },
   slideList: {
     addBlank: 'New blank page',

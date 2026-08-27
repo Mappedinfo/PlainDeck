@@ -62,6 +62,8 @@ export const zh: Messages = {
     githubTitle: 'GitHub · Mappedinfo/PlainDeck',
     paletteAria: '打开色卡实验室配色档案',
     paletteTitle: '配色来自 色卡实验室 Palette Lab · 15 色 / 8 组搭配',
+    samplesAria: '浏览由 PlainDeck 渲染的示例演示与 PDF',
+    samplesTitle: '示例演示库 · 可播放 HTML + PDF',
   },
   slideList: {
     addBlank: '新建空白页',
