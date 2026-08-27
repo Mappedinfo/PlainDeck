@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { SlideElement, Theme } from './schema.js'
 
+import { PlainDeckError } from './errors.js'
 export const tableStyles = ['rules', 'grid', 'stripes'] as const
 export type TableStyle = typeof tableStyles[number]
 export type TableAlignment = 'left' | 'center' | 'right'
@@ -88,7 +89,7 @@ function inferAlignments(columns: string[], rows: string[][]): TableAlignment[] 
 }
 
 function contentFromMatrix(matrix: string[][], metadata: Partial<Pick<TableContent, 'title' | 'takeaway' | 'source' | 'alignments'>> = {}): TableContent {
-  if (matrix.length < 2) throw new Error('表格至少需要一行表头和一行数据。')
+  if (matrix.length < 2) throw new PlainDeckError('table-needs-header-and-row', { zh: '表格至少需要一行表头和一行数据。', en: 'The table needs at least one header row and one data row.' })
   const columns = matrix[0].map(stripInline)
   const rows = matrix.slice(1).map(row => row.map(stripInline))
   return TableContentSchema.parse({
@@ -111,11 +112,11 @@ function parseJsonTable(source: string): TableContent {
       return TableContentSchema.parse({ title: '关键对比', columns, rows: records.map(record => columns.map(column => stripInline(record[column]))), alignments: inferAlignments(columns, records.map(record => columns.map(column => stripInline(record[column])))) })
     }
   }
-  if (!raw || typeof raw !== 'object') throw new Error('JSON 表格必须是二维数组、对象数组，或包含 title / columns / rows 的对象。')
+  if (!raw || typeof raw !== 'object') throw new PlainDeckError('table-json-shape', { zh: 'JSON 表格必须是二维数组、对象数组，或包含 title / columns / rows 的对象。', en: 'A JSON table must be a 2-D array, an array of objects, or an object with title / columns / rows.' })
   const record = raw as Record<string, unknown>
   const columns = (record.columns ?? record.headers) as unknown
   const rows = record.rows as unknown
-  if (!Array.isArray(columns) || !Array.isArray(rows)) throw new Error('JSON 表格需要 columns 与 rows。')
+  if (!Array.isArray(columns) || !Array.isArray(rows)) throw new PlainDeckError('table-json-columns-rows', { zh: 'JSON 表格需要 columns 与 rows。', en: 'A JSON table requires columns and rows.' })
   return TableContentSchema.parse({
     title: stripInline(record.title) || '关键对比',
     columns: columns.map(stripInline),
@@ -128,7 +129,7 @@ function parseJsonTable(source: string): TableContent {
 
 export function parseTableContent(source: string): TableContent {
   const trimmed = source.trim()
-  if (!trimmed) throw new Error('表格内容不能为空。')
+  if (!trimmed) throw new PlainDeckError('table-empty', { zh: '表格内容不能为空。', en: 'Table content must not be empty.' })
   if (trimmed.startsWith('{') || trimmed.startsWith('[')) return parseJsonTable(trimmed)
 
   const lines = trimmed.split(/\r?\n/)
@@ -157,10 +158,10 @@ export function tableCellsToTsv(cells: string[][]) {
 export function parseTableCells(source: string) {
   const normalized = source.replace(/^\r?\n/, '').replace(/\r?\n$/, '')
   const rows = parseDelimited(normalized, source.includes('\t') ? '\t' : ',')
-  if (!rows.length || !rows[0].length) throw new Error('表格网格不能为空。')
+  if (!rows.length || !rows[0].length) throw new PlainDeckError('table-grid-empty', { zh: '表格网格不能为空。', en: 'The table grid must not be empty.' })
   const columns = rows[0].length
   return rows.map((row, index) => {
-    if (row.length !== columns) throw new Error(`第 ${index + 1} 行有 ${row.length} 列，第一行有 ${columns} 列。`)
+    if (row.length !== columns) throw new PlainDeckError('row-column-mismatch', { zh: `第 ${index + 1} 行有 ${row.length} 列，第一行有 ${columns} 列。`, en: `Row ${index + 1} has ${row.length} columns while the first row has ${columns}.` })
     return row
   })
 }

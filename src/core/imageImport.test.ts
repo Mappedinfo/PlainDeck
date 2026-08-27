@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { fitImageFrame, validateImageFile } from './imageImport'
+import { LocalizedError } from '../i18n/errors'
 
 describe('local image import', () => {
   it('fits large images without changing their aspect ratio', () => {
@@ -13,8 +14,8 @@ describe('local image import', () => {
     expect(fitImageFrame({ width: 400, height: 200 }, { width: 1600, height: 900 }, { x: 1580, y: 880 })).toEqual({ x: 1200, y: 700, w: 400, h: 200 })
   })
 
-  it('rejects non-images and oversized files', () => {
-    expect(() => validateImageFile(new File(['text'], 'notes.txt', { type: 'text/plain' }))).toThrow('不支持')
-    expect(() => validateImageFile(new File([new Uint8Array(25 * 1024 * 1024 + 1)], 'huge.png', { type: 'image/png' }))).toThrow('25 MB')
+  it('rejects non-images and oversized files with localized errors', () => {
+    try { validateImageFile(new File(['text'], 'notes.txt', { type: 'text/plain' })); expect.unreachable() } catch (error) { expect(error).toBeInstanceOf(LocalizedError); expect((error as LocalizedError).messageKey).toBe('unsupportedImageFormat') }
+    try { validateImageFile(new File([new Uint8Array(25 * 1024 * 1024 + 1)], 'huge.png', { type: 'image/png' })); expect.unreachable() } catch (error) { expect((error as LocalizedError).messageKey).toBe('imageTooLarge') }
   })
 })

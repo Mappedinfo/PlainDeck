@@ -1,11 +1,13 @@
 import { z } from 'zod'
-import { createLayoutElements, deriveThemeSurface, layoutPresets } from './presets.js'
+import { PlainDeckError } from './errors.js'
+import { createLayoutElements, deriveThemeSurface, layoutPresetsFor } from './presets.js'
 import { ElementSchema, FooterSchema, SlideMotionSchema, ThemeSchema, assertDocument, type DeckDocument, type SlideElement } from './schema.js'
 import { applyDocumentTheme } from './theme.js'
 import { createSummaryCardElements, SummaryCardContentSchema } from './summary-cards.js'
 import { getDesignRecipe } from './design-recipes.js'
 import { createTableSlideElements, TableContentSchema } from './tables.js'
 import { PROJECT_PATHS } from './project-paths.js'
+import type { DeckLocale } from './i18n.js'
 
 const LayoutIdSchema = z.enum(['blank', 'title-body', 'section', 'statement', 'metric', 'two-column', 'image-right', 'three-cards', 'summary-cards', 'paper-figure', 'paper-table', 'versus', 'contributions', 'limits', 'closing', 'hook-statement', 'prose-panel', 'takeaway'])
 const SlidePathSchema = z.string().startsWith(PROJECT_PATHS.slidesDir).endsWith('.json')
@@ -33,6 +35,11 @@ export const DeckOperationSchema = z.discriminatedUnion('op', [
 export const DeckOperationsSchema = z.array(DeckOperationSchema).min(1)
 export type DeckOperation = z.infer<typeof DeckOperationSchema>
 
+export interface ApplyOperationsOptions {
+  /** Language for generated placeholder copy (e.g. `add-slide` layout placeholders). */
+  locale?: DeckLocale
+}
+
 export interface ApplyOperationsResult {
   document: DeckDocument
   changedPaths: string[]
@@ -40,7 +47,7 @@ export interface ApplyOperationsResult {
 
 function requireSlide(document: DeckDocument, path: string) {
   const slide = document.slides[path]
-  if (!slide || !document.deck.slides.includes(path)) throw new Error(`页面不存在：${path}`)
+  if (!slide || !document.deck.slides.includes(path)) throw new PlainDeckError('slide-not-found', { zh: `页面不存在：${path}`, en: `Slide not found: ${path}` })
   return slide
 }
 
@@ -51,18 +58,18 @@ function uniqueSlidePath(document: DeckDocument, id: string) {
 }
 
 function moveRelative(items: string[], item: string, before?: string, after?: string) {
-  if ((before && after) || (!before && !after)) throw new Error('移动操作必须且只能指定 before 或 after。')
+  if ((before && after) || (!before && !after)) throw new PlainDeckError('move-requires-before-or-after', { zh: '移动操作必须且只能指定 before 或 after。', en: 'A move requires exactly one of before or after.' })
   const target = before ?? after!
-  if (item === target) throw new Error('移动目标不能是自身。')
+  if (item === target) throw new PlainDeckError('move-target-self', { zh: '移动目标不能是自身。', en: 'The move target must not be the item itself.' })
   const from = items.indexOf(item); const targetBeforeMove = items.indexOf(target)
-  if (from < 0) throw new Error(`移动对象不存在：${item}`)
-  if (targetBeforeMove < 0) throw new Error(`移动目标不存在：${target}`)
+  if (from < 0) throw new PlainDeckError('move-item-not-found', { zh: `移动对象不存在：${item}`, en: `Item to move does not exist: ${item}` })
+  if (targetBeforeMove < 0) throw new PlainDeckError('move-target-not-found', { zh: `移动目标不存在：${target}`, en: `Move target does not exist: ${target}` })
   items.splice(from, 1)
   const targetIndex = items.indexOf(target)
   items.splice(targetIndex + (after ? 1 : 0), 0, item)
 }
 
-export function applyOperations(input: DeckDocument, rawOperations: unknown): ApplyOperationsResult {
+export function applyOperations(input: DeckDocument, rawOperations: unknown, options: ApplyOperationsOptions = {}): ApplyOperationsResult {
   const operations = DeckOperationsSchema.parse(rawOperations)
   let document = structuredClone(input)
   const changed = new Set<string>()
@@ -71,8 +78,8 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
     if (operation.op === 'set-element') {
       const slide = requireSlide(document, operation.slide)
       const index = slide.elements.findIndex(element => element.id === operation.element)
-      if (index < 0) throw new Error(`元素不存在：${operation.slide}#${operation.element}`)
-      if ('id' in operation.patch || 'type' in operation.patch) throw new Error('set-element 不允许修改元素 id 或 type。')
+      if (index < 0) throw new PlainDeckError('element-not-found', { zh: `元素不存在：${operation.slide}#${operation.element}`, en: `Element not found: ${operation.slide}#${operation.element}` })
+      if ('id' in operation.patch || 'type' in operation.patch) throw new PlainDeckError('set-element-id-type-immutable', { zh: 'set-element 不允许修改元素 id 或 type。', en: 'set-element cannot change the element id or type.' })
       const current = slide.elements[index]
       const patch = operation.patch as Partial<SlideElement>
       slide.elements[index] = {
@@ -83,13 +90,13 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
       changed.add(operation.slide)
     } else if (operation.op === 'add-element') {
       const slide = requireSlide(document, operation.slide)
-      if (slide.elements.some(element => element.id === operation.element.id)) throw new Error(`元素 ID 已存在：${operation.element.id}`)
+      if (slide.elements.some(element => element.id === operation.element.id)) throw new PlainDeckError('element-id-exists', { zh: `元素 ID 已存在：${operation.element.id}`, en: `Element ID already exists: ${operation.element.id}` })
       slide.elements.push(structuredClone(operation.element))
       changed.add(operation.slide)
     } else if (operation.op === 'remove-element') {
       const slide = requireSlide(document, operation.slide)
       const index = slide.elements.findIndex(element => element.id === operation.element)
-      if (index < 0) throw new Error(`元素不存在：${operation.slide}#${operation.element}`)
+      if (index < 0) throw new PlainDeckError('element-not-found', { zh: `元素不存在：${operation.slide}#${operation.element}`, en: `Element not found: ${operation.slide}#${operation.element}` })
       slide.elements.splice(index, 1)
       changed.add(operation.slide)
     } else if (operation.op === 'move-element') {
@@ -101,24 +108,24 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
       changed.add(operation.slide)
     } else if (operation.op === 'add-slide') {
       const id = operation.id ?? `slide-${globalThis.crypto.randomUUID().slice(0, 8)}`
-      if (Object.values(document.slides).some(slide => slide.id === id)) throw new Error(`页面 ID 已存在：${id}`)
+      if (Object.values(document.slides).some(slide => slide.id === id)) throw new PlainDeckError('slide-id-exists', { zh: `页面 ID 已存在：${id}`, en: `Slide ID already exists: ${id}` })
       const path = uniqueSlidePath(document, id)
-      const preset = layoutPresets.find(item => item.id === operation.layout)
-      if (!preset) throw new Error(`未知布局：${operation.layout}`)
+      const preset = layoutPresetsFor(options.locale ?? 'zh').find(item => item.id === operation.layout)
+      if (!preset) throw new PlainDeckError('unknown-layout', { zh: `未知布局：${operation.layout}`, en: `Unknown layout: ${operation.layout}` })
       const afterIndex = operation.after ? document.deck.slides.indexOf(operation.after) : document.deck.slides.length - 1
-      if (operation.after && afterIndex < 0) throw new Error(`页面不存在：${operation.after}`)
+      if (operation.after && afterIndex < 0) throw new PlainDeckError('slide-not-found', { zh: `页面不存在：${operation.after}`, en: `Slide not found: ${operation.after}` })
       document.deck.slides.splice(afterIndex + 1, 0, path)
-      document.slides[path] = { id, name: operation.name ?? preset.name, layoutRef: operation.layout, elements: createLayoutElements(operation.layout, document.theme) }
+      document.slides[path] = { id, name: operation.name ?? preset.name, layoutRef: operation.layout, elements: createLayoutElements(operation.layout, document.theme, undefined, options.locale) }
       changed.add(PROJECT_PATHS.deck); changed.add(path)
     } else if (operation.op === 'add-summary-slide') {
       const id = operation.id ?? `summary-${globalThis.crypto.randomUUID().slice(0, 8)}`
-      if (Object.values(document.slides).some(slide => slide.id === id)) throw new Error(`页面 ID 已存在：${id}`)
+      if (Object.values(document.slides).some(slide => slide.id === id)) throw new PlainDeckError('slide-id-exists', { zh: `页面 ID 已存在：${id}`, en: `Slide ID already exists: ${id}` })
       const recipe = operation.style ? getDesignRecipe(operation.style) : undefined
-      if (operation.style && !recipe) throw new Error(`未知设计配方：${operation.style}`)
+      if (operation.style && !recipe) throw new PlainDeckError('unknown-design-recipe', { zh: `未知设计配方：${operation.style}`, en: `Unknown design recipe: ${operation.style}` })
       const slideTheme = recipe?.theme ?? document.theme
       const path = uniqueSlidePath(document, id)
       const afterIndex = operation.after ? document.deck.slides.indexOf(operation.after) : document.deck.slides.length - 1
-      if (operation.after && afterIndex < 0) throw new Error(`页面不存在：${operation.after}`)
+      if (operation.after && afterIndex < 0) throw new PlainDeckError('slide-not-found', { zh: `页面不存在：${operation.after}`, en: `Slide not found: ${operation.after}` })
       document.deck.slides.splice(afterIndex + 1, 0, path)
       document.slides[path] = {
         id,
@@ -130,10 +137,10 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
       changed.add(PROJECT_PATHS.deck); changed.add(path)
     } else if (operation.op === 'add-table-slide') {
       const id = operation.id ?? `table-${globalThis.crypto.randomUUID().slice(0, 8)}`
-      if (Object.values(document.slides).some(slide => slide.id === id)) throw new Error(`页面 ID 已存在：${id}`)
+      if (Object.values(document.slides).some(slide => slide.id === id)) throw new PlainDeckError('slide-id-exists', { zh: `页面 ID 已存在：${id}`, en: `Slide ID already exists: ${id}` })
       const path = uniqueSlidePath(document, id)
       const afterIndex = operation.after ? document.deck.slides.indexOf(operation.after) : document.deck.slides.length - 1
-      if (operation.after && afterIndex < 0) throw new Error(`页面不存在：${operation.after}`)
+      if (operation.after && afterIndex < 0) throw new PlainDeckError('slide-not-found', { zh: `页面不存在：${operation.after}`, en: `Slide not found: ${operation.after}` })
       document.deck.slides.splice(afterIndex + 1, 0, path)
       document.slides[path] = {
         id,
@@ -146,7 +153,7 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
     } else if (operation.op === 'duplicate-slide') {
       const source = requireSlide(document, operation.slide)
       const id = operation.id ?? `${source.id}-${globalThis.crypto.randomUUID().slice(0, 8)}`
-      if (Object.values(document.slides).some(slide => slide.id === id)) throw new Error(`页面 ID 已存在：${id}`)
+      if (Object.values(document.slides).some(slide => slide.id === id)) throw new PlainDeckError('slide-id-exists', { zh: `页面 ID 已存在：${id}`, en: `Slide ID already exists: ${id}` })
       const path = uniqueSlidePath(document, id)
       const copy = structuredClone(source); copy.id = id; copy.name = operation.name ?? `${source.name ?? source.id} copy`
       document.deck.slides.splice(document.deck.slides.indexOf(operation.slide) + 1, 0, path)
@@ -167,7 +174,7 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
       moveRelative(document.deck.slides, operation.slide, operation.before, operation.after)
       changed.add(PROJECT_PATHS.deck)
     } else if (operation.op === 'remove-slide') {
-      if (document.deck.slides.length === 1) throw new Error('不能删除最后一页。')
+      if (document.deck.slides.length === 1) throw new PlainDeckError('cannot-delete-last-slide', { zh: '不能删除最后一页。', en: 'Cannot delete the last slide.' })
       requireSlide(document, operation.slide)
       document.deck.slides = document.deck.slides.filter(path => path !== operation.slide)
       delete document.slides[operation.slide]
@@ -177,7 +184,7 @@ export function applyOperations(input: DeckDocument, rawOperations: unknown): Ap
       else delete document.deck.footer
       changed.add(PROJECT_PATHS.deck)
     } else {
-      if ((operation.patch && operation.theme) || (!operation.patch && !operation.theme)) throw new Error('set-theme 必须且只能指定 patch 或 theme。')
+      if ((operation.patch && operation.theme) || (!operation.patch && !operation.theme)) throw new PlainDeckError('set-theme-exclusive', { zh: 'set-theme 必须且只能指定 patch 或 theme。', en: 'set-theme requires exactly one of patch or theme.' })
       let theme = operation.theme
       if (!theme) {
         const colors = { ...document.theme.colors, ...operation.patch }

@@ -1,7 +1,8 @@
 import { ChevronDown, ChevronUp, Copy, LayoutTemplate, Plus, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
-import { layoutPresets, type LayoutPresetId } from 'plaindeck/core'
+import { layoutPresetsFor, type LayoutPresetId } from 'plaindeck/core'
 import { useEditor } from '../store'
+import { useT } from '../i18n'
 import { SlideSurface } from './SlideSurface'
 
 function LayoutDiagram({ id }: { id: LayoutPresetId }) {
@@ -22,6 +23,7 @@ function LayoutDiagram({ id }: { id: LayoutPresetId }) {
 export function SlideList() {
   const [choosingLayout, setChoosingLayout] = useState(false)
   const { document, activeSlidePath, setActiveSlide, addSlide, duplicateSlide, deleteSlide, moveSlide } = useEditor()
+  const { t, locale } = useT()
   return <aside className="slide-panel">
     <div className="panel-heading"><span>PAGES</span><strong>{String(document.deck.slides.length).padStart(2, '0')}</strong></div>
     <div className="slide-list">
@@ -32,17 +34,17 @@ export function SlideList() {
       </button>)}
     </div>
     <div className="slide-actions">
-      <button onClick={() => addSlide()} title="新建空白页"><Plus /></button>
-      <button onClick={() => setChoosingLayout(value => !value)} title="从布局新建页面" aria-label="页面布局"><LayoutTemplate /></button>
-      <button onClick={duplicateSlide} title="复制页面"><Copy /></button>
-      <button onClick={deleteSlide} title="删除页面" disabled={document.deck.slides.length <= 1}><Trash2 /></button>
+      <button onClick={() => addSlide()} title={t.slideList.addBlank}><Plus /></button>
+      <button onClick={() => setChoosingLayout(value => !value)} title={t.slideList.addFromLayout} aria-label={t.slideList.layoutButton}><LayoutTemplate /></button>
+      <button onClick={duplicateSlide} title={t.slideList.duplicate}><Copy /></button>
+      <button onClick={deleteSlide} title={t.slideList.remove} disabled={document.deck.slides.length <= 1}><Trash2 /></button>
       <span />
-      <button onClick={() => moveSlide(-1)} title="上移页面"><ChevronUp /></button>
-      <button onClick={() => moveSlide(1)} title="下移页面"><ChevronDown /></button>
+      <button onClick={() => moveSlide(-1)} title={t.slideList.moveUp}><ChevronUp /></button>
+      <button onClick={() => moveSlide(1)} title={t.slideList.moveDown}><ChevronDown /></button>
     </div>
-    {choosingLayout && <div className="layout-picker" role="dialog" aria-label="选择页面布局">
-      <div className="layout-picker-heading"><div><span>LAYOUT STATION</span><strong>选择新页面骨架</strong></div><button onClick={() => setChoosingLayout(false)} aria-label="关闭布局选择"><X /></button></div>
-      <div className="layout-grid">{layoutPresets.map(preset => <button key={preset.id} onClick={() => { addSlide(preset.id); setChoosingLayout(false) }}>
+    {choosingLayout && <div className="layout-picker" role="dialog" aria-label={t.slideList.pickerLabel}>
+      <div className="layout-picker-heading"><div><span>{t.slideList.pickerHeading}</span><strong>{t.slideList.pickerTitle}</strong></div><button onClick={() => setChoosingLayout(false)} aria-label={t.slideList.closePicker}><X /></button></div>
+      <div className="layout-grid">{layoutPresetsFor(locale).map(preset => <button key={preset.id} onClick={() => { addSlide(preset.id); setChoosingLayout(false) }}>
         <LayoutDiagram id={preset.id} /><strong>{preset.name}</strong><small>{preset.description}</small>
       </button>)}</div>
     </div>}

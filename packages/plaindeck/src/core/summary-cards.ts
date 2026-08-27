@@ -2,6 +2,7 @@ import { z } from 'zod'
 import type { DesignRecipe, DesignVariant } from './design-recipes.js'
 import type { SlideElement, Theme } from './schema.js'
 
+import { PlainDeckError } from './errors.js'
 export const SummaryCardSchema = z.object({
   title: z.string().trim().min(1).max(40),
   description: z.string().trim().min(1).max(320),
@@ -39,12 +40,12 @@ function plainText(input: string) {
 
 export function parseSummaryCards(input: string): SummaryCardContent {
   const cleaned = stripFence(input).replaceAll(/\r\n?/g, '\n').trim()
-  if (!cleaned) throw new Error('卡片内容为空。')
+  if (!cleaned) throw new PlainDeckError('cards-empty', { zh: '卡片内容为空。', en: 'Card content must not be empty.' })
 
   if (cleaned.startsWith('{')) {
     let value: unknown
-    try { value = JSON.parse(cleaned) } catch { throw new Error('卡片 JSON 无法解析。') }
-    if (!value || typeof value !== 'object') throw new Error('卡片 JSON 必须是对象。')
+    try { value = JSON.parse(cleaned) } catch { throw new PlainDeckError('cards-json-invalid', { zh: '卡片 JSON 无法解析。', en: 'The card JSON could not be parsed.' }) }
+    if (!value || typeof value !== 'object') throw new PlainDeckError('cards-json-not-object', { zh: '卡片 JSON 必须是对象。', en: 'The card JSON must be an object.' })
     const raw = value as { title?: unknown; mainTitle?: unknown; cards?: unknown }
     const normalized = {
       title: typeof raw.title === 'string' ? raw.title : raw.mainTitle,

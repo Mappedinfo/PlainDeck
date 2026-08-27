@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { BRAND_ACCENT } from './brand.js'
 import { PROJECT_PATHS } from './project-paths.js'
+import { PlainDeckError } from './errors.js'
 
 export const FrameSchema = z.object({
   x: z.number().int(), y: z.number().int(), w: z.number().int().positive(), h: z.number().int().positive(),
@@ -185,6 +186,6 @@ export function assertDocument(input: unknown): DeckDocument {
   const deck = DeckSchema.parse(raw.deck)
   const theme = ThemeSchema.parse(raw.theme)
   const slides = Object.fromEntries(Object.entries(raw.slides).map(([path, slide]) => [path, SlideSchema.parse(slide)]))
-  for (const path of deck.slides) if (!slides[path]) throw new Error(`页面文件缺失：${path}`)
+  for (const path of deck.slides) if (!slides[path]) throw new PlainDeckError('slide-file-missing', { zh: `页面文件缺失：${path}`, en: `Slide file missing from the deck: ${path}` })
   return { deck, slides, theme }
 }

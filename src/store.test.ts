@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { applyOperations, themePresets } from 'plaindeck/core'
 import { createSampleDocument } from './core/sample'
+import { setLocale } from './i18n'
 import { useEditor } from './store'
 
 describe('editor command history', () => {
-  beforeEach(() => useEditor.getState().setDocument(createSampleDocument()))
+  beforeEach(() => { setLocale('zh'); useEditor.getState().setDocument(createSampleDocument()) })
   it('always opens the first page from deck order', () => {
     const state = useEditor.getState()
     expect(state.activeSlidePath).toBe(state.document.deck.slides[0])
@@ -75,7 +76,7 @@ describe('editor command history', () => {
     const state = useEditor.getState(); const slide = state.document.slides[state.activeSlidePath]
     expect(slide.layoutRef).toBe('image-right')
     expect(slide.elements).toEqual(expect.arrayContaining([
-      expect.objectContaining({ type: 'text', text: '让图片承担一半表达' }),
+      expect.objectContaining({ type: 'text', id: 'title', styleRef: 'slide-title', text: expect.stringMatching(/承担一半表达|carry half the story/i) }),
       expect.objectContaining({ type: 'image', src: 'placeholder:image' }),
     ]))
     expect([...state.dirtyPaths]).toEqual(['deck.json', state.activeSlidePath])

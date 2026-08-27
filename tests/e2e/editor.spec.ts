@@ -3,6 +3,10 @@ import { readFileSync } from 'node:fs'
 
 const packageVersion = JSON.parse(readFileSync(new URL('../../packages/plaindeck/package.json', import.meta.url), 'utf8')).version as string
 
+// Most flows assert Chinese UI labels; the file pins zh-CN while the dedicated
+// describe below overrides to en-US to prove browser-language switching.
+test.use({ locale: 'zh-CN' })
+
 test('edits the sample deck and uses history', async ({ page }) => {
   const errors: string[] = []
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()) })
@@ -234,44 +238,70 @@ test('activates a waiting service worker before refreshing', async ({ page }) =>
   await expect(updateNotice).toBeHidden()
 })
 
-test('creates a layout page, changes its color style, and edits shape text', async ({ page }) => {
-  await page.goto('./')
-  const nightCitrus = page.locator('.theme-presets > button').filter({ hasText: '午夜柑橘' })
-  await nightCitrus.click()
-  await expect(nightCitrus).toHaveClass(/active/)
-  await expect(page.locator('.canvas-workspace .slide-surface')).toHaveCSS('background-color', 'rgb(16, 23, 20)')
-  await expect(page.locator('.canvas-workspace [data-element-id="accent-rule"] .shape-content')).toHaveCSS('background-color', 'rgb(216, 255, 82)')
-  await page.getByRole('button', { name: '页面布局' }).click()
-  const layoutPicker = page.getByRole('dialog', { name: '选择页面布局' })
-  await expect(layoutPicker).toBeVisible()
-  await page.screenshot({ path: '/tmp/plaindeck-layout-picker.png', fullPage: true })
-  await layoutPicker.getByRole('button', { name: /图文并排/ }).click()
+test.describe('Chinese-locale browsing (demo deck auto-switches to zh)', () => {
+  test.use({ locale: 'zh-CN' })
 
-  await expect(page.locator('.slide-thumb')).toHaveCount(8)
-  await expect(page.locator('.canvas-workspace .slide-surface')).toContainText('让图片承担一半表达')
-  await expect(page.locator('.canvas-workspace .image-placeholder')).toBeVisible()
+  test('creates a layout page, changes its color style, and edits shape text', async ({ page }) => {
+    await page.goto('./')
+    const nightCitrus = page.locator('.theme-presets > button').filter({ hasText: '午夜柑橘' })
+    await nightCitrus.click()
+    await expect(nightCitrus).toHaveClass(/active/)
+    await expect(page.locator('.canvas-workspace .slide-surface')).toHaveCSS('background-color', 'rgb(16, 23, 20)')
+    await expect(page.locator('.canvas-workspace [data-element-id="accent-rule"] .shape-content')).toHaveCSS('background-color', 'rgb(216, 255, 82)')
+    await page.getByRole('button', { name: '页面布局' }).click()
+    const layoutPicker = page.getByRole('dialog', { name: '选择页面布局' })
+    await expect(layoutPicker).toBeVisible()
+    await page.screenshot({ path: '/tmp/plaindeck-layout-picker.png', fullPage: true })
+    await layoutPicker.getByRole('button', { name: /图文并排/ }).click()
 
-  await page.getByRole('button', { name: /深夜蓝图/ }).click()
-  await expect(page.locator('.canvas-workspace .slide-surface')).toHaveCSS('background-color', 'rgb(17, 24, 32)')
+    await expect(page.locator('.slide-thumb')).toHaveCount(8)
+    await expect(page.locator('.canvas-workspace .slide-surface')).toContainText('让图片承担一半表达')
+    await expect(page.locator('.canvas-workspace .image-placeholder')).toBeVisible()
 
-  await page.getByRole('button', { name: '添加矩形' }).click()
-  const selectedShape = page.locator('.canvas-workspace .slide-element.selected')
-  await expect(selectedShape.locator('.shape-label')).toContainText('双击添加文字')
-  const shapeText = page.locator('.inspector textarea')
-  await shapeText.fill('形状也可以直接承载观点')
-  await expect(selectedShape.locator('.shape-label')).toContainText('双击添加文字')
-  await shapeText.blur()
-  await expect(selectedShape.locator('.shape-label')).toContainText('形状也可以直接承载观点')
-  await page.screenshot({ path: '/tmp/plaindeck-layout-theme-shape.png', fullPage: true })
+    await page.getByRole('button', { name: /深夜蓝图/ }).click()
+    await expect(page.locator('.canvas-workspace .slide-surface')).toHaveCSS('background-color', 'rgb(17, 24, 32)')
+
+    await page.getByRole('button', { name: '添加矩形' }).click()
+    const selectedShape = page.locator('.canvas-workspace .slide-element.selected')
+    await expect(selectedShape.locator('.shape-label')).toContainText('双击添加文字')
+    const shapeText = page.locator('.inspector textarea')
+    await shapeText.fill('形状也可以直接承载观点')
+    await expect(selectedShape.locator('.shape-label')).toContainText('双击添加文字')
+    await shapeText.blur()
+    await expect(selectedShape.locator('.shape-label')).toContainText('形状也可以直接承载观点')
+    await page.screenshot({ path: '/tmp/plaindeck-layout-theme-shape.png', fullPage: true })
+  })
+
+  test('presents the seven-page evidence-led onboarding story in order', async ({ page }) => {
+    await page.goto('./')
+    const expected = ['方法标题：一句话说清解决了什么', '现有方法在哪个关键条件下仍然不够', '方法流程直接对应问题中的四个约束', '主图必须直接支撑本页结论', '比较表只保留改变判断的指标', '可信结论同时说明证据覆盖与失效条件', '方法的价值不在于看起来复杂']
+    const thumbnails = page.locator('.slide-thumb')
+    for (let index = 0; index < expected.length; index += 1) {
+      await thumbnails.nth(index).click()
+      await expect(page.locator('.canvas-workspace .slide-surface')).toContainText(expected[index])
+      await page.locator('.canvas-workspace').screenshot({ path: `/tmp/plaindeck-slide-${index + 1}.png` })
+    }
+  })
 })
 
-test('presents the seven-page evidence-led onboarding story in order', async ({ page }) => {
-  await page.goto('./')
-  const expected = ['方法标题：一句话说清解决了什么', '现有方法在哪个关键条件下仍然不够', '方法流程直接对应问题中的四个约束', '主图必须直接支撑本页结论', '比较表只保留改变判断的指标', '可信结论同时说明证据覆盖与失效条件', '方法的价值不在于看起来复杂']
-  const thumbnails = page.locator('.slide-thumb')
-  for (let index = 0; index < expected.length; index += 1) {
-    await thumbnails.nth(index).click()
-    await expect(page.locator('.canvas-workspace .slide-surface')).toContainText(expected[index])
-    await page.locator('.canvas-workspace').screenshot({ path: `/tmp/plaindeck-slide-${index + 1}.png` })
-  }
+test.describe('English-locale browsing (demo deck falls back to English)', () => {
+  test.use({ locale: 'en-US' })
+
+  test('follows the browser language and renders the English demo deck', async ({ page }) => {
+    await page.goto('./')
+    await expect(page.locator('.canvas-workspace .slide-surface')).toContainText('Methods headline: what was solved, in one clear sentence')
+    await expect(page.locator('.canvas-workspace .slide-surface')).toContainText('Organize a credible academic talk around question, method, evidence and boundaries.')
+  })
+
+  test('switches UI language and re-renders the pristine sample through the toolbar toggle', async ({ page }) => {
+    await page.goto('./')
+    // Cycle: auto (auto-detected en) → manual EN → manual ZH → auto.
+    await page.locator('.language-toggle').click()
+    await expect(page.locator('.language-toggle[data-auto="true"]')).not.toBeVisible()
+    await page.locator('.language-toggle').click()
+    await expect(page.locator('.canvas-workspace .slide-surface')).toContainText('方法标题：一句话说清解决了什么')
+    await expect(page.getByRole('button', { name: '添加文本' })).toBeVisible()
+    await page.locator('.language-toggle').click()
+    await expect(page.locator('.language-toggle[data-auto="true"]')).toBeVisible()
+  })
 })

@@ -2,7 +2,7 @@ import { cp, mkdtemp, readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { applyOperations, canonicalJson, createDeckTemplate, createSavePlan, createSummaryCardElements, deckTemplatePresets, designRecipeCategories, designRecipes, designRecipeSource, getDesignRecipe, inspectDeck, loadDeck, parseSummaryCards, parseTableContent, renderHtml, resolveFooterSlot, saveDeck, searchDesignRecipes, shrinkFontToFit, summaryCardsToMarkdown, themePresets, validateDeck } from '../src/index.js'
+import { applyOperations, canonicalJson, createDeckTemplate, createSavePlan, createSummaryCardElements, deckTemplatePresets, designRecipeCategories, designRecipes, designRecipeSource, getDesignRecipe, inspectDeck, loadDeck, parseSummaryCards, parseTableContent, renderHtml, resolveFooterSlot, resolveLocale, saveDeck, searchDesignRecipes, shrinkFontToFit, summaryCardsToMarkdown, themePresets, validateDeck } from '../src/index.js'
 
 const starter = resolve('examples/starter')
 
@@ -202,5 +202,45 @@ describe('PlainDeck public API', () => {
     await cp(starter, root, { recursive: true })
     await saveDeck(root, removed.document, removed.changedPaths)
     await expect(readFile(join(root, removedPath.replace(/^\.\//, '')), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
+  })
+})
+
+describe('deck copy locales (browser-language demos)', () => {
+  it('maps BCP-47 tags to zh/en with English as the final fallback', () => {
+    expect(resolveLocale('zh')).toBe('zh')
+    expect(resolveLocale('zh-TW')).toBe('zh')
+    expect(resolveLocale('en-US')).toBe('en')
+    expect(resolveLocale(['fr-FR', 'zh-CN'])).toBe('zh')
+    expect(resolveLocale(['fr-FR', 'de-DE'])).toBe('en')
+    expect(resolveLocale('')).toBe('en')
+    expect(resolveLocale(null)).toBe('en')
+  })
+
+  it('keeps Chinese as the default template language and matches resolved lang', () => {
+    for (const template of deckTemplatePresets) {
+      // The blank template ships English-only placeholder copy; every other template carries localized strings.
+      if (template.id === 'blank') continue
+      const zh = canonicalJson(createDeckTemplate(template.id))
+      const en = canonicalJson(createDeckTemplate(template.id, { lang: 'en' }))
+      expect(zh).toMatch(/[\u4e00-\u9fff]/)
+      expect(en).not.toEqual(zh)
+      expect(en).not.toMatch(/[\u4e00-\u9fff]/)
+      expect(validateDeck(createDeckTemplate(template.id, { lang: 'en' }))).toMatchObject({ valid: true, issues: [] })
+    }
+  })
+
+  it('localizes layout placeholder copy when new slides are added', () => {
+    const original = createDeckTemplate('blank')
+    for (const [locale, expected] of [['en', 'This figure is the core evidence'], ['zh', '这张原图是核心证据']] as const) {
+      const result = applyOperations(original, [{ op: 'add-slide', id: `fig-${locale}`, layout: 'paper-figure' }], { locale })
+      const path = result.document.deck.slides[1]
+      expect(result.document.slides[path].elements.find(element => element.id === 'title')).toMatchObject({ text: expected })
+      expect(result.document.slides[path].elements.find(element => element.id === 'caption')?.text).toMatch(locale === 'en' ? /Caption:/ : /图注：/)
+    }
+  })
+
+  it('lets the editor pin an explicit title per language for the default sample deck', () => {
+    expect(createDeckTemplate('nature-methods').deck.title).toBe('方法标题：一句话说清解决了什么')
+    expect(createDeckTemplate('nature-methods', { lang: 'en' }).deck.title).toBe('Methods headline: what was solved, in one clear sentence')
   })
 })

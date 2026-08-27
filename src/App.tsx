@@ -13,6 +13,8 @@ import { moveFrame } from './core/geometry'
 import { blobToDataUrl, fitImageFrame, hasTransferredImages, imageDimensions, imageFiles, transferredImageFiles, validateImageFile } from './core/imageImport'
 import { createSaveLoop } from './core/saveLoop'
 import { useEditor } from './store'
+import { getMessages, useT } from './i18n'
+import { errorText, throwLocalized } from './i18n/errors'
 import { exportHtml } from './export/html'
 import { waitForPrintResources } from './export/print'
 import { exportZip, importZip } from './storage/zipStorage'
@@ -21,23 +23,24 @@ import { clearRecoveryFromOpfs, initializeProject, pickDirectory, projectFingerp
 type ApplyUpdate = (reloadPage?: boolean) => Promise<void>
 
 function Presentation({ onClose }: { onClose: () => void }) {
-  const { document, activeSlidePath } = useEditor(); const initial = Math.max(0, document.deck.slides.indexOf(activeSlidePath)); const [index, setIndex] = useState(initial)
+  const { document, activeSlidePath } = useEditor(); const t = getMessages(); const initial = Math.max(0, document.deck.slides.indexOf(activeSlidePath)); const [index, setIndex] = useState(initial)
   useEffect(() => { const key = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); if (['ArrowRight', 'ArrowDown', ' '].includes(event.key)) setIndex(i => Math.min(document.deck.slides.length - 1, i + 1)); if (['ArrowLeft', 'ArrowUp'].includes(event.key)) setIndex(i => Math.max(0, i - 1)) }; addEventListener('keydown', key); return () => removeEventListener('keydown', key) }, [document.deck.slides.length, onClose])
   const scale = Math.min(window.innerWidth / document.deck.canvas.width, window.innerHeight / document.deck.canvas.height) * .94
-  return <div className="presentation" role="dialog" aria-label="演示模式"><button className="presentation-close" onClick={onClose}><X /> 退出</button><div className="presentation-stage" style={{ width: document.deck.canvas.width * scale, height: document.deck.canvas.height * scale }}><SlideSurface slide={document.slides[document.deck.slides[index]]} interactive={false} zoom={scale} /></div><div className="presentation-nav"><button onClick={() => setIndex(i => Math.max(0, i - 1))}><ChevronLeft /></button><span>{index + 1} / {document.deck.slides.length}</span><button onClick={() => setIndex(i => Math.min(document.deck.slides.length - 1, i + 1))}><ChevronRight /></button></div></div>
+  return <div className="presentation" role="dialog" aria-label={t.presentation.dialogLabel}><button className="presentation-close" onClick={onClose}><X /> {t.presentation.exit}</button><div className="presentation-stage" style={{ width: document.deck.canvas.width * scale, height: document.deck.canvas.height * scale }}><SlideSurface slide={document.slides[document.deck.slides[index]]} interactive={false} zoom={scale} /></div><div className="presentation-nav"><button onClick={() => setIndex(i => Math.max(0, i - 1))}><ChevronLeft /></button><span>{index + 1} / {document.deck.slides.length}</span><button onClick={() => setIndex(i => Math.min(document.deck.slides.length - 1, i + 1))}><ChevronRight /></button></div></div>
 }
 
 function ExportDialog({ onClose }: { onClose: () => void }) {
   const editor = useEditor(); const { document, directory } = editor
+  const { t } = useT()
   const action = async (type: 'html' | 'zip' | 'pdf') => {
     try { if (type === 'html') await exportHtml(document, directory); if (type === 'zip') await exportZip(document, directory); if (type === 'pdf') { await waitForPrintResources(globalThis.document.querySelector('.print-deck') ?? globalThis.document); window.print() } onClose() }
-    catch (error) { editor.setSaveState('error', error instanceof Error ? error.message : String(error)) }
+    catch (error) { editor.setSaveState('error', errorText(error)) }
   }
-  return <div className="modal-backdrop" onMouseDown={onClose}><div className="export-dialog" onMouseDown={e => e.stopPropagation()}><div><span className="eyebrow">PORTABLE OUTPUT</span><button onClick={onClose}><X /></button></div><h2>Take the deck with you.</h2><p>原始项目始终留在本地。导出不会改变源文件。</p><button className="export-choice" onClick={() => action('html')}><FileCode2 /><span><strong>Standalone HTML</strong><small>浏览器播放与分享</small></span><Download /></button><button className="export-choice" onClick={() => action('pdf')}><Printer /><span><strong>Print / PDF</strong><small>使用浏览器分页打印</small></span><Download /></button><button className="export-choice" onClick={() => action('zip')}><FileArchive /><span><strong>Project ZIP</strong><small>Firefox / Safari 回退与迁移</small></span><Download /></button></div></div>
+  return <div className="modal-backdrop" onMouseDown={onClose}><div className="export-dialog" onMouseDown={e => e.stopPropagation()}><div><span className="eyebrow">{t.exportDialog.eyebrow}</span><button onClick={onClose}><X /></button></div><h2>{t.exportDialog.title}</h2><p>{t.exportDialog.intro}</p><button className="export-choice" onClick={() => action('html')}><FileCode2 /><span><strong>{t.exportDialog.htmlName}</strong><small>{t.exportDialog.htmlHint}</small></span><Download /></button><button className="export-choice" onClick={() => action('pdf')}><Printer /><span><strong>{t.exportDialog.pdfName}</strong><small>{t.exportDialog.pdfHint}</small></span><Download /></button><button className="export-choice" onClick={() => action('zip')}><FileArchive /><span><strong>{t.exportDialog.zipName}</strong><small>{t.exportDialog.zipHint}</small></span><Download /></button></div></div>
 }
 
 export default function App() {
-  const state = useEditor(); const [present, setPresent] = useState(false); const [exporting, setExporting] = useState(false); const [addingCards, setAddingCards] = useState(false); const [addingTable, setAddingTable] = useState(false); const [updateReady, setUpdateReady] = useState(false); const [draggingImage, setDraggingImage] = useState(false); const [imageNotice, setImageNotice] = useState(''); const [recovery, setRecovery] = useState<Awaited<ReturnType<typeof restoreFromOpfs>>>(null); const zipRef = useRef<HTMLInputElement>(null); const imageRef = useRef<HTMLInputElement>(null); const canvasRef = useRef<HTMLElement>(null); const applyUpdateRef = useRef<ApplyUpdate>(null)
+  const state = useEditor(); const { t } = useT(); const [present, setPresent] = useState(false); const [exporting, setExporting] = useState(false); const [addingCards, setAddingCards] = useState(false); const [addingTable, setAddingTable] = useState(false); const [updateReady, setUpdateReady] = useState(false); const [draggingImage, setDraggingImage] = useState(false); const [imageNotice, setImageNotice] = useState(''); const [recovery, setRecovery] = useState<Awaited<ReturnType<typeof restoreFromOpfs>>>(null); const zipRef = useRef<HTMLInputElement>(null); const imageRef = useRef<HTMLInputElement>(null); const canvasRef = useRef<HTMLElement>(null); const applyUpdateRef = useRef<ApplyUpdate>(null)
   const fitCanvas = useCallback(() => {
     const workspace = canvasRef.current
     if (!workspace) return
@@ -50,17 +53,17 @@ export default function App() {
     try {
       for (const [index, file] of files.entries()) {
         validateImageFile(file)
-        const editor = useEditor.getState(); const dimensions = await imageDimensions(file)
+        const editor = useEditor.getState(); const messages = getMessages(); const dimensions = await imageDimensions(file)
         let src: string
         if (editor.directory) {
-          if (!await verifyPermission(editor.directory, true)) throw new Error('未授予图片资源写入权限。')
+          if (!await verifyPermission(editor.directory, true)) throwLocalized('imageWritePermission')
           src = await writeImageAsset(editor.directory, file)
         } else src = await blobToDataUrl(file)
         const offsetPoint = point ? { x: point.x + index * 28, y: point.y + index * 28 } : undefined
-        editor.addImage(src, fitImageFrame(dimensions, editor.document.deck.canvas, offsetPoint), file.name || '粘贴的图片')
-        setImageNotice(editor.directory ? `已放入画板并保存到 ${src}` : '已放入画板 · 当前演示项目中以内嵌图片保存')
+        editor.addImage(src, fitImageFrame(dimensions, editor.document.deck.canvas, offsetPoint), file.name || messages.app.pastedImageAlt)
+        setImageNotice(editor.directory ? messages.app.savedToAssetNotice(src) : messages.app.savedInlineNotice)
       }
-    } catch (error) { useEditor.getState().setSaveState('error', error instanceof Error ? error.message : String(error)) }
+    } catch (error) { useEditor.getState().setSaveState('error', errorText(error)) }
   }, [])
   const canvasPoint = useCallback((clientX: number, clientY: number) => {
     const surface = canvasRef.current?.querySelector('.canvas-sized > .slide-surface')
@@ -75,13 +78,13 @@ export default function App() {
       current.setSaveState('saving')
       await snapshotToOpfs({ document, projectFingerprint: projectFingerprint(document, directory), revision: current.revision, persistedRevision: current.persistedRevision })
       if (directory) {
-        if (!await verifyPermission(directory)) throw new Error('目录写入权限已失效，请重新打开目录。')
+        if (!await verifyPermission(directory)) throwLocalized('directoryPermissionExpired')
         await writeProject(directory, document, paths)
       }
       useEditor.getState().clearDirty(captured)
       if (directory && !useEditor.getState().dirtyRevisions.size) await clearRecoveryFromOpfs()
     },
-    onError: error => { useEditor.getState().setSaveState('error', error instanceof Error ? error.message : String(error)) },
+    onError: error => { useEditor.getState().setSaveState('error', errorText(error)) },
   }))
   const save = useCallback(() => saveLoop.request(), [saveLoop])
 
@@ -108,31 +111,31 @@ export default function App() {
       if (mod && event.key.toLowerCase() === 'd') { event.preventDefault(); editor.duplicateSelected() }
       if (mod && event.key.toLowerCase() === 's') { event.preventDefault(); save() }
       if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); editor.removeSelected() }
-      if (event.key.startsWith('Arrow') && editor.selectedIds.length === 1) { event.preventDefault(); const slide = editor.document.slides[editor.activeSlidePath]; const element = slide.elements.find(item => item.id === editor.selectedIds[0]); if (!element) return; const amount = event.shiftKey ? 8 : 1; const dx = event.key === 'ArrowRight' ? amount : event.key === 'ArrowLeft' ? -amount : 0; const dy = event.key === 'ArrowDown' ? amount : event.key === 'ArrowUp' ? -amount : 0; editor.updateElement(element.id, { frame: moveFrame(element.frame, dx, dy, editor.document.deck.canvas, 1) } as never, '键盘微调') }
+      if (event.key.startsWith('Arrow') && editor.selectedIds.length === 1) { event.preventDefault(); const slide = editor.document.slides[editor.activeSlidePath]; const element = slide.elements.find(item => item.id === editor.selectedIds[0]); if (!element) return; const amount = event.shiftKey ? 8 : 1; const dx = event.key === 'ArrowRight' ? amount : event.key === 'ArrowLeft' ? -amount : 0; const dy = event.key === 'ArrowDown' ? amount : event.key === 'ArrowUp' ? -amount : 0; editor.updateElement(element.id, { frame: moveFrame(element.frame, dx, dy, editor.document.deck.canvas, 1) } as never, getMessages().store.nudgeWithKeyboard) }
     }
     addEventListener('keydown', key); return () => removeEventListener('keydown', key)
   }, [save])
 
   const openDirectory = async () => {
-    try { const handle = await pickDirectory(); if (!await verifyPermission(handle, true)) throw new Error('未授予目录写入权限。'); state.setSaveState('saving'); const document = await readProject(handle); state.setDocument(document, handle); setRecovery(await restoreFromOpfs(projectFingerprint(document, handle))) }
-    catch (error) { if ((error as DOMException).name !== 'AbortError') state.setSaveState('error', error instanceof Error ? error.message : String(error)) }
+    try { const handle = await pickDirectory(); if (!await verifyPermission(handle, true)) throwLocalized('directoryWritePermission'); state.setSaveState('saving'); const document = await readProject(handle); state.setDocument(document, handle); setRecovery(await restoreFromOpfs(projectFingerprint(document, handle))) }
+    catch (error) { if ((error as DOMException).name !== 'AbortError') state.setSaveState('error', errorText(error)) }
   }
   const newProject = async () => {
-    try { const handle = await pickDirectory(); if (!await verifyPermission(handle, true)) throw new Error('未授予目录写入权限。'); const document = createSampleDocument(); await initializeProject(handle, document); await clearRecoveryFromOpfs(); setRecovery(null); state.setDocument(document, handle) }
-    catch (error) { if ((error as DOMException).name !== 'AbortError') state.setSaveState('error', error instanceof Error ? error.message : String(error)) }
+    try { const handle = await pickDirectory(); if (!await verifyPermission(handle, true)) throwLocalized('directoryWritePermission'); const document = createSampleDocument(); await initializeProject(handle, document); await clearRecoveryFromOpfs(); setRecovery(null); state.setDocument(document, handle) }
+    catch (error) { if ((error as DOMException).name !== 'AbortError') state.setSaveState('error', errorText(error)) }
   }
-  const loadZip = async (file?: File) => { if (!file) return; try { state.setDocument(await importZip(file), null) } catch (error) { state.setSaveState('error', error instanceof Error ? error.message : String(error)) } }
+  const loadZip = async (file?: File) => { if (!file) return; try { state.setDocument(await importZip(file), null) } catch (error) { state.setSaveState('error', errorText(error)) } }
   const activeSlide = state.document.slides[state.activeSlidePath]
   return <div className="app-shell">
     <Toolbar onOpen={openDirectory} onNew={newProject} onImportZip={() => zipRef.current?.click()} onAddImage={() => imageRef.current?.click()} onAddCards={() => setAddingCards(true)} onAddTable={() => setAddingTable(true)} onExport={() => setExporting(true)} onPresent={() => setPresent(true)} onSave={save} />
     <input ref={zipRef} hidden type="file" accept=".zip,application/zip" onChange={e => loadZip(e.target.files?.[0])} />
     <input ref={imageRef} hidden type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" multiple onChange={e => { void insertImages(imageFiles(e.target.files ?? [])); e.currentTarget.value = '' }} />
-    <main className="workspace"><SlideList /><section ref={canvasRef} className={`canvas-workspace ${draggingImage ? 'image-drop-active' : ''}`} onDragEnter={event => { if (hasTransferredImages(event.dataTransfer)) setDraggingImage(true) }} onDragOver={event => { if (hasTransferredImages(event.dataTransfer)) { event.preventDefault(); event.dataTransfer.dropEffect = 'copy' } }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDraggingImage(false) }} onDrop={event => { const files = transferredImageFiles(event.dataTransfer); setDraggingImage(false); if (!files.length) return; event.preventDefault(); void insertImages(files, canvasPoint(event.clientX, event.clientY)) }} onDoubleClick={e => { if (e.currentTarget === e.target) fitCanvas() }}><div className="canvas-label"><span>ARTBOARD</span><SlideNameEditor key={state.activeSlidePath} name={activeSlide.name ?? activeSlide.id} onCommit={state.renameSlide} /></div><div className="canvas-scroller"><div className="canvas-sized" style={{ width: state.document.deck.canvas.width * state.zoom, height: state.document.deck.canvas.height * state.zoom }}><SlideSurface slide={activeSlide} zoom={state.zoom} /></div></div><div className="image-drop-overlay"><strong>DROP IMAGE</strong><span>释放以放入当前画板</span></div><div className="canvas-coordinate">X 0000&nbsp;&nbsp; Y 0000</div></section><Inspector /></main>
+    <main className="workspace"><SlideList /><section ref={canvasRef} className={`canvas-workspace ${draggingImage ? 'image-drop-active' : ''}`} onDragEnter={event => { if (hasTransferredImages(event.dataTransfer)) setDraggingImage(true) }} onDragOver={event => { if (hasTransferredImages(event.dataTransfer)) { event.preventDefault(); event.dataTransfer.dropEffect = 'copy' } }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDraggingImage(false) }} onDrop={event => { const files = transferredImageFiles(event.dataTransfer); setDraggingImage(false); if (!files.length) return; event.preventDefault(); void insertImages(files, canvasPoint(event.clientX, event.clientY)) }} onDoubleClick={e => { if (e.currentTarget === e.target) fitCanvas() }}><div className="canvas-label"><span>ARTBOARD</span><SlideNameEditor key={state.activeSlidePath} name={activeSlide.name ?? activeSlide.id} onCommit={state.renameSlide} /></div><div className="canvas-scroller"><div className="canvas-sized" style={{ width: state.document.deck.canvas.width * state.zoom, height: state.document.deck.canvas.height * state.zoom }}><SlideSurface slide={activeSlide} zoom={state.zoom} /></div></div><div className="image-drop-overlay"><strong>DROP IMAGE</strong><span>{t.canvas.dropOverlay}</span></div><div className="canvas-coordinate">X 0000&nbsp;&nbsp; Y 0000</div></section><Inspector /></main>
     <StatusBar />
     <div className="print-deck">{state.document.deck.slides.map(path => <div className="print-page" key={path}><SlideSurface slide={state.document.slides[path]} interactive={false} zoom={1} /></div>)}</div>
     {present && <Presentation onClose={() => setPresent(false)} />}{exporting && <ExportDialog onClose={() => setExporting(false)} />}{addingCards && <SummaryCardsDialog onClose={() => setAddingCards(false)} />}{addingTable && <TableDialog onClose={() => setAddingTable(false)} />}
-    {recovery && <div className="recovery-toast"><strong>发现未保存的恢复快照</strong><span>{new Date(recovery.savedAt).toLocaleString()}</span><div><button onClick={() => { setRecovery(null); void clearRecoveryFromOpfs() }}>丢弃</button><button onClick={() => { state.restoreDocument(recovery.document, recovery.revision); setRecovery(null) }}>恢复</button></div></div>}
+    {recovery && <div className="recovery-toast"><strong>{t.app.recoveryTitle}</strong><span>{new Date(recovery.savedAt).toLocaleString()}</span><div><button onClick={() => { setRecovery(null); void clearRecoveryFromOpfs() }}>{t.app.recoveryDiscard}</button><button onClick={() => { state.restoreDocument(recovery.document, recovery.revision); setRecovery(null) }}>{t.app.recoveryRestore}</button></div></div>}
     {imageNotice && <div className="image-toast" role="status">{imageNotice}</div>}
-    {updateReady && <div className="update-toast">新版本已就绪。保存后刷新以更新。<button onClick={() => { const applyUpdate = applyUpdateRef.current; if (!applyUpdate) return; setUpdateReady(false); void applyUpdate(true).catch(() => setUpdateReady(true)) }}>刷新</button></div>}
+    {updateReady && <div className="update-toast">{t.app.updateReady}<button onClick={() => { const applyUpdate = applyUpdateRef.current; if (!applyUpdate) return; setUpdateReady(false); void applyUpdate(true).catch(() => setUpdateReady(true)) }}>{t.app.reload}</button></div>}
   </div>
 }

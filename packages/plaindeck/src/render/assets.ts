@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { extname, isAbsolute, relative, resolve } from 'node:path'
 import type { DeckDocument } from '../core/schema.js'
 
+import { PlainDeckError } from '../core/errors.js'
 const mimeTypes: Record<string, string> = {
   '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.svg': 'image/svg+xml',
 }
@@ -27,12 +28,12 @@ export async function prepareDocumentAssets(input: DeckDocument, options: Prepar
         continue
       }
       try {
-        if (isAbsolute(element.src)) throw new Error('不允许绝对资源路径')
+        if (isAbsolute(element.src)) throw new PlainDeckError('asset-absolute-path-forbidden', { zh: '不允许绝对资源路径', en: 'Absolute asset paths are not allowed' })
         const assetPath = resolve(root, element.src.replace(/^\.\//, ''))
         const inside = relative(root, assetPath)
-        if (inside.startsWith('..') || isAbsolute(inside)) throw new Error('资源路径越界')
+        if (inside.startsWith('..') || isAbsolute(inside)) throw new PlainDeckError('asset-path-escapes-root', { zh: '资源路径越界', en: 'The asset path escapes the project root' })
         const mime = mimeTypes[extname(assetPath).toLowerCase()]
-        if (!mime) throw new Error('不支持的图片格式')
+        if (!mime) throw new PlainDeckError('unsupported-image-format', { zh: '不支持的图片格式', en: 'Unsupported image format' })
         element.src = `data:${mime};base64,${(await readFile(assetPath)).toString('base64')}`
       } catch (error) {
         warnings.push(`${element.src}：${error instanceof Error ? error.message : String(error)}`)

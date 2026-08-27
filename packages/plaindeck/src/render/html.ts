@@ -1,6 +1,7 @@
 import type { DeckDocument, SlideElement } from '../core/schema.js'
 import { elementFrameStyle, footerPresentation, imageContentStyle, lineContentStyle, shapeContentStyle, shapeLabelStyle, slideStyle, tableCellStyle, tableColumnWidths, tableContentStyle, textContentStyle, type PresentationStyle } from './presentation.js'
 
+import { PlainDeckError } from '../core/errors.js'
 export interface HtmlRenderOptions {
   slidePaths?: string[]
   resolveAsset?: (src: string) => string
@@ -53,7 +54,7 @@ export function renderHtml(document: DeckDocument, options: HtmlRenderOptions = 
   const { deck, theme } = document
   const paths = options.slidePaths ?? deck.slides
   const resolveAsset = options.resolveAsset ?? (src => src)
-  for (const path of paths) if (!document.slides[path]) throw new Error(`页面不存在：${path}`)
+  for (const path of paths) if (!document.slides[path]) throw new PlainDeckError('slide-not-found', { zh: `页面不存在：${path}`, en: `Slide not found: ${path}` })
   const slides = paths.map(path => {
     const slide = document.slides[path]
     return `<section class="slide" data-slide-path="${escapeAttribute(path)}" aria-label="${escapeAttribute(slide.name ?? slide.id)}" style="${escapeAttribute(styleHtml(slideStyle(document, path)))}">${slide.elements.map(element => elementHtml(element, theme, resolveAsset)).join('')}${footerHtml(document, path, options.date)}</section>`

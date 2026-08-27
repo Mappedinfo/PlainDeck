@@ -1,3 +1,4 @@
+import { PlainDeckError } from '../core/errors.js'
 /**
  * PlainDeck MCP server — agent-native slide decks over the Model Context
  * Protocol. Exposes the PlainDeck Agent API (init / validate / inspect /
@@ -41,13 +42,13 @@ const json = (value: unknown) => JSON.stringify(value, null, 2)
 async function initProject(projectPath: string, options: { title?: string; id?: string; template?: string; theme?: string }) {
   const template = options.template ?? 'showcase'
   const theme = options.theme ?? (template === 'paper-reading' || template === 'nature-methods' ? 'nature-editorial' : 'studio-cobalt')
-  if (!deckTemplatePresets.some(item => item.id === template)) throw new Error(`未知模板 ${template}。可用模板：${deckTemplatePresets.map(item => item.id).join(', ')}`)
-  if (!themePresets.some(item => item.id === theme)) throw new Error(`未知主题 ${theme}。可用主题：${themePresets.map(item => item.id).join(', ')}`)
+  if (!deckTemplatePresets.some(item => item.id === template)) throw new PlainDeckError('unknown-template', { zh: `未知模板 ${template}。可用模板：${deckTemplatePresets.map(item => item.id).join(', ')}`, en: `Unknown template ${template}. Available templates: ${deckTemplatePresets.map(item => item.id).join(', ')}` })
+  if (!themePresets.some(item => item.id === theme)) throw new PlainDeckError('unknown-theme', { zh: `未知主题 ${theme}。可用主题：${themePresets.map(item => item.id).join(', ')}`, en: `Unknown theme ${theme}. Available themes: ${themePresets.map(item => item.id).join(', ')}` })
   const document = createDeckTemplate(template as DeckTemplateId, { title: options.title, id: options.id, theme })
   const plannedPaths = [...createSavePlan(document).targets, PROJECT_PATHS.gitignore]
   const collisions: string[] = []
   for (const path of plannedPaths) if (existsSync(join(projectPath, path.replace(/^\.\//, '')))) collisions.push(path)
-  if (collisions.length) throw new Error(`目标目录包含将被创建的文件：${collisions.join('、')}。init 已停止，请使用空目录。`)
+  if (collisions.length) throw new PlainDeckError('init-directory-conflicts', { zh: `目标目录包含将被创建的文件：${collisions.join('、')}。init 已停止，请使用空目录。`, en: `The target folder already contains files that would be created: ${collisions.join(', ')}. init stopped; pick an empty folder.` })
   const changedPaths = await saveDeck(projectPath, document)
   const ignore = join(projectPath, PROJECT_PATHS.gitignore)
   if (!existsSync(ignore)) {
@@ -100,7 +101,7 @@ async function applyOperationsToProject(projectPath: string, operations: unknown
   } catch (error) {
     if (error instanceof ZodError) {
       const lines = error.issues.map(issue => `${issue.path.join('.') || '(root)'}: ${issue.message}`)
-      throw new Error(`操作格式无效：\n${lines.join('\n')}`, { cause: error })
+      throw new PlainDeckError('invalid-operation-payload', { zh: `操作格式无效：\n${lines.join('\n')}`, en: `Invalid operation payload:\n${lines.join('\n')}` }, { cause: error })
     }
     throw error
   }
@@ -137,7 +138,7 @@ async function renderProject(projectPath: string, format: 'html' | 'png' | 'pdf'
     await writeFile(output, html, 'utf8')
     return { format, file: output, files: [output], written: true, warnings: prepared.warnings }
   }
-  if (!output) throw new Error('PNG/PDF 渲染需要指定 output 文件路径（绝对路径）。')
+  if (!output) throw new PlainDeckError('output-path-required', { zh: 'PNG/PDF 渲染需要指定 output 文件路径（绝对路径）。', en: 'PNG/PDF rendering requires an absolute output file path.' })
   if (format === 'png') {
     const result = await renderPng(document, { output, projectPath, allowNetwork, slide })
     return { format, file: output, files: result.files, written: true, warnings: result.warnings }

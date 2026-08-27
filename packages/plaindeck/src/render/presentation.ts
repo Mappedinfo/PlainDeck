@@ -2,6 +2,7 @@ import { resolveFooterSlot } from '../core/footer.js'
 import { DEFAULT_TYPE_SCALE } from '../core/typography.js'
 import type { DeckDocument, SlideElement } from '../core/schema.js'
 
+import { PlainDeckError } from '../core/errors.js'
 export type PresentationStyle = Record<string, string | number | undefined>
 
 // CJK unified + extension + fullwidth forms + CJK punctuation (、。！？「」 are full-width 1em in CJK fonts)
@@ -389,7 +390,7 @@ export function footerPresentation(document: DeckDocument, path: string, date?: 
   const footer = document.deck.footer
   if (!footer) return null
   const slide = document.slides[path]
-  if (!slide) throw new Error(`页面不存在：${path}`)
+  if (!slide) throw new PlainDeckError('slide-not-found', { zh: `页面不存在：${path}`, en: `Slide not found: ${path}` })
   const context = {
     pageNumber: document.deck.slides.indexOf(path) + 1,
     pageCount: document.deck.slides.length,

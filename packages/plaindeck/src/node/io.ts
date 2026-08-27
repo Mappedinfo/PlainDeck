@@ -5,12 +5,13 @@ import { migrateDeck } from '../core/migration.js'
 import { PROJECT_PATHS } from '../core/project-paths.js'
 import { DeckSchema, SlideSchema, ThemeSchema, assertDocument, type DeckDocument, type Slide } from '../core/schema.js'
 
+import { PlainDeckError } from '../core/errors.js'
 function projectFile(root: string, file: string) {
-  if (isAbsolute(file)) throw new Error(`项目路径必须是相对路径：${file}`)
+  if (isAbsolute(file)) throw new PlainDeckError('project-path-must-be-relative', { zh: `项目路径必须是相对路径：${file}`, en: `Project paths must be relative: ${file}` })
   const resolvedRoot = resolve(root)
   const resolvedFile = resolve(resolvedRoot, file.replace(/^\.\//, ''))
   const inside = relative(resolvedRoot, resolvedFile)
-  if (inside.startsWith('..') || isAbsolute(inside)) throw new Error(`项目路径越界：${file}`)
+  if (inside.startsWith('..') || isAbsolute(inside)) throw new PlainDeckError('project-path-escapes-root', { zh: `项目路径越界：${file}`, en: `Project path escapes the project root: ${file}` })
   return resolvedFile
 }
 

@@ -1,5 +1,7 @@
 import type { DeckDocument, Slide, Theme } from 'plaindeck/core'
 import { DeckSchema, SlideSchema, ThemeSchema, assertDocument, canonicalJson, createSavePlan, GITIGNORE_TEMPLATE, migrateDeck, PROJECT_PATHS } from 'plaindeck/core'
+import { getLocale } from '../i18n'
+import { throwLocalized } from '../i18n/errors'
 
 export type DirectoryHandle = FileSystemDirectoryHandle
 const baselines = new WeakMap<DirectoryHandle, Map<string, string>>()
@@ -14,7 +16,7 @@ type WritableDirectoryHandle = FileSystemDirectoryHandle & {
 async function fileHandle(root: DirectoryHandle, path: string, create = false): Promise<FileSystemFileHandle> {
   const parts = path.replace(/^\.\//, '').split('/')
   const name = parts.pop()
-  if (!name) throw new Error(`无效路径：${path}`)
+  if (!name) throwLocalized('invalidPath', path)
   let directory = root
   for (const part of parts) directory = await directory.getDirectoryHandle(part, { create })
   return directory.getFileHandle(name, { create })
@@ -35,7 +37,7 @@ async function pathExists(root: DirectoryHandle, path: string): Promise<boolean>
 async function removePath(root: DirectoryHandle, path: string): Promise<void> {
   const parts = path.replace(/^\.\//, '').split('/')
   const name = parts.pop()
-  if (!name) throw new Error(`无效路径：${path}`)
+  if (!name) throwLocalized('invalidPath', path)
   let directory = root
   for (const part of parts) directory = await directory.getDirectoryHandle(part)
   await directory.removeEntry(name)
@@ -87,9 +89,9 @@ async function writeChecked(root: DirectoryHandle, path: string, content: string
   const expected = baseline?.get(path)
   if (expected !== undefined) {
     let current: string
-    try { current = await readText(root, path) } catch { throw new Error(`文件在外部被删除，已停止覆盖：${path}`) }
-    if (current !== expected) throw new Error(`检测到外部修改，已停止自动保存：${path}`)
-  } else if (await pathExists(root, path)) throw new Error(`目标文件已存在，已停止覆盖：${path}`)
+    try { current = await readText(root, path) } catch { throwLocalized('deletedExternallyOverwrite', path) }
+    if (current !== expected) throwLocalized('modifiedExternallySave', path)
+  } else if (await pathExists(root, path)) throwLocalized('targetExistsOverwrite', path)
   await writeText(root, path, content)
   const next = baselines.get(root) ?? new Map<string, string>(); next.set(path, content); baselines.set(root, next)
 }
@@ -98,9 +100,9 @@ async function removeChecked(root: DirectoryHandle, path: string): Promise<void>
   const baseline = baselines.get(root)
   const expected = baseline?.get(path)
   if (!await pathExists(root, path)) { baseline?.delete(path); return }
-  if (expected === undefined) throw new Error(`目标文件不属于当前项目基线，已停止删除：${path}`)
+  if (expected === undefined) throwLocalized('notInBaselineDelete', path)
   const current = await readText(root, path)
-  if (current !== expected) throw new Error(`检测到外部修改，已停止删除：${path}`)
+  if (current !== expected) throwLocalized('modifiedExternallyDelete', path)
   await removePath(root, path)
   baseline?.delete(path)
 }
@@ -125,7 +127,7 @@ export function projectInitializationPaths(document: DeckDocument): string[] {
 export async function initializeProject(root: DirectoryHandle, document: DeckDocument): Promise<void> {
   const collisions: string[] = []
   for (const path of projectInitializationPaths(document)) if (await pathExists(root, path)) collisions.push(path)
-  if (collisions.length) throw new Error(`所选目录包含 PlainDeck 将创建的文件：${collisions.join('、')}。请选择空目录。`)
+  if (collisions.length) throwLocalized('directoryConflicts', collisions.join(getLocale() === 'zh' ? '、' : ', '))
   baselines.set(root, new Map())
   await writeProject(root, document)
 }
@@ -135,7 +137,7 @@ export function themeCss(theme: Theme): string {
 }
 
 export async function pickDirectory(): Promise<DirectoryHandle> {
-  if (!('showDirectoryPicker' in window)) throw new Error('当前浏览器不支持原位目录访问，请使用 Chrome / Edge 或 ZIP 导入。')
+  if (!('showDirectoryPicker' in window)) throwLocalized('directoryApiUnsupported')
   return window.showDirectoryPicker({ mode: 'readwrite' })
 }
 

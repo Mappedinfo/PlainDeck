@@ -1,7 +1,9 @@
 import { assertDocument, type DeckDocument, type Slide, type SlideElement, type Theme } from './schema.js'
-import { createLayoutElements, getThemePreset, type LayoutPresetId } from './presets.js'
+import { BASE_CANVAS, createLayoutElements, getThemePreset, type LayoutPresetId } from './presets.js'
 import { PROJECT_PATHS } from './project-paths.js'
+import { resolveLocale, type DeckLocale } from './i18n.js'
 
+import { PlainDeckError } from './errors.js'
 export type DeckTemplateId = 'showcase' | 'pitch' | 'blank' | 'paper-reading' | 'nature-methods'
 
 export interface DeckTemplatePreset {
@@ -15,6 +17,8 @@ export interface CreateDeckTemplateOptions {
   title?: string
   id?: string
   theme?: string | Theme
+  /** Deck copy language; `resolveLocale` semantics when omitted defaults to Chinese (CLI/back-compat). */
+  lang?: DeckLocale
 }
 
 export const deckTemplatePresets: DeckTemplatePreset[] = [
@@ -25,6 +29,21 @@ export const deckTemplatePresets: DeckTemplatePreset[] = [
   { id: 'nature-methods', name: 'Nature methods', description: '证据优先的方法汇报：问题、流程、图表、边界与结论', slideCount: 7 },
 ]
 
+const deckTemplateMeta = {
+  en: {
+    showcase: ['Five-slide narrative skeleton for intros, reports and showcases'],
+    pitch: ['A five-slide proposal: problem, solution, evidence and action'],
+    blank: ['Just one beautifully typeset cover'],
+    'paper-reading': ['Eight pages for reading a paper: problem, contributions, evidence, comparison, limits and takeaway'],
+    'nature-methods': ['Evidence-led methods talk: question, process, figures, boundaries and conclusion'],
+  },
+} satisfies Record<'en', Record<DeckTemplateId, [string]>>
+
+export function deckTemplatePresetsFor(locale: DeckLocale): DeckTemplatePreset[] {
+  if (locale === 'zh') return deckTemplatePresets
+  return deckTemplatePresets.map(preset => ({ ...preset, description: deckTemplateMeta.en[preset.id][0] }))
+}
+
 const frame = (x: number, y: number, w: number, h: number) => ({ x, y, w, h })
 const text = (id: string, value: string, x: number, y: number, w: number, h: number, options: Partial<Extract<SlideElement, { type: 'text' }>> = {}): SlideElement => ({ id, type: 'text', frame: frame(x, y, w, h), text: value, ...options })
 const shape = (id: string, x: number, y: number, w: number, h: number, fill: string, options: Partial<Extract<SlideElement, { type: 'shape' }>> = {}): SlideElement => ({ id, type: 'shape', frame: frame(x, y, w, h), shape: 'rectangle', fill, ...options })
@@ -34,25 +53,37 @@ function slug(value: string) {
   return normalized || 'plaindeck-project'
 }
 
-function copyFor(template: 'showcase' | 'pitch', title: string) {
-  if (template === 'pitch') return {
+function copyFor(template: 'showcase' | 'pitch', title: string, locale: DeckLocale) {
+  if (template === 'pitch') return locale === 'zh' ? {
     coverKicker: 'FOCUSED PITCH / FIVE SLIDES', coverTitle: title, coverSubtitle: '把问题、方案与下一步压缩成一条清晰的决策路径。',
     thesisKicker: '01 / THE PROBLEM', thesis: '先描述一个真实、具体、值得解决的问题。', thesisNote: '谁在何时遇到它？现有方案为什么仍然不够？',
     pillarsTitle: '方案必须同时回答三件事', cards: [['01', '价值\n解决什么'], ['02', '机制\n如何做到'], ['03', '差异\n为何是你']],
     evidenceTitle: '用一个证据降低不确定性', evidenceBody: '替换左侧图片或图表，并在这里解释：它验证了什么、还没有验证什么。', metric: '3×', metricLabel: '可验证的改进',
     closeTitle: '明确说出你希望观众做什么。', closeBody: '下一步 · 负责人 · 时间点',
+  } : {
+    coverKicker: 'FOCUSED PITCH / FIVE SLIDES', coverTitle: title, coverSubtitle: 'Compress the problem, the solution and the next step into one clear path to a decision.',
+    thesisKicker: '01 / THE PROBLEM', thesis: 'Start from a real, specific problem worth solving.', thesisNote: 'Who hits it and when? Why do existing solutions still fall short?',
+    pillarsTitle: 'A solution must answer three things at once', cards: [['01', 'Value\nWhat it solves'], ['02', 'Mechanism\nHow it works'], ['03', 'Edge\nWhy you']],
+    evidenceTitle: 'Use one piece of evidence to cut uncertainty', evidenceBody: 'Replace the image or chart here and explain: what it verifies, and what it does not verify yet.', metric: '3×', metricLabel: 'Verifiable improvement',
+    closeTitle: 'Say plainly what you want the audience to do.', closeBody: 'Next step · Owner · Date',
   }
-  return {
+  return locale === 'zh' ? {
     coverKicker: 'EDITORIAL SHOWCASE / PLAINDECK', coverTitle: title, coverSubtitle: '一套为人阅读、为 Agent 编辑、为 Web 播放而设计的开放幻灯片。',
     thesisKicker: '01 / POINT OF VIEW', thesis: '每一页只负责一个值得记住的观点。', thesisNote: '标题给结论，正文给证据；把装饰留给真正需要强调的地方。',
     pillarsTitle: '让叙事拥有清楚的骨架', cards: [['01', '观点\n先说结论'], ['02', '证据\n建立可信度'], ['03', '行动\n给出下一步']],
     evidenceTitle: '让视觉承担一半表达', evidenceBody: '使用本地图片、图表或研究结果。导出 HTML 时可嵌入资源，分享一个真正独立的文件。', metric: '1:1', metricLabel: '内容与视觉同等重要',
     closeTitle: '结束在决定，而不是总结。', closeBody: '打开编辑器 · 替换内容 · 讲出你的版本',
+  } : {
+    coverKicker: 'EDITORIAL SHOWCASE / PLAINDECK', coverTitle: title, coverSubtitle: 'An open slide format designed to be read by people, edited by agents and played on the web.',
+    thesisKicker: '01 / POINT OF VIEW', thesis: 'Every slide argues one point worth remembering.', thesisNote: 'Give the headline a conclusion and the body evidence; save decoration for what truly needs emphasis.',
+    pillarsTitle: 'Give your story a clear skeleton', cards: [['01', 'Point\nLead with it'], ['02', 'Evidence\nEarn trust'], ['03', 'Action\nName the next step']],
+    evidenceTitle: 'Let visuals carry half the message', evidenceBody: 'Use local images, charts or research results. HTML export embeds resources so you can share one truly self-contained file.', metric: '1:1', metricLabel: 'Content and visuals matter equally',
+    closeTitle: 'End on a decision, not a summary.', closeBody: 'Open the editor · Replace the copy · Tell your version',
   }
 }
 
-function storySlides(template: 'showcase' | 'pitch', theme: Theme, title: string): Record<string, Slide> {
-  const c = theme.colors; const copy = copyFor(template, title)
+function storySlides(template: 'showcase' | 'pitch', theme: Theme, title: string, locale: DeckLocale): Record<string, Slide> {
+  const c = theme.colors; const copy = copyFor(template, title, locale)
   return {
     './slides/001-cover.json': { id: 'cover', name: 'Cover', layoutRef: 'showcase-cover', background: { color: c.background }, elements: [
       shape('accent-panel', 0, 0, 420, 900, c.accent),
@@ -105,14 +136,25 @@ function storySlides(template: 'showcase' | 'pitch', theme: Theme, title: string
 }
 
 /** Build a slide from a layout preset, overriding placeholder text by element id. */
-function layoutSlide(id: string, name: string, layoutId: LayoutPresetId, theme: Theme, overrides: Record<string, string> = {}): Slide {
-  const elements = createLayoutElements(layoutId, theme).map(element =>
+function layoutSlide(id: string, name: string, layoutId: LayoutPresetId, theme: Theme, overrides: Record<string, string> = {}, locale: DeckLocale = 'zh'): Slide {
+  const elements = createLayoutElements(layoutId, theme, BASE_CANVAS, locale).map(element =>
     element.type === 'text' && overrides[element.id] ? { ...element, text: overrides[element.id] } : element)
   return { id, name, layoutRef: layoutId, background: { color: theme.colors.background }, elements }
 }
 
-function paperReadingSlides(theme: Theme, title: string): Record<string, Slide> {
+function paperReadingSlides(theme: Theme, title: string, locale: DeckLocale): Record<string, Slide> {
   const c = theme.colors; const mono = theme.fonts.mono ?? theme.fonts.body
+  const copy = locale === 'zh' ? {
+    authors: '作者列表 · 机构',
+    statementKicker: '01 / THE PROBLEM',
+    statement: '这篇论文要解决的核心问题，\n用一句话说清楚。',
+    context: '为什么已有方法在这个问题上仍然不够？',
+  } : {
+    authors: 'Authors · Affiliations',
+    statementKicker: '01 / THE PROBLEM',
+    statement: 'State the core problem of this paper\nin one clear sentence.',
+    context: 'Why do existing methods still fall short on this problem?',
+  }
   return {
     './slides/001-cover.json': { id: 'cover', name: 'Cover', layoutRef: 'paper-cover', background: { color: c.background }, elements: [
       shape('accent-panel', 0, 0, 420, 900, c.accent),
@@ -121,68 +163,105 @@ function paperReadingSlides(theme: Theme, title: string): Record<string, Slide> 
       text('kicker', 'VENUE · YEAR · TRACK', 510, 78, 880, 42, { fontSize: 18, fontWeight: 800, color: c.accent, fontFamily: mono, letterSpacing: 2 }),
       text('title', title, 510, 188, 980, 260, { styleRef: 'slide-title', fontSize: 80, fontWeight: 800, color: c.text }),
       shape('rule', 510, 530, 980, 4, c.text),
-      text('authors', '作者列表 · 机构', 510, 588, 890, 60, { fontSize: 28, fontWeight: 500, color: c.muted }),
+      text('authors', copy.authors, 510, 588, 890, 60, { fontSize: 28, fontWeight: 500, color: c.muted }),
       text('hint', 'ONE PAPER · ONE READING · EIGHT SLIDES', 510, 790, 900, 34, { fontSize: 16, fontWeight: 700, color: c.muted, fontFamily: mono, letterSpacing: 2 }),
     ] },
     './slides/002-problem.json': layoutSlide('problem', 'Problem', 'statement', theme, {
-      kicker: '01 / THE PROBLEM', index: '01',
-      statement: '这篇论文要解决的核心问题，\n用一句话说清楚。',
-      context: '为什么已有方法在这个问题上仍然不够？',
+      kicker: copy.statementKicker, index: '01',
+      statement: copy.statement,
+      context: copy.context,
     }),
-    './slides/003-contributions.json': layoutSlide('contributions', 'Contributions', 'contributions', theme, { kicker: '02 / CONTRIBUTIONS' }),
-    './slides/004-figure.json': layoutSlide('figure', 'Key figure', 'paper-figure', theme, { kicker: '03 / EVIDENCE · FIGURE' }),
-    './slides/005-table.json': layoutSlide('table', 'Key table', 'paper-table', theme, { kicker: '04 / EVIDENCE · TABLE' }),
-    './slides/006-versus.json': layoutSlide('versus', 'Comparison', 'versus', theme, { kicker: '05 / COMPARISON' }),
-    './slides/007-limits.json': layoutSlide('limits', 'Limitations', 'limits', theme, { kicker: '06 / LIMITATIONS' }),
-    './slides/008-closing.json': layoutSlide('closing', 'Takeaway', 'closing', theme, { kicker: '07 / TAKEAWAY' }),
+    './slides/003-contributions.json': layoutSlide('contributions', 'Contributions', 'contributions', theme, { kicker: '02 / CONTRIBUTIONS' }, locale),
+    './slides/004-figure.json': layoutSlide('figure', 'Key figure', 'paper-figure', theme, { kicker: '03 / EVIDENCE · FIGURE' }, locale),
+    './slides/005-table.json': layoutSlide('table', 'Key table', 'paper-table', theme, { kicker: '04 / EVIDENCE · TABLE' }, locale),
+    './slides/006-versus.json': layoutSlide('versus', 'Comparison', 'versus', theme, { kicker: '05 / COMPARISON' }, locale),
+    './slides/007-limits.json': layoutSlide('limits', 'Limitations', 'limits', theme, { kicker: '06 / LIMITATIONS' }, locale),
+    './slides/008-closing.json': layoutSlide('closing', 'Takeaway', 'closing', theme, { kicker: '07 / TAKEAWAY' }, locale),
   }
 }
 
-function natureMethodsSlides(theme: Theme, title: string): Record<string, Slide> {
+function natureMethodsSlides(theme: Theme, title: string, locale: DeckLocale): Record<string, Slide> {
   const c = theme.colors; const mono = theme.fonts.mono ?? theme.fonts.body
+  const copy = locale === 'zh' ? {
+    subtitle: '用问题、方法、证据与边界组织一场可信的学术汇报。',
+    problemTitle: '现有方法在哪个关键条件下仍然不够？',
+    problemClaim: '把研究缺口写成一个可验证的瓶颈，而不是宽泛的背景。',
+    problemBoundary: '限定对象、条件与失败方式；下一页的方法必须逐项回应这些条件。',
+    methodTitle: '方法流程直接对应问题中的四个约束',
+    methodStages: ['输入与假设', '核心机制', '验证设计', '可复用输出'],
+    methodBodies: ['定义输入、假设与适用边界。', '说明关键变换与作用路径。', '用数据、基线与消融建立证据。', '输出可复查结果与使用边界。'],
+    methodTakeaway: '每个阶段都应留下可检查的输入、输出或证据。',
+    figureTitle: '主图必须直接支撑本页结论',
+    tableTitle: '比较表只保留改变判断的指标',
+    boundariesTitle: '可信结论同时说明证据覆盖与失效条件',
+    boundaryItems: [
+      ['01', '证据覆盖', '哪些数据、场景与比较已经被实验直接支持？'],
+      ['02', '失效条件', '哪些假设一旦不成立，方法表现就可能改变？'],
+      ['03', '仍待验证', '哪些外推、机制解释或应用判断仍是开放问题？'],
+    ] as Array<[string, string, string]>,
+    boundariesTakeaway: '结论强度不能超过证据覆盖范围。',
+    closingQuote: '方法的价值不在于看起来复杂，\n而在于证据能否改变判断。',
+    closingNext: '下一步：替换占位证据，核对来源，并把未验证的部分明确标出。',
+  } : {
+    subtitle: 'Organize a credible academic talk around question, method, evidence and boundaries.',
+    problemTitle: 'Under which key condition do existing methods fall short?',
+    problemClaim: 'Frame the research gap as a verifiable bottleneck, not a broad background.',
+    problemBoundary: 'Pin down subjects, conditions and failure modes; the next slide must answer each one.',
+    methodTitle: 'The method maps directly onto the four constraints above',
+    methodStages: ['Inputs & assumptions', 'Core mechanism', 'Validation design', 'Reusable outputs'],
+    methodBodies: ['Define inputs, assumptions and scope.', 'Explain the key transformation and how it acts.', 'Build evidence with data, baselines and ablations.', 'Deliver results others can re-check.'],
+    methodTakeaway: 'Every stage should leave inspectable inputs, outputs or evidence.',
+    figureTitle: 'The key figure must directly support this slide’s claim',
+    tableTitle: 'Keep only the metrics that change the verdict',
+    boundariesTitle: 'A credible conclusion states both coverage and failure modes',
+    boundaryItems: [
+      ['01', 'Evidence coverage', 'Which data, settings and comparisons do experiments directly support?'],
+      ['02', 'Failure conditions', 'Which assumptions, once broken, could change how the method performs?'],
+      ['03', 'Still open', 'Which extrapolations, mechanistic claims or applications remain open questions?'],
+    ] as Array<[string, string, string]>,
+    boundariesTakeaway: 'A conclusion is never stronger than its evidence.',
+    closingQuote: 'The value of a method is not looking complex —\nit is whether the evidence changes minds.',
+    closingNext: 'Next: replace placeholder evidence, check sources, and clearly mark what remains unverified.',
+  }
   return {
     './slides/001-cover.json': { id: 'cover', name: 'Cover', layoutRef: 'nature-cover', background: { color: c.background }, elements: [
       shape('accent-rule', 88, 76, 8, 748, c.accent),
       text('kicker', 'METHODS / EVIDENCE-LED DECK', 132, 82, 920, 34, { fontSize: 17, fontWeight: 700, color: c.accent, fontFamily: mono, letterSpacing: 2 }),
       text('title', title, 132, 204, 1240, 250, { styleRef: 'slide-title', fontSize: 72, fontWeight: 700, color: c.text, fit: 'shrink' }),
-      text('subtitle', '用问题、方法、证据与边界组织一场可信的学术汇报。', 132, 520, 1080, 80, { fontSize: 28, fontWeight: 400, color: c.muted }),
+      text('subtitle', copy.subtitle, 132, 520, 1080, 80, { fontSize: 28, fontWeight: 400, color: c.muted }),
       shape('metadata-rule', 132, 706, 1380, 2, c.muted),
       text('metadata', 'AUTHOR · AFFILIATION · VENUE · YEAR', 132, 738, 1180, 32, { fontSize: 15, fontWeight: 600, color: c.muted, fontFamily: mono, letterSpacing: 1.5 }),
       text('page', '01', 1370, 738, 142, 40, { fontSize: 23, fontWeight: 700, color: c.accent, fontFamily: mono, align: 'right' }),
     ] },
     './slides/002-problem.json': { id: 'problem', name: 'Problem', layoutRef: 'claim-led', background: { color: c.background }, elements: [
       text('kicker', '01 / BOTTLENECK', 88, 62, 720, 34, { fontSize: 17, fontWeight: 700, color: c.accent, fontFamily: mono, letterSpacing: 2 }),
-      text('title', '现有方法在哪个关键条件下仍然不够？', 88, 142, 1260, 146, { styleRef: 'slide-title', fontSize: 58, fontWeight: 700, color: c.text, fit: 'shrink' }),
-      text('claim', '把研究缺口写成一个可验证的瓶颈，而不是宽泛的背景。', 88, 382, 1130, 118, { fontSize: 38, fontWeight: 600, color: c.text, lineHeight: 1.32 }),
+      text('title', copy.problemTitle, 88, 142, 1260, 146, { styleRef: 'slide-title', fontSize: 58, fontWeight: 700, color: c.text, fit: 'shrink' }),
+      text('claim', copy.problemClaim, 88, 382, 1130, 118, { fontSize: 38, fontWeight: 600, color: c.text, lineHeight: 1.32 }),
       shape('claim-rule', 88, 548, 170, 7, c.accent),
-      text('boundary', '限定对象、条件与失败方式；下一页的方法必须逐项回应这些条件。', 88, 602, 1140, 90, { fontSize: 25, color: c.muted, lineHeight: 1.45 }),
+      text('boundary', copy.problemBoundary, 88, 602, 1140, 90, { fontSize: 25, color: c.muted, lineHeight: 1.45 }),
       text('index', '02', 1354, 96, 158, 80, { fontSize: 52, fontWeight: 700, color: c.surface, fontFamily: mono, align: 'right' }),
     ] },
     './slides/003-method.json': { id: 'method', name: 'Method', layoutRef: 'process-wide', background: { color: c.background }, elements: [
       text('kicker', '02 / METHOD', 88, 56, 720, 34, { fontSize: 17, fontWeight: 700, color: c.accent, fontFamily: mono, letterSpacing: 2 }),
-      text('title', '方法流程直接对应问题中的四个约束', 88, 112, 1340, 76, { styleRef: 'slide-title', fontSize: 48, fontWeight: 700, color: c.text, fit: 'shrink' }),
-      ...['输入与假设', '核心机制', '验证设计', '可复用输出'].flatMap((label, index): SlideElement[] => {
+      text('title', copy.methodTitle, 88, 112, 1340, 76, { styleRef: 'slide-title', fontSize: 48, fontWeight: 700, color: c.text, fit: 'shrink' }),
+      ...copy.methodStages.flatMap((label, index): SlideElement[] => {
         const x = 88 + index * 374
         return [
           { id: `stage-${index + 1}-number`, type: 'text', frame: frame(x, 276, 110, 46), text: `0${index + 1}`, fontSize: 23, fontWeight: 700, color: c.accent, fontFamily: mono },
           { id: `stage-${index + 1}-title`, type: 'text', frame: frame(x, 350, 300, 52), text: label, fontSize: 30, fontWeight: 700, color: c.text },
-          { id: `stage-${index + 1}-body`, type: 'text', frame: frame(x, 430, 300, 148), text: ['定义输入、假设与适用边界。', '说明关键变换与作用路径。', '用数据、基线与消融建立证据。', '输出可复查结果与使用边界。'][index], fontSize: 22, color: c.muted, lineHeight: 1.45 },
+          { id: `stage-${index + 1}-body`, type: 'text', frame: frame(x, 430, 300, 148), text: copy.methodBodies[index], fontSize: 22, color: c.muted, lineHeight: 1.45 },
           { id: `stage-${index + 1}-rule`, type: 'shape', frame: frame(x, 620, 300, index === 3 ? 7 : 3), shape: 'rectangle', fill: index === 3 ? c.accent : c.muted, opacity: index === 3 ? 1 : .45 },
           ...(index < 3 ? [{ id: `stage-${index + 1}-arrow`, type: 'line', frame: frame(x + 304, 452, 56, 2), color: c.accent, strokeWidth: 2, arrowEnd: true } as SlideElement] : []),
         ]
       }),
-      text('takeaway', '每个阶段都应留下可检查的输入、输出或证据。', 88, 736, 1320, 58, { fontSize: 26, fontWeight: 600, color: c.text }),
+      text('takeaway', copy.methodTakeaway, 88, 736, 1320, 58, { fontSize: 26, fontWeight: 600, color: c.text }),
     ] },
-    './slides/004-figure.json': layoutSlide('figure', 'Key figure', 'paper-figure', theme, { kicker: '03 / EVIDENCE · FIGURE', title: '主图必须直接支撑本页结论' }),
-    './slides/005-table.json': layoutSlide('table', 'Key table', 'paper-table', theme, { kicker: '04 / EVIDENCE · TABLE', title: '比较表只保留改变判断的指标' }),
+    './slides/004-figure.json': layoutSlide('figure', 'Key figure', 'paper-figure', theme, { kicker: '03 / EVIDENCE · FIGURE', title: copy.figureTitle }, locale),
+    './slides/005-table.json': layoutSlide('table', 'Key table', 'paper-table', theme, { kicker: '04 / EVIDENCE · TABLE', title: copy.tableTitle }, locale),
     './slides/006-boundaries.json': { id: 'boundaries', name: 'Boundaries', layoutRef: 'discussion', background: { color: c.background }, elements: [
       text('kicker', '05 / BOUNDARIES', 88, 58, 720, 34, { fontSize: 17, fontWeight: 700, color: c.accent, fontFamily: mono, letterSpacing: 2 }),
-      text('title', '可信结论同时说明证据覆盖与失效条件', 88, 118, 1350, 76, { styleRef: 'slide-title', fontSize: 48, fontWeight: 700, color: c.text, fit: 'shrink' }),
-      ...[
-        ['01', '证据覆盖', '哪些数据、场景与比较已经被实验直接支持？'],
-        ['02', '失效条件', '哪些假设一旦不成立，方法表现就可能改变？'],
-        ['03', '仍待验证', '哪些外推、机制解释或应用判断仍是开放问题？'],
-      ].flatMap(([number, heading, body], index): SlideElement[] => {
+      text('title', copy.boundariesTitle, 88, 118, 1350, 76, { styleRef: 'slide-title', fontSize: 48, fontWeight: 700, color: c.text, fit: 'shrink' }),
+      ...copy.boundaryItems.flatMap(([number, heading, body], index): SlideElement[] => {
         const y = 284 + index * 156
         return [
           { id: `boundary-${index + 1}-number`, type: 'text', frame: frame(88, y, 100, 48), text: number, fontSize: 23, fontWeight: 700, color: c.accent, fontFamily: mono },
@@ -192,25 +271,32 @@ function natureMethodsSlides(theme: Theme, title: string): Record<string, Slide>
         ]
       }),
       shape('boundary-anchor', 88, 770, 8, 58, c.accent),
-      text('boundary-takeaway', '结论强度不能超过证据覆盖范围。', 124, 770, 1120, 58, { fontSize: 27, fontWeight: 600, color: c.text, verticalAlign: 'middle' }),
+      text('boundary-takeaway', copy.boundariesTakeaway, 124, 770, 1120, 58, { fontSize: 27, fontWeight: 600, color: c.text, verticalAlign: 'middle' }),
     ] },
     './slides/007-closing.json': { id: 'closing', name: 'Takeaway', layoutRef: 'closing', background: { color: c.background }, elements: [
       text('kicker', 'TAKEAWAY / ONE CLAIM', 88, 72, 720, 34, { fontSize: 17, fontWeight: 700, color: c.accent, fontFamily: mono, letterSpacing: 2 }),
-      text('quote', '方法的价值不在于看起来复杂，\n而在于证据能否改变判断。', 88, 262, 1300, 210, { styleRef: 'slide-title', fontSize: 62, fontWeight: 700, color: c.text, fit: 'shrink' }),
+      text('quote', copy.closingQuote, 88, 262, 1300, 210, { styleRef: 'slide-title', fontSize: 62, fontWeight: 700, color: c.text, fit: 'shrink' }),
       shape('rule', 88, 584, 1424, 4, c.accent),
-      text('next', '下一步：替换占位证据，核对来源，并把未验证的部分明确标出。', 88, 646, 1260, 72, { fontSize: 27, color: c.muted }),
+      text('next', copy.closingNext, 88, 646, 1260, 72, { fontSize: 27, color: c.muted }),
       text('end', 'END / 07', 1300, 790, 212, 34, { fontSize: 17, fontWeight: 700, color: c.accent, fontFamily: mono, align: 'right', letterSpacing: 2 }),
     ] },
   }
 }
 
+const defaultTitles: Record<DeckLocale, Partial<Record<DeckTemplateId, string>>> = {
+  zh: { 'paper-reading': '论文标题：一句话说清核心贡献', 'nature-methods': '方法标题：一句话说清解决了什么' },
+  en: { 'paper-reading': 'Paper headline: the core contribution in one sentence', 'nature-methods': 'Methods headline: what was solved, in one clear sentence' },
+}
+
 export function createDeckTemplate(templateId: DeckTemplateId = 'showcase', options: CreateDeckTemplateOptions = {}): DeckDocument {
-  if (!deckTemplatePresets.some(template => template.id === templateId)) throw new Error(`未知模板：${templateId}`)
+  if (!deckTemplatePresets.some(template => template.id === templateId)) throw new PlainDeckError('unknown-template', { zh: `未知模板：${templateId}`, en: `Unknown template: ${templateId}` })
   const preset = typeof options.theme === 'string' ? getThemePreset(options.theme) : undefined
-  if (typeof options.theme === 'string' && !preset) throw new Error(`未知主题：${options.theme}`)
+  if (typeof options.theme === 'string' && !preset) throw new PlainDeckError('unknown-theme', { zh: `未知主题：${options.theme}`, en: `Unknown theme: ${options.theme}` })
+  const locale = resolveLocale(options.lang ?? 'zh')
   const defaultTheme = templateId === 'paper-reading' || templateId === 'nature-methods' ? 'nature-editorial' : 'studio-cobalt'
   const theme = structuredClone(typeof options.theme === 'object' ? options.theme : preset?.theme ?? getThemePreset(defaultTheme)!.theme)
-  const title = options.title?.trim() || (templateId === 'pitch' ? 'A focused idea, ready to move.' : templateId === 'blank' ? 'Untitled presentation' : templateId === 'paper-reading' ? '论文标题：一句话说清核心贡献' : templateId === 'nature-methods' ? '方法标题：一句话说清解决了什么' : 'Make the idea visible.')
+  const fallbackTitle = defaultTitles[locale][templateId] ?? (templateId === 'pitch' ? 'A focused idea, ready to move.' : templateId === 'blank' ? 'Untitled presentation' : 'Make the idea visible.')
+  const title = options.title?.trim() || fallbackTitle
   const id = options.id?.trim() || slug(title)
   if (templateId === 'blank') {
     const path = `${PROJECT_PATHS.slidesDir}001-cover.json`
@@ -225,7 +311,7 @@ export function createDeckTemplate(templateId: DeckTemplateId = 'showcase', opti
       ] } },
     })
   }
-  const slides = templateId === 'paper-reading' ? paperReadingSlides(theme, title) : templateId === 'nature-methods' ? natureMethodsSlides(theme, title) : storySlides(templateId, theme, title)
+  const slides = templateId === 'paper-reading' ? paperReadingSlides(theme, title, locale) : templateId === 'nature-methods' ? natureMethodsSlides(theme, title, locale) : storySlides(templateId, theme, title, locale)
   return assertDocument({
     deck: { schemaVersion: '0.1', id, title, canvas: { width: 1600, height: 900 }, theme: PROJECT_PATHS.theme, slides: Object.keys(slides) },
     theme, slides,

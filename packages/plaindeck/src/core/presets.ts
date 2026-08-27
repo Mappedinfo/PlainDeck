@@ -1,14 +1,67 @@
 import type { SlideElement, Theme } from './schema.js'
 import { createSummaryCardElements } from './summary-cards.js'
 import { BRAND_ACCENT } from './brand.js'
+import type { DeckLocale } from './i18n.js'
 
 export type LayoutPresetId = 'blank' | 'title-body' | 'section' | 'statement' | 'metric' | 'two-column' | 'image-right' | 'three-cards' | 'summary-cards' | 'paper-figure' | 'paper-table' | 'versus' | 'contributions' | 'limits' | 'closing' | 'hook-statement' | 'prose-panel' | 'takeaway'
+
+export interface ThemePreset {
+  id: string
+  name: string
+  description: string
+  colors: Theme['colors']
+  theme: Theme
+}
 
 export interface LayoutPreset {
   id: LayoutPresetId
   name: string
   description: string
 }
+
+/** Localized display metadata for layout presets; ids stay language-neutral. */
+export const layoutMeta = {
+  zh: {
+    blank: ['空白页', '从完全空白开始'],
+    'title-body': ['标题与正文', '标准信息页面'],
+    section: ['章节标题', '醒目的过渡页面'],
+    statement: ['核心观点', '一句话成为视觉中心'],
+    metric: ['关键数字', '数据、结论与解释'],
+    'two-column': ['双栏文字', '并列观点或对比'],
+    'image-right': ['图文并排', '左文右图的叙事页'],
+    'three-cards': ['三张卡片', '步骤、能力或分类'],
+    'summary-cards': ['结构化卡片', '1–8 个自适应信息要点'],
+    'paper-figure': ['论文原图', '证据直出：原图居中，注脚在右'],
+    'paper-table': ['论文表格', '表格骨架：高亮关键行，底部给读法'],
+    versus: ['对比页', '两个方法或结果的并排对照'],
+    contributions: ['贡献列表', '编号式贡献陈述'],
+    limits: ['局限页', '诚实标注方法的边界'],
+    closing: ['金句收尾', '一句话 takeaway 作为结束'],
+    'hook-statement': ['开场论断页', '超大标题 + 引导/支撑两句，右侧幽灵页码'],
+    'prose-panel': ['正文面板页', '标题 + 面板卡片正文，右侧幽灵页码'],
+    takeaway: ['编号要点收尾', '分号切条成编号要点，底部 END 收束'],
+  },
+  en: {
+    blank: ['Blank page', 'Start from a completely clean canvas'],
+    'title-body': ['Title & body', 'A standard content page'],
+    section: ['Section title', 'A bold transition page'],
+    statement: ['Statement', 'One sentence as the visual center'],
+    metric: ['Key metric', 'Number, conclusion and interpretation'],
+    'two-column': ['Two columns', 'Side-by-side points or a comparison'],
+    'image-right': ['Image + text', 'Narrative on the left, visual on the right'],
+    'three-cards': ['Three cards', 'Steps, capabilities or categories'],
+    'summary-cards': ['Summary cards', '1–8 adaptive key points'],
+    'paper-figure': ['Paper figure', 'Evidence first: figure centered, notes on the right'],
+    'paper-table': ['Paper table', 'Table skeleton: highlight the key row, read-out below'],
+    versus: ['Versus', 'Two methods or results side by side'],
+    contributions: ['Contributions', 'Numbered contribution statements'],
+    limits: ['Limitations', 'The honest boundaries of the method'],
+    closing: ['Takeaway quote', 'A one-sentence takeaway to close'],
+    'hook-statement': ['Hook statement', 'Oversized claim with lead and support lines plus a ghost page number'],
+    'prose-panel': ['Prose panel', 'Heading with a panel-card body and a ghost page number'],
+    takeaway: ['Numbered takeaways', 'Semicolon-split numbered points ending with END'],
+  },
+} satisfies Record<DeckLocale, Record<LayoutPresetId, [string, string]>>
 
 export const layoutPresets: LayoutPreset[] = [
   { id: 'blank', name: '空白页', description: '从完全空白开始' },
@@ -31,12 +84,13 @@ export const layoutPresets: LayoutPreset[] = [
   { id: 'takeaway', name: '编号要点收尾', description: '分号切条成编号要点，底部 END 收束' },
 ]
 
-export interface ThemePreset {
-  id: string
-  name: string
-  description: string
-  colors: Theme['colors']
-  theme: Theme
+/** Layout presets with display metadata for one locale; element builders still use zh-neutral ids. */
+export function layoutPresetsFor(locale: DeckLocale): LayoutPreset[] {
+  return layoutPresets.map(preset => ({ ...preset, name: layoutMeta[locale][preset.id][0], description: layoutMeta[locale][preset.id][1] }))
+}
+
+export function getLayoutPreset(id: LayoutPresetId | string, locale: DeckLocale = 'zh'): LayoutPreset | undefined {
+  return locale === 'zh' ? layoutPresets.find(preset => preset.id === id) : layoutPresetsFor(locale).find(preset => preset.id === id)
 }
 
 /** Mix background toward text by a small amount to derive a card surface color. */
@@ -101,6 +155,48 @@ export function getThemePreset(id: string): ThemePreset | undefined {
   return themePresets.find(preset => preset.id === id)
 }
 
+/** Localized display metadata for theme presets; ids stay language-neutral. */
+const themeMeta: Record<DeckLocale, Record<string, [string, string]>> = {
+  zh: {
+    'nature-editorial': ['Nature 学术编辑', '浅色、证据优先、克制而高密度'],
+    'studio-cobalt': ['钴蓝工作室', '编辑感、鲜明、现代'],
+    'night-citrus': ['午夜柑橘', '深色、锐利、舞台感'],
+    'ink-rose': ['墨色玫瑰', '克制、时尚、高对比'],
+    'paper-signal': ['纸张信号', '温暖、直接'],
+    'night-blue': ['深夜蓝图', '技术、沉静'],
+    'field-notes': ['田野笔记', '自然、克制'],
+    'editorial-blue': ['编辑蓝', '清晰、理性'],
+    'poster-red': ['海报红黑', '高对比、强表达'],
+    'palette-vermillion': ['宣纸与朱砂', '宣纸底、朱砂点睛，学术严谨感首选'],
+    'palette-ice-magenta': ['冰蓝与品红', '冷色冰面托起品红，阴性/阳性对照'],
+    'palette-jade-ivory': ['翡翠与象牙', '深翡翠与象牙白，克制清爽留白'],
+    'palette-jade-night': ['翡翠夜', '翡翠底、象牙字，琥珀强调的深色舞台'],
+  },
+  en: {
+    'nature-editorial': ['Nature academic editorial', 'Light, evidence-first, restrained and dense'],
+    'studio-cobalt': ['Cobalt studio', 'Editorial, vivid, modern'],
+    'night-citrus': ['Night citrus', 'Dark, sharp, stage-like'],
+    'ink-rose': ['Ink rose', 'Restrained, fashionable, high contrast'],
+    'paper-signal': ['Paper signal', 'Warm and direct'],
+    'night-blue': ['Night blue', 'Technical and calm'],
+    'field-notes': ['Field notes', 'Natural and restrained'],
+    'editorial-blue': ['Editorial blue', 'Clear and rational'],
+    'poster-red': ['Poster red-black', 'High contrast, expressive'],
+    'palette-vermillion': ['Vermillion on rice paper', 'Rice-paper base with a vermillion accent — first choice for academic rigor'],
+    'palette-ice-magenta': ['Ice blue & magenta', 'A cool ice surface carrying magenta; negative/positive pairing'],
+    'palette-jade-ivory': ['Jade & ivory', 'Deep jade with ivory white; calm, fresh whitespace'],
+    'palette-jade-night': ['Jade night', 'Jade base, ivory type and an amber accent on a dark stage'],
+  },
+}
+
+export function themePresetsFor(locale: DeckLocale): ThemePreset[] {
+  if (locale === 'zh') return themePresets
+  return themePresets.map(preset => {
+    const meta = themeMeta[locale][preset.id]
+    return meta ? { ...preset, name: meta[0], description: meta[1] } : preset
+  })
+}
+
 const imagePlaceholder = 'placeholder:image'
 const frame = (x: number, y: number, w: number, h: number) => ({ x, y, w, h })
 
@@ -108,8 +204,8 @@ const frame = (x: number, y: number, w: number, h: number) => ({ x, y, w, h })
 export const BASE_CANVAS = { width: 1600, height: 900 }
 
 /** Create preset layout elements, scaled uniformly when the target canvas differs from the 1600×900 design base. */
-export function createLayoutElements(layoutId: LayoutPresetId, theme: Theme, canvas = BASE_CANVAS): SlideElement[] {
-  const elements = buildLayoutElements(layoutId, theme)
+export function createLayoutElements(layoutId: LayoutPresetId, theme: Theme, canvas: { width: number; height: number } = BASE_CANVAS, locale: DeckLocale = 'zh'): SlideElement[] {
+  const elements = buildLayoutElements(layoutId, theme, locale)
   const scaleX = canvas.width / BASE_CANVAS.width; const scaleY = canvas.height / BASE_CANVAS.height
   if (Math.abs(scaleX - 1) < 1e-6 && Math.abs(scaleY - 1) < 1e-6) return elements
   const fontScale = Math.min(scaleX, scaleY)
@@ -128,77 +224,200 @@ export function createLayoutElements(layoutId: LayoutPresetId, theme: Theme, can
   }))
 }
 
-function buildLayoutElements(layoutId: LayoutPresetId, theme: Theme): SlideElement[] {
+/** Placeholder copy authored per layout; zh is canonical and en mirrors it for browser-detected decks. */
+const layoutCopy = {
+  en: {
+    titleBodyTitle: 'Type your title',
+    titleBodyBody: 'Click to edit this paragraph. Organize one clear point; add text, images or shapes from the toolbar.',
+    sectionTitle: 'Section title',
+    sectionSubtitle: 'One line on what comes next',
+    statementTitle: 'Take your single most important point\nand make it one memorable sentence.',
+    statementContext: 'Add a line of evidence, a caveat, or what to do next.',
+    metricTitle: 'What does this number change?',
+    metricBody: "Don't just show the number. Explain which judgment it changes and what the audience should do next.",
+    twoColumnTitle: 'Two-column title',
+    twoColumnLabels: ['Point A', 'Point B'],
+    twoColumnBodies: [
+      'Write the left column here. Good for one method, one stance or one group of facts.',
+      'Write the right column here. Keep both columns at similar depth so they compare well.',
+    ],
+    imageRightTitle: 'Let the image carry half the story',
+    imageRightBody: 'Keep the key narrative on the left; replace the right with a photo, chart or research result.',
+    imageAlt: 'image placeholder',
+    summaryCardsTitle: 'Turn long content into clear cards',
+    summaryCards: [
+      { title: 'Distill', description: 'Each card carries exactly one core point — subject, numbers and needed caveats.' },
+      { title: 'Arrange', description: 'Cards adapt automatically to one or two rows and stay editable element by element.' },
+      { title: 'Verify', description: 'AI drafts; people own facts, judgment and the final word.' },
+    ],
+    figureTitle: 'This figure is the core evidence',
+    figureCaption: 'Caption: say in one sentence what this figure proves.',
+    figureNotes: ['Read axes and units first, then the trend.', 'Point at the curve that backs the conclusion.', 'Mark outliers, noise and anomalies.'],
+    tableTitle: 'The row worth remembering',
+    tableHeader: ['Method', 'Setup', 'Result'],
+    tableRows: [['Baseline', 'Default setup', '82.4'], ['This work', 'Full model', '89.7'], ['Ablation', 'Key module removed', '85.1']],
+    tableTakeaway: 'How to read it: present whichever row changes your verdict.',
+    versusTitle: 'Put both approaches under the same light',
+    versusLeftTitle: 'Existing approach',
+    versusLeftBody: 'What it assumes, optimizes and where it breaks down. One fact per line, no judgments.',
+    versusRightTitle: 'This work',
+    versusRightBody: 'Which assumption it drops and what that costs. Align item by item with the left column.',
+    versusVerdict: 'Verdict: under which conditions do you trust which side?',
+    contributionsTitle: 'Three contributions of this paper',
+    contributionItems: ['A new problem or setting', 'A key design decision', 'A persuasive body of evidence'],
+    contributionBody: 'In one or two sentences: what it solves and how it differs from prior work.',
+    limitsTitle: 'When does this method break down?',
+    limitsIntro: 'Clear limits are more credible than oversold results.',
+    limitsCards: [
+      { title: 'Scope limits', body: 'Which assumptions does the method rely on? What happens when they fail?' },
+      { title: 'Evidence limits', body: 'Which settings did experiments cover? Which conclusions are still conjecture?' },
+    ],
+    limitsFuture: 'These limits chart future work: turn each boundary into a roadmap step.',
+    closingQuote: 'Compress the whole paper into\none sentence worth taking away.',
+    attribution: '— Author · Venue / Journal · Year',
+    hookHeading: 'Make your strongest claim the headline',
+    hookLead: 'Lead: state what this page argues.',
+    hookSupport: 'Support: add evidence, caveats or what to do next.\n\nSecond paragraph: expand further — around 200 words max, so every slide stands alone.',
+    proseHeading: 'Prose panel',
+    proseLead: 'Lead: state the topic of this page.',
+    takeawayHeading: 'Numbered takeaways',
+    takeawayQuote: 'Compress the whole paper into one sentence worth taking away.',
+    cardsFallbackTitle: 'Three parallel points',
+    cardsFallbackHint: 'Double-click to edit',
+  },
+  zh: {
+    titleBodyTitle: '点击输入标题',
+    titleBodyBody: '点击输入正文。用清晰的段落组织观点，也可以从工具栏继续添加文字、图片或形状。',
+    sectionTitle: '章节标题',
+    sectionSubtitle: '用一句话说明接下来要讨论的主题',
+    statementTitle: '把最重要的观点，\n写成一句能被记住的话。',
+    statementContext: '补充一行证据、限定条件或行动含义。',
+    metricTitle: '关键数字说明了什么',
+    metricBody: '不要只展示数字。解释它改变了哪个判断，以及观众下一步应该做什么。',
+    twoColumnTitle: '双栏标题',
+    twoColumnLabels: ['观点 A', '观点 B'],
+    twoColumnBodies: [
+      '在这里输入左栏内容。适合呈现一种方法、一个立场或一组信息。',
+      '在这里输入右栏内容。两栏保持相似的信息层级，更容易比较。',
+    ],
+    imageRightTitle: '让图片承担一半表达',
+    imageRightBody: '左侧保留关键叙述，右侧替换为照片、图表或研究结果。',
+    imageAlt: '图片占位',
+    summaryCardsTitle: '把长内容整理成清楚的卡片',
+    summaryCards: [
+      { title: '提炼', description: '每张卡只承载一个核心要点，保留主体、数字与必要限定。' },
+      { title: '编排', description: '卡片数量会自动适配为一到两行，生成后仍可逐元素编辑。' },
+      { title: '复核', description: 'AI 负责初稿，人负责事实、判断与最终表达。' },
+    ],
+    figureTitle: '这张原图是核心证据',
+    figureCaption: '图注：用一句话说明这张图证明了什么。',
+    figureNotes: ['先看坐标轴与单位，再看趋势。', '指出与正文结论对应的曲线。', '标注例外、噪声或反常之处。'],
+    tableTitle: '表格里最值得记住的一行',
+    tableHeader: ['方法', '设置', '结果'],
+    tableRows: [['基线方法', '默认设置', '82.4'], ['本文方法', '完整模型', '89.7'], ['消融变体', '移除关键模块', '85.1']],
+    tableTakeaway: '读法：哪一行改变了你的判断，就把哪一行讲出来。',
+    versusTitle: '把两个方法放在同一束光下',
+    versusLeftTitle: '现有方法',
+    versusLeftBody: '它假设什么、优化什么、在何处开始失效。每行一个事实，不写评价。',
+    versusRightTitle: '本文方法',
+    versusRightBody: '它改掉了哪个假设、换来了什么代价。与左栏逐项对齐，方便对照。',
+    versusVerdict: '结论：在什么条件下，哪一边更值得相信。',
+    contributionsTitle: '本文的三个贡献',
+    contributionItems: ['一个新问题或新设定', '一个关键方法设计', '一组有说服力的证据'],
+    contributionBody: '用一到两句话说明它解决了什么、与此前工作的差别在哪里。',
+    limitsTitle: '这个方法在什么情况下会失效',
+    limitsIntro: '把局限讲清楚，比把效果讲满更可信。',
+    limitsCards: [
+      { title: '适用边界', body: '方法依赖哪些假设？假设不成立时会怎样？' },
+      { title: '证据边界', body: '实验覆盖了哪些场景？哪些结论还只是推测？' },
+    ],
+    limitsFuture: '这些局限指向的未来工作：把边界写成下一步的路线图。',
+    closingQuote: '把整篇论文压缩成一句\n可以被带走的话。',
+    attribution: '—— 作者 · 会议 / 期刊 · 年份',
+    hookHeading: '把最重要的论点写成超大标题',
+    hookLead: '引导句：点明本页主题与论点。',
+    hookSupport: '支撑句：补充证据、限定条件或行动含义。\n\n第二段：继续展开，最多约两百字，保证每页自含上下文。',
+    proseHeading: '正文面板页',
+    proseLead: '引导句：点明本页主题。',
+    takeawayHeading: '编号要点收尾',
+    takeawayQuote: '把整篇论文压缩成一句可以被带走的话。',
+    cardsFallbackTitle: '三个并列要点',
+    cardsFallbackHint: '双击编辑卡片文字',
+  },
+} satisfies Record<DeckLocale, Record<string, unknown>>
+
+function buildLayoutElements(layoutId: LayoutPresetId, theme: Theme, locale: DeckLocale): SlideElement[] {
   const text = theme.colors.text
   const muted = theme.colors.muted
   const accent = theme.colors.accent
   const background = theme.colors.background
   const surface = theme.colors.surface ?? background
   const mono = theme.fonts.mono ?? theme.fonts.body
+  const t = layoutCopy[locale] as typeof layoutCopy.en
   const title = (id: string, value: string, x: number, y: number, w: number, h: number, fontSize = 58): SlideElement => ({ id, type: 'text', styleRef: 'slide-title', frame: frame(x, y, w, h), text: value, fontSize, fontWeight: 700 })
   const body = (id: string, value: string, x: number, y: number, w: number, h: number): SlideElement => ({ id, type: 'text', frame: frame(x, y, w, h), text: value, fontSize: 28, color: muted })
 
   if (layoutId === 'blank') return []
   if (layoutId === 'title-body') return [
-    title('title', '点击输入标题', 96, 88, 1408, 110),
+    title('title', t.titleBodyTitle, 96, 88, 1408, 110),
     { id: 'accent-rule', type: 'shape', frame: frame(96, 230, 120, 8), shape: 'rectangle', fill: accent },
-    body('body', '点击输入正文。用清晰的段落组织观点，也可以从工具栏继续添加文字、图片或形状。', 96, 286, 1220, 360),
+    body('body', t.titleBodyBody, 96, 286, 1220, 360),
   ]
   if (layoutId === 'section') return [
     { id: 'section-number', type: 'text', frame: frame(96, 96, 300, 54), text: 'SECTION 01', fontSize: 22, fontWeight: 700, color: accent },
-    title('title', '章节标题', 96, 286, 1300, 180, 76),
-    body('subtitle', '用一句话说明接下来要讨论的主题', 100, 500, 1100, 70),
+    title('title', t.sectionTitle, 96, 286, 1300, 180, 76),
+    body('subtitle', t.sectionSubtitle, 100, 500, 1100, 70),
     { id: 'section-block', type: 'shape', frame: frame(1370, 0, 230, 900), shape: 'rectangle', fill: accent, text: '01', textColor: background, fontSize: 72, fontWeight: 700, align: 'center', verticalAlign: 'middle' },
   ]
   if (layoutId === 'statement') return [
     { id: 'kicker', type: 'text', frame: frame(88, 72, 720, 40), text: 'ONE IDEA / ONE SLIDE', fontSize: 18, fontWeight: 700, color: accent },
     { id: 'index', type: 'text', frame: frame(1260, 52, 252, 150), text: '01', fontSize: 112, fontWeight: 700, align: 'right', color: accent },
-    title('statement', '把最重要的观点，\n写成一句能被记住的话。', 88, 238, 1240, 270, 76),
+    title('statement', t.statementTitle, 88, 238, 1240, 270, 76),
     { id: 'rule', type: 'shape', frame: frame(88, 620, 1424, 3), shape: 'rectangle', fill: text },
-    body('context', '补充一行证据、限定条件或行动含义。', 88, 682, 1040, 70),
+    body('context', t.statementContext, 88, 682, 1040, 70),
   ]
   if (layoutId === 'metric') return [
     { id: 'kicker', type: 'text', frame: frame(88, 72, 720, 40), text: 'SIGNAL / METRIC', fontSize: 18, fontWeight: 700, color: accent },
     { id: 'metric', type: 'text', frame: frame(84, 190, 850, 260), text: '72%', fontSize: 196, fontWeight: 700, color: text },
     { id: 'metric-rule', type: 'shape', frame: frame(930, 214, 8, 420), shape: 'rectangle', fill: accent },
-    title('title', '关键数字说明了什么', 1010, 224, 500, 138, 46),
-    body('body', '不要只展示数字。解释它改变了哪个判断，以及观众下一步应该做什么。', 1010, 410, 480, 220),
+    title('title', t.metricTitle, 1010, 224, 500, 138, 46),
+    body('body', t.metricBody, 1010, 410, 480, 220),
     { id: 'source', type: 'text', frame: frame(88, 746, 900, 40), text: 'SOURCE · PERIOD · SAMPLE', fontSize: 17, fontWeight: 700, color: muted },
   ]
   if (layoutId === 'two-column') return [
-    title('title', '双栏标题', 88, 70, 1424, 100, 54),
+    title('title', t.twoColumnTitle, 88, 70, 1424, 100, 54),
     { id: 'divider', type: 'shape', frame: frame(796, 230, 3, 490), shape: 'rectangle', fill: accent },
-    { id: 'left-label', type: 'text', frame: frame(88, 230, 620, 48), text: '观点 A', fontSize: 24, fontWeight: 700, color: accent },
-    body('left-body', '在这里输入左栏内容。适合呈现一种方法、一个立场或一组信息。', 88, 302, 620, 320),
-    { id: 'right-label', type: 'text', frame: frame(890, 230, 620, 48), text: '观点 B', fontSize: 24, fontWeight: 700, color: accent },
-    body('right-body', '在这里输入右栏内容。两栏保持相似的信息层级，更容易比较。', 890, 302, 620, 320),
+    { id: 'left-label', type: 'text', frame: frame(88, 230, 620, 48), text: t.twoColumnLabels[0], fontSize: 24, fontWeight: 700, color: accent },
+    body('left-body', t.twoColumnBodies[0], 88, 302, 620, 320),
+    { id: 'right-label', type: 'text', frame: frame(890, 230, 620, 48), text: t.twoColumnLabels[1], fontSize: 24, fontWeight: 700, color: accent },
+    body('right-body', t.twoColumnBodies[1], 890, 302, 620, 320),
   ]
   if (layoutId === 'image-right') return [
     { id: 'kicker', type: 'text', frame: frame(88, 72, 600, 42), text: 'IMAGE + STORY', fontSize: 19, fontWeight: 700, color: accent },
-    title('title', '让图片承担一半表达', 88, 154, 620, 170, 58),
-    body('body', '左侧保留关键叙述，右侧替换为照片、图表或研究结果。', 88, 370, 590, 210),
-    { id: 'image', type: 'image', frame: frame(800, 72, 712, 756), src: imagePlaceholder, fit: 'cover', alt: '图片占位' },
+    title('title', t.imageRightTitle, 88, 154, 620, 170, 58),
+    body('body', t.imageRightBody, 88, 370, 590, 210),
+    { id: 'image', type: 'image', frame: frame(800, 72, 712, 756), src: imagePlaceholder, fit: 'cover', alt: t.imageAlt },
   ]
   if (layoutId === 'summary-cards') return createSummaryCardElements({
-    title: '把长内容整理成清楚的卡片',
+    title: t.summaryCardsTitle,
     cards: [
-      { title: '提炼', description: '每张卡只承载一个核心要点，保留主体、数字与必要限定。', icon: 'filter_alt' },
-      { title: '编排', description: '卡片数量会自动适配为一到两行，生成后仍可逐元素编辑。', icon: 'dashboard' },
-      { title: '复核', description: 'AI 负责初稿，人负责事实、判断与最终表达。', icon: 'verified' },
+      { ...t.summaryCards[0], icon: 'filter_alt' },
+      { ...t.summaryCards[1], icon: 'dashboard' },
+      { ...t.summaryCards[2], icon: 'verified' },
     ],
   }, theme)
   if (layoutId === 'paper-figure') return [
     { id: 'kicker', type: 'text', frame: frame(88, 64, 700, 34), text: 'EVIDENCE / FIGURE', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2 },
     { id: 'fig-label', type: 'text', frame: frame(1000, 64, 512, 34), text: 'FIGURE 3 · PAGE 7', fontSize: 17, fontWeight: 700, fontFamily: mono, align: 'right', color: muted },
-    title('title', '这张原图是核心证据', 88, 112, 1300, 64, 44),
+    title('title', t.figureTitle, 88, 112, 1300, 64, 44),
     { id: 'figure-stage', type: 'shape', frame: frame(88, 200, 950, 556), shape: 'rounded-rectangle', fill: surface, radius: 18 },
-    { id: 'figure', type: 'image', frame: frame(112, 224, 902, 508), src: imagePlaceholder, fit: 'contain', alt: '论文原图' },
-    { id: 'caption', type: 'text', frame: frame(88, 770, 950, 64), text: '图注：用一句话说明这张图证明了什么。', fontSize: 24, color: muted, lineHeight: 1.4, fit: 'fill' },
+    { id: 'figure', type: 'image', frame: frame(112, 224, 902, 508), src: imagePlaceholder, fit: 'contain', alt: t.imageAlt },
+    { id: 'caption', type: 'text', frame: frame(88, 770, 950, 64), text: t.figureCaption, fontSize: 24, color: muted, lineHeight: 1.4, fit: 'fill' },
     { id: 'rail-rule', type: 'shape', frame: frame(1076, 200, 3, 556), shape: 'rectangle', fill: accent },
     { id: 'notes-label', type: 'text', frame: frame(1112, 200, 400, 30), text: 'READING NOTES', fontSize: 17, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2 },
     ...[0, 1, 2].flatMap((index): SlideElement[] => [
       { id: `note-${index + 1}-number`, type: 'text', frame: frame(1112, 252 + index * 170, 80, 36), text: `0${index + 1}`, fontSize: 22, fontWeight: 700, fontFamily: mono, color: accent },
-      { id: `note-${index + 1}`, type: 'text', frame: frame(1112, 296 + index * 170, 400, 120), text: ['先看坐标轴与单位，再看趋势。', '指出与正文结论对应的曲线。', '标注例外、噪声或反常之处。'][index], fontSize: 24, color: text, lineHeight: 1.5, fit: 'fill' },
+      { id: `note-${index + 1}`, type: 'text', frame: frame(1112, 296 + index * 170, 400, 120), text: t.figureNotes[index], fontSize: 24, color: text, lineHeight: 1.5, fit: 'fill' },
     ]),
     { id: 'source', type: 'text', frame: frame(88, 848, 1200, 30), text: 'SOURCE · VENUE · YEAR', fontSize: 16, fontWeight: 700, fontFamily: mono, color: muted },
   ]
@@ -206,95 +425,90 @@ function buildLayoutElements(layoutId: LayoutPresetId, theme: Theme): SlideEleme
     return [
       { id: 'kicker', type: 'text', frame: frame(88, 64, 700, 34), text: 'EVIDENCE / TABLE', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2 },
       { id: 'table-label', type: 'text', frame: frame(1000, 64, 512, 34), text: 'TABLE 2 · PAGE 9', fontSize: 17, fontWeight: 700, fontFamily: mono, align: 'right', color: muted },
-      title('title', '表格里最值得记住的一行', 88, 112, 1300, 64, 44),
-      { id: 'table', type: 'table', frame: frame(88, 210, 1424, 394), cells: [
-        ['方法', '设置', '结果'],
-        ['基线方法', '默认设置', '82.4'],
-        ['本文方法', '完整模型', '89.7'],
-        ['消融变体', '移除关键模块', '85.1'],
-      ], headerRows: 1, columnWidths: [1.45, 1.2, 1], alignments: ['left', 'left', 'right'], style: 'rules', fontSize: 23, textColor: text, headerTextColor: text, headerFill: surface, stripeFill: surface, ruleColor: muted, accentColor: accent, ruleWidth: 2, cellPadding: 18, highlightRows: [2] },
+      title('title', t.tableTitle, 88, 112, 1300, 64, 44),
+      { id: 'table', type: 'table', frame: frame(88, 210, 1424, 394), cells: [t.tableHeader, t.tableRows[0], t.tableRows[1], t.tableRows[2]], headerRows: 1, columnWidths: [1.45, 1.2, 1], alignments: ['left', 'left', 'right'], style: 'rules', fontSize: 23, textColor: text, headerTextColor: text, headerFill: surface, stripeFill: surface, ruleColor: muted, accentColor: accent, ruleWidth: 2, cellPadding: 18, highlightRows: [2] },
       { id: 'takeaway-bar', type: 'shape', frame: frame(88, 640, 6, 56), shape: 'rectangle', fill: accent },
-      { id: 'takeaway', type: 'text', frame: frame(114, 636, 1398, 60), text: '读法：哪一行改变了你的判断，就把哪一行讲出来。', fontSize: 26, fontWeight: 600, color: text, lineHeight: 1.3 },
+      { id: 'takeaway', type: 'text', frame: frame(114, 636, 1398, 60), text: t.tableTakeaway, fontSize: 26, fontWeight: 600, color: text, lineHeight: 1.3 },
       { id: 'source', type: 'text', frame: frame(88, 848, 1200, 30), text: 'SOURCE · VENUE · YEAR', fontSize: 16, fontWeight: 700, fontFamily: mono, color: muted },
     ]
   }
   if (layoutId === 'versus') return [
     { id: 'kicker', type: 'text', frame: frame(88, 64, 700, 34), text: 'COMPARISON / VERSUS', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2 },
-    title('title', '把两个方法放在同一束光下', 88, 112, 1300, 64, 44),
+    title('title', t.versusTitle, 88, 112, 1300, 64, 44),
     { id: 'panel-left', type: 'shape', frame: frame(88, 210, 664, 480), shape: 'rounded-rectangle', fill: surface, radius: 18 },
     { id: 'panel-right', type: 'shape', frame: frame(848, 210, 664, 480), shape: 'rounded-rectangle', fill: surface, radius: 18 },
     { id: 'left-label', type: 'text', frame: frame(128, 250, 560, 32), text: 'BASELINE', fontSize: 19, fontWeight: 700, fontFamily: mono, color: muted, letterSpacing: 2 },
-    { id: 'left-title', type: 'text', frame: frame(128, 300, 560, 48), text: '现有方法', fontSize: 32, fontWeight: 700, color: text },
-    { id: 'left-body', type: 'text', frame: frame(128, 372, 584, 260), text: '它假设什么、优化什么、在何处开始失效。每行一个事实，不写评价。', fontSize: 22, color: muted, lineHeight: 1.5 },
+    { id: 'left-title', type: 'text', frame: frame(128, 300, 560, 48), text: t.versusLeftTitle, fontSize: 32, fontWeight: 700, color: text },
+    { id: 'left-body', type: 'text', frame: frame(128, 372, 584, 260), text: t.versusLeftBody, fontSize: 22, color: muted, lineHeight: 1.5 },
     { id: 'right-label', type: 'text', frame: frame(888, 250, 560, 32), text: 'PROPOSED', fontSize: 19, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2 },
-    { id: 'right-title', type: 'text', frame: frame(888, 300, 560, 48), text: '本文方法', fontSize: 32, fontWeight: 700, color: text },
-    { id: 'right-body', type: 'text', frame: frame(888, 372, 584, 260), text: '它改掉了哪个假设、换来了什么代价。与左栏逐项对齐，方便对照。', fontSize: 22, color: text, lineHeight: 1.5 },
+    { id: 'right-title', type: 'text', frame: frame(888, 300, 560, 48), text: t.versusRightTitle, fontSize: 32, fontWeight: 700, color: text },
+    { id: 'right-body', type: 'text', frame: frame(888, 372, 584, 260), text: t.versusRightBody, fontSize: 22, color: text, lineHeight: 1.5 },
     { id: 'vs-badge', type: 'shape', frame: frame(766, 418, 68, 68), shape: 'ellipse', fill: accent, text: 'VS', textColor: background, fontSize: 24, fontWeight: 800, align: 'center', verticalAlign: 'middle' },
     { id: 'verdict-rule', type: 'shape', frame: frame(88, 742, 1424, 3), shape: 'rectangle', fill: accent },
     { id: 'verdict-label', type: 'text', frame: frame(88, 770, 220, 30), text: 'VERDICT', fontSize: 17, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2 },
-    { id: 'verdict', type: 'text', frame: frame(340, 762, 1172, 52), text: '结论：在什么条件下，哪一边更值得相信。', fontSize: 26, fontWeight: 600, color: text },
+    { id: 'verdict', type: 'text', frame: frame(340, 762, 1172, 52), text: t.versusVerdict, fontSize: 26, fontWeight: 600, color: text },
   ]
   if (layoutId === 'contributions') return [
     { id: 'kicker', type: 'text', frame: frame(88, 64, 700, 34), text: 'CONTRIBUTIONS / WHAT IS NEW', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2 },
-    title('title', '本文的三个贡献', 88, 118, 1300, 70, 52),
+    title('title', t.contributionsTitle, 88, 118, 1300, 70, 52),
     ...[0, 1, 2].flatMap((index): SlideElement[] => [
       { id: `item-${index + 1}-number`, type: 'text', frame: frame(88, 258 + index * 182, 150, 100), text: `0${index + 1}`, fontSize: 84, fontWeight: 800, fontFamily: mono, color: accent },
-      { id: `item-${index + 1}-title`, type: 'text', frame: frame(272, 264 + index * 182, 1100, 52), text: ['一个新问题或新设定', '一个关键方法设计', '一组有说服力的证据'][index], fontSize: 36, fontWeight: 700, color: text, fit: 'fill' },
-      { id: `item-${index + 1}-body`, type: 'text', frame: frame(272, 330 + index * 182, 1180, 76), text: '用一到两句话说明它解决了什么、与此前工作的差别在哪里。', fontSize: 26, color: muted, lineHeight: 1.45, fit: 'fill' },
+      { id: `item-${index + 1}-title`, type: 'text', frame: frame(272, 264 + index * 182, 1100, 52), text: t.contributionItems[index], fontSize: 36, fontWeight: 700, color: text, fit: 'fill' },
+      { id: `item-${index + 1}-body`, type: 'text', frame: frame(272, 330 + index * 182, 1180, 76), text: t.contributionBody, fontSize: 26, color: muted, lineHeight: 1.45, fit: 'fill' },
       ...(index < 2 ? [{ id: `item-${index + 1}-rule`, type: 'line', frame: frame(272, 424 + index * 182, 1240, 2), color: muted, strokeWidth: 2, opacity: 0.3 } as SlideElement] : []),
     ]),
     { id: 'source', type: 'text', frame: frame(88, 848, 1200, 30), text: 'SOURCE · VENUE · YEAR', fontSize: 16, fontWeight: 700, fontFamily: mono, color: muted },
   ]
   if (layoutId === 'limits') return [
     { id: 'kicker', type: 'text', frame: frame(88, 64, 700, 34), text: 'LIMITATIONS / HONEST BOUNDARIES', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2 },
-    title('title', '这个方法在什么情况下会失效', 88, 112, 1300, 64, 44),
-    { id: 'intro', type: 'text', frame: frame(88, 192, 1300, 40), text: '把局限讲清楚，比把效果讲满更可信。', fontSize: 24, color: muted },
+    title('title', t.limitsTitle, 88, 112, 1300, 64, 44),
+    { id: 'intro', type: 'text', frame: frame(88, 192, 1300, 40), text: t.limitsIntro, fontSize: 24, color: muted },
     ...[0, 1].flatMap((index): SlideElement[] => [
       { id: `limit-${index + 1}-card`, type: 'shape', frame: frame(88 + index * 734, 268, 690, 380), shape: 'rounded-rectangle', fill: surface, radius: 18 },
       { id: `limit-${index + 1}-marker`, type: 'text', frame: frame(128 + index * 734, 304, 80, 44), text: '△', fontSize: 32, fontWeight: 700, color: accent },
-      { id: `limit-${index + 1}-title`, type: 'text', frame: frame(128 + index * 734, 366, 610, 44), text: ['适用边界', '证据边界'][index], fontSize: 30, fontWeight: 700, color: text },
-      { id: `limit-${index + 1}-body`, type: 'text', frame: frame(128 + index * 734, 430, 610, 180), text: ['方法依赖哪些假设？假设不成立时会怎样？', '实验覆盖了哪些场景？哪些结论还只是推测？'][index], fontSize: 22, color: muted, lineHeight: 1.5 },
+      { id: `limit-${index + 1}-title`, type: 'text', frame: frame(128 + index * 734, 366, 610, 44), text: t.limitsCards[index].title, fontSize: 30, fontWeight: 700, color: text },
+      { id: `limit-${index + 1}-body`, type: 'text', frame: frame(128 + index * 734, 430, 610, 180), text: t.limitsCards[index].body, fontSize: 22, color: muted, lineHeight: 1.5 },
     ]),
     { id: 'future-rule', type: 'shape', frame: frame(88, 716, 1424, 3), shape: 'rectangle', fill: text },
-    { id: 'future', type: 'text', frame: frame(88, 764, 1300, 52), text: '这些局限指向的未来工作：把边界写成下一步的路线图。', fontSize: 24, fontWeight: 600, color: text },
+    { id: 'future', type: 'text', frame: frame(88, 764, 1300, 52), text: t.limitsFuture, fontSize: 24, fontWeight: 600, color: text },
   ]
   if (layoutId === 'closing') return [
     { id: 'kicker', type: 'text', frame: frame(88, 72, 720, 40), text: 'TAKEAWAY / ONE SENTENCE', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2 },
     { id: 'quote-mark', type: 'text', frame: frame(72, 120, 260, 220), text: '“', fontSize: 220, fontWeight: 800, color: accent },
-    title('quote', '把整篇论文压缩成一句\n可以被带走的话。', 120, 330, 1392, 240, 64),
+    title('quote', t.closingQuote, 120, 330, 1392, 240, 64),
     { id: 'rule', type: 'shape', frame: frame(120, 640, 1392, 3), shape: 'rectangle', fill: accent },
-    { id: 'attribution', type: 'text', frame: frame(120, 700, 1100, 44), text: '—— 作者 · 会议 / 期刊 · 年份', fontSize: 24, color: muted },
+    { id: 'attribution', type: 'text', frame: frame(120, 700, 1100, 44), text: t.attribution, fontSize: 24, color: muted },
     { id: 'end', type: 'text', frame: frame(1300, 786, 212, 46), text: 'END', fontSize: 22, fontWeight: 700, fontFamily: mono, align: 'right', color: accent, letterSpacing: 2 },
   ]
   if (layoutId === 'hook-statement') return [
     { id: 'kicker', type: 'text', frame: frame(88, 48, 750, 34), text: 'HOOK / STATEMENT', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent },
     { id: 'ghost', type: 'text', frame: frame(1108, 100, 392, 300), text: '01', fontSize: 240, fontWeight: 800, fontFamily: mono, align: 'right', color: surface },
-    { id: 'heading', type: 'text', styleRef: 'slide-title', frame: frame(100, 200, 1000, 110), text: '把最重要的论点写成超大标题', fontSize: 66, fontWeight: 800, color: text },
+    { id: 'heading', type: 'text', styleRef: 'slide-title', frame: frame(100, 200, 1000, 110), text: t.hookHeading, fontSize: 66, fontWeight: 800, color: text },
     { id: 'heading-rule', type: 'line', frame: frame(100, 340, 183, 2), color: accent, strokeWidth: 8 },
-    { id: 'lead', type: 'text', frame: frame(100, 402, 1250, 140), text: '引导句：点明本页主题与论点。', fontSize: 40, fontWeight: 700, color: text, lineHeight: 1.45 },
-    { id: 'support', type: 'text', frame: frame(100, 560, 1250, 258), text: '支撑句：补充证据、限定条件或行动含义。\n\n第二段：继续展开，最多约两百字，保证每页自含上下文。', fontSize: 30, fontWeight: 500, color: muted, lineHeight: 1.6 },
+    { id: 'lead', type: 'text', frame: frame(100, 402, 1250, 140), text: t.hookLead, fontSize: 40, fontWeight: 700, color: text, lineHeight: 1.45 },
+    { id: 'support', type: 'text', frame: frame(100, 560, 1250, 258), text: t.hookSupport, fontSize: 30, fontWeight: 500, color: muted, lineHeight: 1.6 },
   ]
   if (layoutId === 'prose-panel') return [
     { id: 'kicker', type: 'text', frame: frame(88, 48, 750, 34), text: 'CONTEXT / PROSE', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent },
-    title('heading', '正文面板页', 100, 116, 1167, 80, 50),
+    title('heading', t.proseHeading, 100, 116, 1167, 80, 50),
     { id: 'heading-rule', type: 'line', frame: frame(100, 226, 1400, 2), color: surface, strokeWidth: 3 },
     { id: 'prose-panel', type: 'shape', frame: frame(100, 286, 1033, 500), shape: 'rounded-rectangle', fill: surface, radius: 28 },
     { id: 'ghost', type: 'text', frame: frame(1175, 286, 325, 500), text: '02', fontSize: 200, fontWeight: 800, fontFamily: mono, align: 'center', color: surface, verticalAlign: 'middle' },
-    { id: 'lead', type: 'text', frame: frame(155, 332, 915, 92), text: '引导句：点明本页主题。', fontSize: 36, fontWeight: 700, color: text, lineHeight: 1.45 },
+    { id: 'lead', type: 'text', frame: frame(155, 332, 915, 92), text: t.proseLead, fontSize: 36, fontWeight: 700, color: text, lineHeight: 1.45 },
     { id: 'lead-rule', type: 'line', frame: frame(155, 446, 117, 2), color: accent, strokeWidth: 6 },
-    { id: 'support', type: 'text', frame: frame(155, 472, 915, 284), text: '支撑句：补充证据、限定条件或行动含义。\n\n第二段：继续展开，最多约两百字，保证每页自含上下文。', fontSize: 30, fontWeight: 500, color: muted, lineHeight: 1.6 },
+    { id: 'support', type: 'text', frame: frame(155, 472, 915, 284), text: t.hookSupport, fontSize: 30, fontWeight: 500, color: muted, lineHeight: 1.6 },
   ]
   if (layoutId === 'takeaway') return [
     { id: 'kicker', type: 'text', frame: frame(88, 48, 750, 34), text: 'TAKEAWAY / SUMMARY', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent },
-    title('heading', '编号要点收尾', 100, 120, 1083, 84, 50),
+    title('heading', t.takeawayHeading, 100, 120, 1083, 84, 50),
     { id: 'heading-rule', type: 'line', frame: frame(100, 232, 183, 2), color: accent, strokeWidth: 8 },
-    { id: 'quote', type: 'text', frame: frame(100, 268, 1300, 90), text: '把整篇论文压缩成一句可以被带走的话。', fontSize: 34, fontWeight: 700, color: accent, lineHeight: 1.3 },
+    { id: 'quote', type: 'text', frame: frame(100, 268, 1300, 90), text: t.takeawayQuote, fontSize: 34, fontWeight: 700, color: accent, lineHeight: 1.3 },
     { id: 'end-rule', type: 'line', frame: frame(100, 852, 1400, 2), color: surface, strokeWidth: 3 },
-    { id: 'attribution', type: 'text', frame: frame(100, 864, 1000, 30), text: '—— 作者 · 会议 / 期刊 · 年份', fontSize: 20, fontWeight: 600, color: muted },
+    { id: 'attribution', type: 'text', frame: frame(100, 864, 1000, 30), text: t.attribution, fontSize: 20, fontWeight: 600, color: muted },
     { id: 'end', type: 'text', frame: frame(1350, 864, 150, 30), text: 'END', fontSize: 20, fontWeight: 700, fontFamily: mono, align: 'right', color: accent },
   ]
   return [
-    title('title', '三个并列要点', 80, 64, 1440, 90, 54),
+    title('title', t.cardsFallbackTitle, 80, 64, 1440, 90, 54),
     ...[0, 1, 2].map((index): SlideElement => ({
       id: `card-${index + 1}`,
       type: 'shape',
@@ -302,7 +516,7 @@ function buildLayoutElements(layoutId: LayoutPresetId, theme: Theme): SlideEleme
       shape: 'rounded-rectangle',
       fill: index === 0 ? accent : index === 1 ? text : surface,
       radius: 22,
-      text: `0${index + 1}\n双击编辑卡片文字`,
+      text: `0${index + 1}\n${t.cardsFallbackHint}`,
       textColor: index < 2 ? background : text,
       fontSize: 32,
       fontWeight: 700,

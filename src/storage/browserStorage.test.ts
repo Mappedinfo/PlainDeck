@@ -3,6 +3,7 @@ import { applyOperations } from 'plaindeck/core'
 import { createSampleDocument } from '../core/sample'
 import { clearRecoveryFromOpfs, initializeProject, readProject, restoreFromOpfs, snapshotToOpfs, writeProject, type DirectoryHandle } from './browserStorage'
 
+import { LocalizedError } from '../i18n/errors'
 class MemoryFileHandle {
   kind = 'file' as const
   constructor(public name: string, public content = '', private readonly events: string[] = []) {}
@@ -57,7 +58,8 @@ describe('browser project storage', () => {
 
   it('refuses initialization before overwriting any planned file', async () => {
     const root = directory(); await put(root, './theme.json', 'keep-theme')
-    await expect(initializeProject(root, createSampleDocument())).rejects.toThrow('theme.json')
+    const refusal = await initializeProject(root, createSampleDocument()).then(() => null, (error: unknown) => error as LocalizedError)
+    expect(refusal).toBeInstanceOf(LocalizedError); expect((refusal as LocalizedError).params[0]).toContain('theme.json')
     await expect(root.getFileHandle('deck.json')).rejects.toMatchObject({ name: 'NotFoundError' })
     expect(await (await root.getFileHandle('theme.json')).getFile().then(file => file.text())).toBe('keep-theme')
   })

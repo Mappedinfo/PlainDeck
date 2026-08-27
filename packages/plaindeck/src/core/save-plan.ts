@@ -1,3 +1,4 @@
+import { PlainDeckError } from './errors.js'
 import { assertDocument, type DeckDocument } from './schema.js'
 import { canonicalJson } from './serializer.js'
 import { PROJECT_PATHS, SLIDE_PATH_PATTERN } from './project-paths.js'
@@ -20,7 +21,7 @@ export function createSavePlan(input: DeckDocument, changedPaths?: Iterable<stri
 
   for (const target of targets) {
     if (!currentPaths.has(target) && !(SLIDE_PATH_PATTERN.test(target) && !document.slides[target])) {
-      throw new Error(`不允许写入未知项目路径：${target}`)
+      throw new PlainDeckError('unknown-save-path', { zh: `不允许写入未知项目路径：${target}`, en: `Refusing to write unknown project path: ${target}` })
     }
   }
 

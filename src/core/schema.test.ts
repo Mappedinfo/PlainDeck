@@ -6,7 +6,7 @@ describe('schema', () => {
   it('validates the seven-page Nature methods starter project', () => {
     const document = assertDocument(createSampleDocument())
     expect(document.deck.schemaVersion).toBe('0.1')
-    expect(document.deck.title).toBe('方法标题：一句话说清解决了什么')
+    expect(document.deck.title).toMatch(/方法标题：一句话说清解决了什么|Methods headline: what was solved, in one clear sentence/)
     expect(document.deck.slides).toHaveLength(7)
   })
   it('rejects fractional coordinates', () => expect(() => SlideSchema.parse({ id: 'bad', elements: [{ id: 'x', type: 'text', text: '', frame: { x: .5, y: 0, w: 10, h: 10 } }] })).toThrow())

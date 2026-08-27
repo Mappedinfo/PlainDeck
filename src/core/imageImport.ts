@@ -1,11 +1,12 @@
 import type { Frame } from 'plaindeck/core'
+import { throwLocalized } from '../i18n/errors'
 
 export const MAX_IMAGE_BYTES = 25 * 1024 * 1024
 export const SUPPORTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml']
 
 export function validateImageFile(file: File) {
-  if (!SUPPORTED_IMAGE_TYPES.includes(file.type)) throw new Error(`不支持的图片格式：${file.type || file.name}`)
-  if (file.size > MAX_IMAGE_BYTES) throw new Error(`图片超过 ${MAX_IMAGE_BYTES / 1024 / 1024} MB：${file.name}`)
+  if (!SUPPORTED_IMAGE_TYPES.includes(file.type)) throwLocalized('unsupportedImageFormat', file.type || file.name)
+  if (file.size > MAX_IMAGE_BYTES) throwLocalized('imageTooLarge', MAX_IMAGE_BYTES / 1024 / 1024, file.name)
 }
 
 export function fitImageFrame(
@@ -37,7 +38,7 @@ export async function imageDimensions(file: File): Promise<{ width: number; heig
     return await new Promise((resolve, reject) => {
       const image = new Image()
       image.onload = () => resolve({ width: image.naturalWidth, height: image.naturalHeight })
-      image.onerror = () => reject(new Error(`无法读取图片尺寸：${file.name}`))
+      image.onerror = () => reject(throwLocalized('unreadableImageSize', file.name))
       image.src = url
     })
   } finally { URL.revokeObjectURL(url) }

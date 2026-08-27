@@ -4,6 +4,7 @@ import type { DeckDocument } from '../core/schema.js'
 import { prepareDocumentAssets, type PrepareAssetsOptions } from './assets.js'
 import { renderHtml } from './html.js'
 
+import { PlainDeckError } from '../core/errors.js'
 export interface BrowserRenderOptions extends PrepareAssetsOptions {
   output: string
   browserExecutable?: string
@@ -19,7 +20,7 @@ async function launchChromium(executablePath?: string) {
     const { chromium } = await import('playwright')
     return await chromium.launch({ headless: true, executablePath })
   } catch (error) {
-    throw new Error(`PNG/PDF 渲染需要 Playwright Chromium。请运行：npm install playwright && npx playwright install chromium\n${error instanceof Error ? error.message : String(error)}`, { cause: error })
+    throw new PlainDeckError('playwright-chromium-required', { zh: `PNG/PDF 渲染需要 Playwright Chromium。请运行：npm install playwright && npx playwright install chromium\n${error instanceof Error ? error.message : String(error)}`, en: `PNG/PDF rendering requires Playwright Chromium. Run: npm install playwright && npx playwright install chromium\n${error instanceof Error ? error.message : String(error)}` }, { cause: error })
   }
 }
 
@@ -27,11 +28,11 @@ function resolveSlide(document: DeckDocument, selector: number | string) {
   if (typeof selector === 'number' || /^\d+$/.test(selector)) {
     const index = Number(selector) - 1
     const path = document.deck.slides[index]
-    if (!path) throw new Error(`页面序号不存在：${selector}`)
+    if (!path) throw new PlainDeckError('slide-index-out-of-range', { zh: `页面序号不存在：${selector}`, en: `Slide index does not exist: ${selector}` })
     return { path, index }
   }
   const index = document.deck.slides.indexOf(selector)
-  if (index < 0) throw new Error(`页面不存在：${selector}`)
+  if (index < 0) throw new PlainDeckError('slide-not-found', { zh: `页面不存在：${selector}`, en: `Slide not found: ${selector}` })
   return { path: selector, index }
 }
 

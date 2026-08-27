@@ -1,3 +1,4 @@
+import { PlainDeckError } from './errors.js'
 import { z } from 'zod'
 import generated from './generated/juya-design-recipes.json' with { type: 'json' }
 import { ThemeSchema } from './schema.js'
@@ -27,7 +28,7 @@ const CatalogSchema = z.object({
 }).strict()
 
 const catalog = CatalogSchema.parse(generated)
-if (catalog.recipes.length !== catalog.source.templateCount) throw new Error('设计配方目录数量与来源声明不一致。')
+if (catalog.recipes.length !== catalog.source.templateCount) throw new PlainDeckError('recipe-source-mismatch', { zh: '设计配方目录数量与来源声明不一致。', en: 'The design recipe catalog count does not match its declared source.' })
 
 function deepFreeze<T>(value: T): T {
   if (value && typeof value === 'object' && !Object.isFrozen(value)) {
