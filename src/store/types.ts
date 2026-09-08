@@ -4,7 +4,7 @@ import type { DirectoryHandle } from '../storage/browserStorage'
 
 /** Canvas zoom limits — single source for the editor zoom range and steps. */
 export const ZOOM_INITIAL = .58
-export const ZOOM_MIN = .2
+export const ZOOM_MIN = .01
 export const ZOOM_MAX = 1.25
 export const ZOOM_STEP = .05
 

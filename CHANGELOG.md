@@ -15,6 +15,11 @@ All notable changes to this project are documented in this file. The format is b
 - 制作规则和默认文案强调直接陈述核心主张及支持证据，保留必要比较、真实负结果和证据边界；示例数据明确标注用途。
 - 补充 EasySlides 制作原则的来源及 PlainDeck 适配说明，更新 Agent API、开发指导和 README 中的 MCP 与本地 AI 指导能力说明。
 
+### 修复
+
+- 窄窗口下画布按实际可用空间自动缩放，缩略图随侧栏宽度与画布比例适配，支持低于 20% 的缩放。
+- 状态栏在窄窗口保留保存状态与缩放控件，项目信息和链接收进展开菜单；错误提示独立成行，可展开查看全文。
+
 ## [v0.10.0] - 2026-08-27
 
 ### 新增

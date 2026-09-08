@@ -45,11 +45,16 @@ export default function App() {
   const [guiding, setGuiding] = useState(false)
   const state = useEditor(); const { t } = useT(); const [present, setPresent] = useState(false); const [exporting, setExporting] = useState(false); const [addingCards, setAddingCards] = useState(false); const [addingTable, setAddingTable] = useState(false); const [updateReady, setUpdateReady] = useState(false); const [draggingImage, setDraggingImage] = useState(false); const [imageNotice, setImageNotice] = useState(''); const [recovery, setRecovery] = useState<Awaited<ReturnType<typeof restoreFromOpfs>>>(null); const zipRef = useRef<HTMLInputElement>(null); const imageRef = useRef<HTMLInputElement>(null); const canvasRef = useRef<HTMLElement>(null); const applyUpdateRef = useRef<ApplyUpdate>(null)
   const fitCanvas = useCallback(() => {
-    const workspace = canvasRef.current
-    if (!workspace) return
+    const scroller = canvasRef.current?.querySelector<HTMLElement>('.canvas-scroller')
+    if (!scroller) return
     const { width, height } = useEditor.getState().document.deck.canvas
-    const zoom = Math.min((workspace.clientWidth - 116) / width, (workspace.clientHeight - 140) / height, .9)
+    const padding = getComputedStyle(scroller)
+    const availableWidth = scroller.clientWidth - parseFloat(padding.paddingLeft) - parseFloat(padding.paddingRight)
+    const availableHeight = scroller.clientHeight - parseFloat(padding.paddingTop) - parseFloat(padding.paddingBottom)
+    if (availableWidth <= 0 || availableHeight <= 0) return
+    const zoom = Math.min(availableWidth / width, availableHeight / height, .9)
     useEditor.getState().setZoom(zoom)
+    scroller.scrollTo(0, 0)
   }, [])
   const insertImages = useCallback(async (files: File[], point?: { x: number; y: number }) => {
     if (!files.length) return

@@ -36,7 +36,7 @@ test('inserts local images from file picker, clipboard, and canvas drop', async 
   const imported = page.locator('.canvas-workspace .slide-element img')
   await expect(imported).toHaveCount(1)
   await expect(imported.first()).toHaveAttribute('src', /^data:image\/svg\+xml;base64,/)
-  await expect(page.getByRole('status')).toContainText('已放入画板')
+  await expect(page.locator('.image-toast')).toContainText('已放入画板')
 
   await page.evaluate(source => {
     const transfer = new DataTransfer(); transfer.items.add(new File([source], 'clipboard.svg', { type: 'image/svg+xml' }))

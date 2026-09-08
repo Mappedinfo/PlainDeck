@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronUp, Copy, LayoutTemplate, Plus, Trash2, X } from 'lucide-react'
-import { useState } from 'react'
-import { layoutPresetsFor, type LayoutPresetId } from 'plaindeck/core'
+import { useEffect, useRef, useState } from 'react'
+import { layoutPresetsFor, type LayoutPresetId, type Slide } from 'plaindeck/core'
 import { useEditor } from '../store'
 import { useT } from '../i18n'
 import { SlideSurface } from './SlideSurface'
@@ -22,6 +22,22 @@ function LayoutDiagram({ id }: { id: LayoutPresetId }) {
   </div>
 }
 
+function SlideThumbnail({ slide }: { slide: Slide }) {
+  const canvas = useEditor(state => state.document.deck.canvas)
+  const cropRef = useRef<HTMLDivElement>(null)
+  const [width, setWidth] = useState(0)
+  useEffect(() => {
+    const crop = cropRef.current
+    if (!crop) return
+    const observer = new ResizeObserver(entries => setWidth(entries[0].contentRect.width))
+    observer.observe(crop)
+    return () => observer.disconnect()
+  }, [])
+  return <div ref={cropRef} className="thumb-crop" style={{ aspectRatio: `${canvas.width} / ${canvas.height}` }}>
+    {width > 0 && <SlideSurface slide={slide} interactive={false} zoom={width / canvas.width} />}
+  </div>
+}
+
 export function SlideList() {
   const [choosingLayout, setChoosingLayout] = useState(false)
   const { document, activeSlidePath, setActiveSlide, addSlide, duplicateSlide, deleteSlide, moveSlide } = useEditor()
@@ -31,7 +47,7 @@ export function SlideList() {
     <div className="slide-list">
       {document.deck.slides.map((path, index) => <button key={path} className={`slide-thumb ${path === activeSlidePath ? 'active' : ''}`} onClick={() => setActiveSlide(path)}>
         <span className="slide-number">{String(index + 1).padStart(3, '0')}</span>
-        <div className="thumb-crop"><SlideSurface slide={document.slides[path]} interactive={false} zoom={.1125} /></div>
+        <SlideThumbnail slide={document.slides[path]} />
         <span className="slide-name">{document.slides[path].name ?? document.slides[path].id}</span>
       </button>)}
     </div>

@@ -33,3 +33,34 @@
 @media(max-width:760px){.presentation-guide{width:95vw;height:94dvh;box-shadow:5px 5px 0 var(--accent)}.guide-header{padding:20px}.guide-header h2{font-size:25px}.guide-header p{font-size:11px}.guide-workbench{display:block;overflow:auto}.guide-brief,.guide-output{overflow:visible;padding:20px;min-height:auto}.guide-brief{border-right:0;border-bottom:1px solid #c6b59d}.guide-prompt{height:240px}.guide-footer{padding:10px 20px}.guide-project{display:none}.guide-copy{min-width:126px}.guide-local-badge{font-size:8px}.guide-brief-row{grid-template-columns:105px minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){.presentation-guide[open]{animation:none}}
 @media print{.presentation-guide{display:none!important}}
+
+/* Fit the canvas and thumbnails to the space available in a narrow editor. */
+.app-shell{min-width:0;grid-template-columns:minmax(0,1fr);grid-template-rows:58px minmax(0,1fr) auto}
+.workspace{min-width:0;grid-template-columns:218px minmax(0,1fr) 264px}
+.slide-panel,.slide-list,.slide-thumb{min-width:0}
+.slide-thumb{grid-template-columns:24px minmax(0,1fr)}
+.thumb-crop{width:100%;height:auto;aspect-ratio:16/9}
+.canvas-label{max-width:calc(100% - 34px)}
+.canvas-label>span{flex-shrink:0}
+.canvas-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.canvas-name-input{min-width:0;max-width:100%}
+@media(max-width:900px){.workspace{grid-template-columns:170px minmax(0,1fr)}.canvas-scroller{padding:48px 24px 32px}}
+@media(max-width:620px){
+  .workspace{grid-template-columns:112px minmax(0,1fr)}
+  .slide-panel{grid-template-rows:34px minmax(0,1fr) auto}
+  .panel-heading{height:34px;padding:0 8px}
+  .slide-list{padding:10px 6px}
+  .slide-thumb{padding:4px;grid-template-columns:22px minmax(0,1fr);gap:5px 3px}
+  .slide-thumb .thumb-crop{grid-column:1/-1;grid-row:1}
+  .slide-number{grid-row:2;font-size:8px}
+  .slide-name{grid-row:2;font-size:9px}
+  .slide-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;padding:6px}
+  .slide-actions span{display:none}
+  .slide-actions button{width:100%;height:26px}
+  .canvas-scroller{padding:48px 16px 28px}
+  .canvas-label{left:12px;gap:5px;max-width:calc(100% - 24px)}
+  .canvas-label>span{display:none}
+  .canvas-coordinate{font-size:8px}
+  .layout-picker{left:104px;width:calc(100vw - 116px)}
+  .layout-grid{grid-template-columns:1fr}
+}
