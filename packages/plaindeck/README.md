@@ -4,9 +4,11 @@ Agent-friendly API, CLI, and renderer for the PlainDeck Git-native slide format.
 
 ```bash
 npm install plaindeck
+npx plaindeck guide --audience general --minutes 10 --locale en
 npx plaindeck init ./my-deck --title "Make the idea visible"
 npx plaindeck validate ./my-deck
 npx plaindeck inspect ./my-deck --json
+npx plaindeck review ./my-deck --locale en --json
 ```
 
 ## Made with `plaindeck`
@@ -23,6 +25,7 @@ Each example below is a real five-slide PlainDeck project generated through `ini
 ## CLI
 
 ```bash
+plaindeck guide --audience faculty --purpose "Explain the mechanism" --minutes 12 --key-message "A shared theme keeps slides consistent" --evidence-depth supported --locale en --json
 plaindeck init ./pitch --template pitch --theme night-citrus
 plaindeck init ./paper-talk --template nature-methods
 plaindeck apply ./my-deck --ops changes.json --dry-run --json
@@ -30,6 +33,7 @@ plaindeck add-slide ./my-deck --layout image-right --name "Results"
 plaindeck styles --search editorial
 cat brief.md | plaindeck add-cards ./my-deck --content - --style editorialMagazine --name "Weekly brief"
 cat benchmark.md | plaindeck add-table ./my-deck --data - --style rules --name "Benchmark"
+plaindeck review ./my-deck --locale en --json
 plaindeck render ./my-deck --format html --output dist/deck.html
 plaindeck render ./my-deck --format png --output dist/slides
 plaindeck render ./my-deck --format pdf --output dist/deck.pdf
@@ -49,6 +53,27 @@ npx playwright install chromium
 ```
 
 External image requests are blocked by default. Pass `--allow-network` only for trusted projects that intentionally use remote images.
+
+## Presentation guidance
+
+`guide` creates a local authoring prompt from the audience, purpose, duration, central claim and evidence depth. The shared workflow maps claims to evidence, plans each slide, builds native editable elements, then checks content and rendered pages. Visible wording leads with the claim and its supporting evidence; necessary comparisons, negative findings and limitations retain their meaning.
+
+The optional brief accepts `audience: general | faculty | classroom | business | public | archive` (default `general`), `purpose`, `minutes` (greater than 0 and at most 240, default `10`), `keyMessage`, and `evidenceDepth: overview | supported | detailed` (default `supported`). Options also accept `locale: zh | en` (default `zh`). CLI equivalents are `--audience`, `--purpose`, `--minutes`, `--key-message`, `--evidence-depth` and `--locale`.
+
+```ts
+import { loadDeck } from 'plaindeck'
+import { PresentationBriefSchema, createPresentationGuidance, auditPresentation } from 'plaindeck/core'
+
+const brief = PresentationBriefSchema.parse({ audience: 'faculty', minutes: 12 })
+const guidance = createPresentationGuidance({ ...brief, locale: 'en' })
+const review = auditPresentation(await loadDeck('./my-deck'), { ...brief, locale: 'en' })
+console.log(guidance.prompt)
+console.log(review.issues, review.manualChecks)
+```
+
+Both core functions run locally and leave the document unchanged. `guide --json` returns the brief, principles, workflow, slide-plan fields and prompt. `review <project> --locale en --json` returns `kind: 'advisory'`, `slideCount`, `issues` and `manualChecks`. Issues locate slides and optional elements and provide suggestions about titles, text density, pending copy, some contrast constructions, geometry, font size, table scale and repeated layouts. These signals complement schema validation; source verification, claim–evidence alignment and rendered visual quality still require review.
+
+The Web toolbar's **Presentation guide** panel stores the brief per project in the local browser, previews and copies the prompt, and navigates review suggestions. The brief stays separate from project JSON and ZIP exports. The panel makes no LLM requests and performs no cloud execution; the chosen Agent executes the copied prompt. See the [production workflow and EasySlides source attribution](https://github.com/Mappedinfo/PlainDeck/blob/main/docs/presentation-guidance.md).
 
 ## TypeScript API
 
@@ -106,7 +131,7 @@ For React and video output, the same package ships `plaindeck/react` and `plaind
 
 ## MCP server
 
-The same package ships an MCP server (`plaindeck/mcp` subpath, `plaindeck-mcp` bin) exposing the Agent API as Model Context Protocol tools: `init`, `validate`, `inspect`, `apply_operations`, `add_cards`, `add_table`, `render`, `styles`. Any MCP client — DeepSeek Harness, Claude Code, Codex — can scaffold, edit, validate, and render decks; every step lands as a reviewable JSON diff.
+The same package ships an MCP server (`plaindeck/mcp` subpath, `plaindeck-mcp` bin) exposing the Agent API as Model Context Protocol tools: `presentation_guide`, `review_presentation`, `init`, `validate`, `inspect`, `apply_operations`, `add_cards`, `add_table`, `render`, `styles`. It also exposes the `build_presentation` prompt with optional briefing arguments. Any MCP client — DeepSeek Harness, Claude Code, Codex — can plan, scaffold, edit, validate, review and render decks; edits land as reviewable JSON diffs.
 
 ```bash
 npm install --global plaindeck
@@ -119,9 +144,9 @@ DeepSeek Harness integration (tools appear as `mcp__plaindeck__*`):
 dsh web --patch "$PWD/packages/plaindeck/plaindeck.cordis.yml"
 ```
 
-Or merge the overlay file's single `insert` patch into `$DSH_HOME/cordis.patch.yml` to keep it across runs. All tools take absolute project paths. The server depends on `@modelcontextprotocol/sdk`, which npm installs automatically.
+Or merge the overlay file's single `insert` patch into `$DSH_HOME/cordis.patch.yml` to keep it across runs. Tools that read or write a project take absolute project paths; `presentation_guide` takes the optional brief and locale, and `styles` takes an optional search query. The server depends on `@modelcontextprotocol/sdk`, which npm installs automatically.
 
-See the [Agent API and operation contract](https://github.com/Mappedinfo/PlainDeck/blob/main/docs/agent-api.md) for the v0.7 interface, including native tables, document-level automatic footers, readable motion, and the MCP tool contract. The project schema remains `0.1`.
+See the [Agent API and operation contract](https://github.com/Mappedinfo/PlainDeck/blob/main/docs/agent-api.md) for native tables, document-level automatic footers, readable motion, presentation guidance, and the MCP tool contract. The project schema remains `0.1`.
 
 ## License
 

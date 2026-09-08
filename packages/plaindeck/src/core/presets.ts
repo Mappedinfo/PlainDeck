@@ -240,7 +240,7 @@ const layoutCopy = {
     statementTitle: 'Take your single most important point\nand make it one memorable sentence.',
     statementContext: 'Add a line of evidence, a caveat, or what to do next.',
     metricTitle: 'What does this number change?',
-    metricBody: "Don't just show the number. Explain which judgment it changes and what the audience should do next.",
+    metricBody: 'Show the number, unit and source. Explain the judgment it supports and the next step.',
     twoColumnTitle: 'Two-column title',
     twoColumnLabels: ['Point A', 'Point B'],
     twoColumnBodies: [
@@ -260,7 +260,7 @@ const layoutCopy = {
     figureCaption: 'Caption: say in one sentence what this figure proves.',
     figureNotes: ['Read axes and units first, then the trend.', 'Point at the curve that backs the conclusion.', 'Mark outliers, noise and anomalies.'],
     tableTitle: 'The row worth remembering',
-    tableHeader: ['Method', 'Setup', 'Result'],
+    tableHeader: ['Method', 'Setup', 'Illustrative data'],
     tableRows: [['Baseline', 'Default setup', '82.4'], ['This work', 'Full model', '89.7'], ['Ablation', 'Key module removed', '85.1']],
     tableTakeaway: 'How to read it: present whichever row changes your verdict.',
     versusTitle: 'Put both approaches under the same light',
@@ -303,7 +303,7 @@ const layoutCopy = {
     branchVerify: 'Validate at small scale',
     branchShip: 'Ship it',
     branchLoopNote: 'If it fails, return to the previous step and strengthen the evidence.',
-    branchTakeaway: 'Draw the “no” exit on the diagram instead of hiding it.',
+    branchTakeaway: 'Show both decision outcomes and the path back to verification.',
   },
   zh: {
     titleBodyTitle: '点击输入标题',
@@ -313,7 +313,7 @@ const layoutCopy = {
     statementTitle: '把最重要的观点，\n写成一句能被记住的话。',
     statementContext: '补充一行证据、限定条件或行动含义。',
     metricTitle: '关键数字说明了什么',
-    metricBody: '不要只展示数字。解释它改变了哪个判断，以及观众下一步应该做什么。',
+    metricBody: '展示数字、单位和来源，解释它支持的判断，以及观众下一步应该做什么。',
     twoColumnTitle: '双栏标题',
     twoColumnLabels: ['观点 A', '观点 B'],
     twoColumnBodies: [
@@ -333,7 +333,7 @@ const layoutCopy = {
     figureCaption: '图注：用一句话说明这张图证明了什么。',
     figureNotes: ['先看坐标轴与单位，再看趋势。', '指出与正文结论对应的曲线。', '标注例外、噪声或反常之处。'],
     tableTitle: '表格里最值得记住的一行',
-    tableHeader: ['方法', '设置', '结果'],
+    tableHeader: ['方法', '设置', '示例数据'],
     tableRows: [['基线方法', '默认设置', '82.4'], ['本文方法', '完整模型', '89.7'], ['消融变体', '移除关键模块', '85.1']],
     tableTakeaway: '读法：哪一行改变了你的判断，就把哪一行讲出来。',
     versusTitle: '把两个方法放在同一束光下',
@@ -376,7 +376,7 @@ const layoutCopy = {
     branchVerify: '小范围验证',
     branchShip: '正式发布',
     branchLoopNote: '不通过就回到上一步，重做并补充证据。',
-    branchTakeaway: '把“不行”的出口画在图上，而不是藏在心里。',
+    branchTakeaway: '画出两种判断结果，并标明返回验证的路径。',
   },
 } satisfies Record<DeckLocale, Record<string, unknown>>
 
@@ -412,7 +412,7 @@ function buildLayoutElements(layoutId: LayoutPresetId, theme: Theme, locale: Dec
   ]
   if (layoutId === 'metric') return [
     { id: 'kicker', type: 'text', frame: frame(88, 72, 720, 40), text: 'SIGNAL / METRIC', fontSize: 18, fontWeight: 700, color: accent },
-    { id: 'metric', type: 'text', frame: frame(84, 190, 850, 260), text: '72%', fontSize: 196, fontWeight: 700, color: text },
+    { id: 'metric', type: 'text', frame: frame(84, 190, 850, 260), text: locale === 'zh' ? '待补' : 'TBD', fontSize: 196, fontWeight: 700, color: text },
     { id: 'metric-rule', type: 'shape', frame: frame(930, 214, 8, 420), shape: 'rectangle', fill: accent },
     title('title', t.metricTitle, 1010, 224, 500, 138, 46),
     body('body', t.metricBody, 1010, 410, 480, 220),
@@ -442,7 +442,7 @@ function buildLayoutElements(layoutId: LayoutPresetId, theme: Theme, locale: Dec
   }, theme)
   if (layoutId === 'paper-figure') return [
     { id: 'kicker', type: 'text', frame: frame(88, 64, 700, 34), text: 'EVIDENCE / FIGURE', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2 },
-    { id: 'fig-label', type: 'text', frame: frame(1000, 64, 512, 34), text: 'FIGURE 3 · PAGE 7', fontSize: 17, fontWeight: 700, fontFamily: mono, align: 'right', color: muted },
+    { id: 'fig-label', type: 'text', frame: frame(1000, 64, 512, 34), text: locale === 'zh' ? '图号与来源页码待补' : 'FIGURE / SOURCE PAGE · TBD', fontSize: 17, fontWeight: 700, fontFamily: mono, align: 'right', color: muted },
     title('title', t.figureTitle, 88, 112, 1300, 64, 44),
     { id: 'figure-stage', type: 'shape', frame: frame(88, 200, 950, 556), shape: 'rounded-rectangle', fill: surface, radius: 18 },
     { id: 'figure', type: 'image', frame: frame(112, 224, 902, 508), src: imagePlaceholder, fit: 'contain', alt: t.imageAlt },
@@ -458,7 +458,7 @@ function buildLayoutElements(layoutId: LayoutPresetId, theme: Theme, locale: Dec
   if (layoutId === 'paper-table') {
     return [
       { id: 'kicker', type: 'text', frame: frame(88, 64, 700, 34), text: 'EVIDENCE / TABLE', fontSize: 18, fontWeight: 700, fontFamily: mono, color: accent, letterSpacing: 2 },
-      { id: 'table-label', type: 'text', frame: frame(1000, 64, 512, 34), text: 'TABLE 2 · PAGE 9', fontSize: 17, fontWeight: 700, fontFamily: mono, align: 'right', color: muted },
+      { id: 'table-label', type: 'text', frame: frame(1000, 64, 512, 34), text: locale === 'zh' ? '表号与来源页码待补' : 'TABLE / SOURCE PAGE · TBD', fontSize: 17, fontWeight: 700, fontFamily: mono, align: 'right', color: muted },
       title('title', t.tableTitle, 88, 112, 1300, 64, 44),
       { id: 'table', type: 'table', frame: frame(88, 210, 1424, 394), cells: [t.tableHeader, t.tableRows[0], t.tableRows[1], t.tableRows[2]], headerRows: 1, columnWidths: [1.45, 1.2, 1], alignments: ['left', 'left', 'right'], style: 'rules', fontSize: 23, textColor: text, headerTextColor: text, headerFill: surface, stripeFill: surface, ruleColor: muted, accentColor: accent, ruleWidth: 2, cellPadding: 18, highlightRows: [2] },
       { id: 'takeaway-bar', type: 'shape', frame: frame(88, 640, 6, 56), shape: 'rectangle', fill: accent },

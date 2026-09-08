@@ -2,7 +2,7 @@
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { stdin, stderr, stdout } from 'node:process'
-import { applyOperations, createDeckTemplate, createSavePlan, deckTemplatePresets, designRecipes, GITIGNORE_TEMPLATE, inspectDeck, layoutPresets, parseSummaryCards, parseTableContent, PROJECT_PATHS, searchDesignRecipes, tableStyles, themePresets, validateDeck, type DeckTemplateId, type TableStyle } from './core/index.js'
+import { applyOperations, auditPresentation, createDeckTemplate, createPresentationGuidance, createSavePlan, deckTemplatePresets, designRecipes, GITIGNORE_TEMPLATE, inspectDeck, layoutPresets, parseSummaryCards, parseTableContent, PresentationBriefSchema, PROJECT_PATHS, searchDesignRecipes, tableStyles, themePresets, validateDeck, type DeckTemplateId, type PresentationGuidanceOptions, type TableStyle } from './core/index.js'
 import { loadDeck, prepareDocumentAssets, renderPdf, renderPng, saveDeck } from './node/index.js'
 import { renderHtml } from './render/index.js'
 import packageMetadata from '../package.json' with { type: 'json' }
@@ -15,8 +15,10 @@ const jsonMode = args.includes('--json')
 const help = `PlainDeck ${VERSION}
 
 Usage:
+  plaindeck guide [--audience general|faculty|classroom|business|public|archive] [--purpose <purpose>] [--minutes <minutes>] [--key-message <message>] [--evidence-depth overview|supported|detailed] [--locale zh|en] [--json]
   plaindeck init <project> [--title <title>] [--template showcase|pitch|blank|paper-reading|nature-methods] [--theme <id>] [--json]
   plaindeck validate <project> [--json]
+  plaindeck review <project> [--locale zh|en] [--json]
   plaindeck inspect <project> [--json]
   plaindeck apply <project> --ops <file|-> [--dry-run] [--json]
   plaindeck add-slide <project> --layout <id> [--name <name>] [--json]
@@ -45,6 +47,29 @@ function projectPath() {
 
 class UsageError extends Error {}
 
+function guidanceOptions(review = false): PresentationGuidanceOptions {
+  const fields: Record<string, string> = review ? {} : {
+    '--audience': 'audience', '--purpose': 'purpose', '--minutes': 'minutes',
+    '--key-message': 'keyMessage', '--evidence-depth': 'evidenceDepth',
+  }
+  const values: Record<string, unknown> = {}
+  let locale: 'zh' | 'en' | undefined
+  for (let index = review ? 2 : 1; index < args.length; index++) {
+    const flag = args[index]!
+    if (flag === '--json') continue
+    if (flag !== '--locale' && !fields[flag]) throw new UsageError(`未知参数 ${flag}`)
+    const value = args[++index]
+    if (!value || value.startsWith('--')) throw new UsageError(`缺少参数 ${flag}`)
+    if (flag === '--locale') {
+      if (value !== 'zh' && value !== 'en') throw new UsageError('--locale 必须是 zh 或 en')
+      locale = value
+    } else values[fields[flag]!] = flag === '--minutes' ? Number(value) : value
+  }
+  const parsed = PresentationBriefSchema.safeParse(values)
+  if (!parsed.success) throw new UsageError(parsed.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join('\n'))
+  return { ...parsed.data, locale }
+}
+
 async function readStdin() {
   const chunks: Buffer[] = []
   for await (const chunk of stdin) chunks.push(Buffer.from(chunk))
@@ -66,6 +91,23 @@ async function run() {
   }
   if (command === '--version' || command === '-v') {
     stdout.write(`${VERSION}\n`)
+    return
+  }
+  if (command === 'guide') {
+    const guidance = createPresentationGuidance(guidanceOptions())
+    emit(guidance, guidance.prompt)
+    return
+  }
+  if (command === 'review') {
+    const root = projectPath()
+    const options = guidanceOptions(true)
+    const result = auditPresentation(await loadDeck(root), options)
+    const en = options.locale === 'en'
+    const heading = en ? `Advisory review · ${result.slideCount} slides · ${result.issues.length} suggestions` : `演示建议审阅 · ${result.slideCount} 页 · ${result.issues.length} 条建议`
+    const scope = en ? 'Heuristics require human judgment; content accuracy and visual quality still need verification.' : '启发式建议需要人工判断；内容准确性与视觉质量仍需核验。'
+    const issues = result.issues.map(issue => `${issue.slideIndex}. ${issue.slidePath}: ${issue.message}\n   ${issue.suggestion}`)
+    const checks = result.manualChecks.map(check => `- ${check}`)
+    emit(result, [heading, scope, ...issues, en ? 'Manual checks:' : '人工复核：', ...checks].join('\n'))
     return
   }
   if (command === 'styles') {

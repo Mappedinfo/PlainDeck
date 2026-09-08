@@ -1,8 +1,8 @@
 import { PlainDeckError } from '../core/errors.js'
 /**
  * PlainDeck MCP server — agent-native slide decks over the Model Context
- * Protocol. Exposes the PlainDeck Agent API (init / validate / inspect /
- * apply operations / add cards / add tables / render) as MCP tools so any
+ * Protocol. Exposes the PlainDeck Agent API (guide / init / validate /
+ * inspect / review / apply operations / add cards / add tables / render) so any
  * MCP-capable agent — including DeepSeek Harness via the `dsh-mcp-client`
  * bridge — can create, review, and iterate slide decks on disk.
  *
@@ -17,13 +17,16 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { ZodError, z } from 'zod'
 import {
   applyOperations,
+  auditPresentation,
   createDeckTemplate,
+  createPresentationGuidance,
   createSavePlan,
   deckTemplatePresets,
   GITIGNORE_TEMPLATE,
   inspectDeck,
   parseSummaryCards,
   parseTableContent,
+  PresentationBriefSchema,
   PROJECT_PATHS,
   searchDesignRecipes,
   themePresets,
@@ -37,6 +40,9 @@ import { renderHtml } from '../render/index.js'
 import packageMetadata from '../../package.json' with { type: 'json' }
 
 const json = (value: unknown) => JSON.stringify(value, null, 2)
+const localeSchema = z.enum(['zh', 'en']).optional().describe('指导与审阅语言；默认 zh')
+const guidanceInputSchema = PresentationBriefSchema.partial().extend({ locale: localeSchema })
+const guidanceStepSchema = z.object({ id: z.string(), title: z.string(), detail: z.string() })
 
 /** Mirror the `plaindeck init` CLI contract: template defaults, theme default, collision guard, .gitignore. */
 async function initProject(projectPath: string, options: { title?: string; id?: string; template?: string; theme?: string }) {
@@ -89,6 +95,7 @@ async function inspectProject(projectPath: string) {
       name: slide.name,
       layoutRef: slide.layoutRef ?? null,
       elementCount: slide.elementCount,
+      elements: slide.elements,
     })),
   }
 }
@@ -157,7 +164,68 @@ async function listStyles(query?: string) {
 
 /** Build the PlainDeck MCP server with all tools registered. */
 export function createPlainDeckServer(): McpServer {
-  const server = new McpServer({ name: 'plaindeck-mcp', version: packageMetadata.version })
+  const server = new McpServer({ name: 'plaindeck-mcp', version: packageMetadata.version }, {
+    instructions: 'Start with presentation_guide or the build_presentation prompt to establish the audience, purpose, duration, central claim and evidence depth. Plan each slide around its claim and supporting evidence. State the intended claim directly in titles, body copy and narration. Use inspect to read existing slide paths, element IDs and text, then apply_operations to edit. Run validate for structural correctness, review_presentation for advisory content and layout signals, then render and visually inspect every slide. Automated review offers suggestions; source validity, claim–evidence alignment and visual quality require separate verification.',
+  })
+
+  server.registerTool(
+    'presentation_guide',
+    {
+      title: 'Plan an evidence-led presentation',
+      description: '先确定听众、目的、时长、核心主张与证据深度，获取本地内置的演示制作原则、逐页计划字段和可直接使用的 AI 提示词。无需项目目录；参数可省略并使用默认值。',
+      inputSchema: guidanceInputSchema,
+      outputSchema: z.object({
+        version: z.string(), brief: PresentationBriefSchema,
+        principles: z.array(guidanceStepSchema), workflow: z.array(guidanceStepSchema),
+        slidePlanFields: z.array(z.string()), prompt: z.string(),
+      }),
+      annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+    },
+    async options => {
+      const result = createPresentationGuidance(options)
+      return { content: [{ type: 'text', text: json(result) }], structuredContent: { ...result } }
+    },
+  )
+
+  server.registerPrompt(
+    'build_presentation',
+    {
+      title: 'Build a presentation from a clear brief',
+      description: 'Get PlainDeck’s shared presentation workflow, tailored to the audience, purpose, timing, central claim and evidence depth. Pass an empty arguments object to use defaults.',
+      argsSchema: {
+        audience: z.string().optional().describe('general | faculty | classroom | business | public | archive'),
+        purpose: z.string().optional().describe('The understanding or decision the presentation should support'),
+        minutes: z.string().optional().describe('Duration in minutes, greater than 0 and at most 240; default 10'),
+        keyMessage: z.string().optional().describe('The central claim the audience should remember'),
+        evidenceDepth: z.string().optional().describe('overview | supported | detailed'),
+        locale: z.string().optional().describe('zh | en; default zh'),
+      },
+    },
+    async args => {
+      const options = guidanceInputSchema.parse({ ...args, minutes: args.minutes === undefined ? undefined : Number(args.minutes) })
+      const result = createPresentationGuidance(options)
+      return { messages: [{ role: 'user', content: { type: 'text', text: result.prompt } }] }
+    },
+  )
+
+  server.registerTool(
+    'review_presentation',
+    {
+      title: 'Review presentation content and layout signals',
+      description: '只读审阅项目的表达、文字密度、待补内容及版式线索，返回带页码与元素 ID 的启发式建议和人工复核清单。来源真实性、主张证据对应及视觉质量仍需独立检查；格式检查请使用 validate。',
+      inputSchema: { projectPath: z.string().describe('项目目录的绝对路径'), locale: localeSchema },
+      outputSchema: z.object({
+        kind: z.literal('advisory'), slideCount: z.number(),
+        issues: z.array(z.object({ code: z.string(), slidePath: z.string(), slideIndex: z.number(), elementId: z.string().optional(), message: z.string(), suggestion: z.string() })),
+        manualChecks: z.array(z.string()),
+      }),
+      annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+    },
+    async ({ projectPath, locale }) => {
+      const result = auditPresentation(await loadDeck(projectPath), { locale })
+      return { content: [{ type: 'text', text: json(result) }], structuredContent: { ...result } }
+    },
+  )
 
   server.registerTool(
     'init',
@@ -212,7 +280,7 @@ export function createPlainDeckServer(): McpServer {
     'inspect',
     {
       title: 'Inspect a PlainDeck project',
-      description: '体检 PlainDeck 项目：返回标题、画布尺寸、每页路径/名称/布局/元素数量。适合在编辑前了解项目结构。',
+      description: '体检 PlainDeck 项目：返回标题、画布尺寸、每页路径/名称/布局，以及元素 ID、类型和文本。适合在编辑前读取现有内容并定位 operations 的目标元素。',
       inputSchema: { projectPath: z.string().describe('项目目录的绝对路径') },
       outputSchema: z.object({
         schemaVersion: z.string(),
@@ -227,6 +295,7 @@ export function createPlainDeckServer(): McpServer {
           name: z.string(),
           layoutRef: z.string().nullable(),
           elementCount: z.number(),
+          elements: z.array(z.object({ id: z.string(), type: z.string(), text: z.string().optional(), rows: z.number().optional(), columns: z.number().optional() })),
         })),
       }),
       annotations: { readOnlyHint: true },

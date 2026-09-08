@@ -274,7 +274,7 @@ test.describe('Chinese-locale browsing (demo deck auto-switches to zh)', () => {
 
   test('presents the seven-page evidence-led onboarding story in order', async ({ page }) => {
     await page.goto('./')
-    const expected = ['方法标题：一句话说清解决了什么', '现有方法在哪个关键条件下仍然不够', '方法流程直接对应问题中的四个约束', '主图必须直接支撑本页结论', '比较表只保留改变判断的指标', '可信结论同时说明证据覆盖与失效条件', '方法的价值不在于看起来复杂']
+    const expected = ['方法标题：一句话说清解决了什么', '现有方法在哪个关键条件下仍然不够', '方法流程直接对应问题中的四个约束', '主图必须直接支撑本页结论', '比较表只保留改变判断的指标', '可信结论同时说明证据覆盖与失效条件', '体现在证据对判断的推进']
     const thumbnails = page.locator('.slide-thumb')
     for (let index = 0; index < expected.length; index += 1) {
       await thumbnails.nth(index).click()

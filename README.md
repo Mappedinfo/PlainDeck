@@ -42,6 +42,7 @@ PlainDeck 是一个以用户操作为先的幻灯片编辑器：你在浏览器�
 
 - **对人友好**：逐页画布、拖放、缩放、文字编辑和主题调整，不需要手写代码。
 - **对 AI 友好**：内容、位置和样式都是结构清楚的文本；AI 可以生成或修改初稿，你再用画布精调。
+- **内置制作指导**：按听众、目的、时长与核心主张生成可复制的提示词，并用本地检查建议辅助内容和版式复核。
 - **对 Git 友好**：一页一个文件，移动一个元素通常只改变几个数字，可以查看差异、提交和回滚。
 - **文件属于你**：项目保存在你选择的本地文件夹里，不要求账号，不把演示文稿上传到服务器。
 
@@ -96,6 +97,12 @@ PlainDeck 使用开放、稳定的文本源文件：
 
 也可以复制 [`examples/starter`](./examples/starter)，然后在 PlainDeck 中选择“打开目录”。Firefox 和 Safari 暂不支持原位目录写入，可使用 ZIP 导入和导出。
 
+### 使用 AI 制作指导
+
+点击工具栏“制作指导 / Presentation guide”，填写听众、目的、时长、核心主张与证据深度。面板即时生成提示词，可复制给所用的 Agent；检查建议可定位到对应页面或元素。简报按项目保存在本机浏览器，提示词生成与检查均在本地运行；面板不发起 LLM 请求或云端执行。
+
+内置流程围绕“主张 → 证据 → 视觉关系 → 复核”组织页面。标题、正文和图注直接说明要成立的主张，随后给出支持证据；必要比较、真实负结果和限制保持准确。制作规则吸收了 EasySlides 的听众规划、内容优先和视觉检查原则，完整说明及来源见 [`docs/presentation-guidance.md`](./docs/presentation-guidance.md)。
+
 ## 优缺点对比
 
 | 能力 | PlainDeck | PowerPoint / PPTX | PDF | Marp / Quarto |
@@ -121,8 +128,7 @@ PlainDeck 当前不适合：
 
 - 依赖复杂动画、SmartArt、宏或完整 Office 兼容的演示；
 - 多人实时协作、评论审批和云端权限管理；
-- 无损导入任意 PPTX；
-- 把 Git 或 AI 功能直接内置进编辑器——当前版本提供友好的文件格式，Git 与 AI 工具由用户自行选择。
+- 无损导入任意 PPTX。
 
 ## 本地开发
 
@@ -147,10 +153,11 @@ npm run test:pack
 
 ## Agent API 与 CLI
 
-PlainDeck 的 npm 包提供 TypeScript API、`plaindeck` 命令和 HTML/PNG/PDF 渲染器。AI Agent 可以先检查项目，再以稳定的页面路径与元素 ID 提交结构化操作：
+PlainDeck 的 npm 包提供 TypeScript API、`plaindeck` 命令、MCP server 和 HTML/PNG/PDF 渲染器。AI Agent 可以先获取制作指导、规划证据，再以稳定的页面路径与元素 ID 提交结构化操作：
 
 ```bash
 npm install plaindeck
+npx plaindeck guide --audience public --minutes 8 --key-message "共享主题让整套页面保持一致" --locale zh
 npx plaindeck init ./my-deck --title "生成式 AI 简介"
 npx plaindeck init ./paper-talk --template nature-methods --title "方法标题"
 npx plaindeck inspect ./my-deck --json
@@ -160,6 +167,8 @@ npx plaindeck add-cards ./my-deck --content brief.md --style editorialMagazine
 npx plaindeck add-table ./my-deck --data benchmark.md --style rules
 npx plaindeck apply ./my-deck --ops changes.json --dry-run --json
 npx plaindeck apply ./my-deck --ops changes.json
+npx plaindeck validate ./my-deck
+npx plaindeck review ./my-deck --locale zh --json
 npx plaindeck render ./my-deck --format html --output deck.html
 ```
 
@@ -170,7 +179,7 @@ npm install playwright
 npx playwright install chromium
 ```
 
-公共 API 与操作格式见 [`docs/agent-api.md`](./docs/agent-api.md)，npm 包说明见 [`packages/plaindeck/README.md`](./packages/plaindeck/README.md)。v0.6 不包含 HTTP API、MCP、serve/watch 或 PPTX 导入导出；项目 schema 仍保持 `0.1` 兼容。
+公共 API 与操作格式见 [`docs/agent-api.md`](./docs/agent-api.md)，npm 包说明见 [`packages/plaindeck/README.md`](./packages/plaindeck/README.md)。MCP 随主包分发；当前导出支持 HTML、PNG 和 PDF，项目 schema 保持 `0.1` 兼容。`review` 提供启发式建议；`validate` 负责结构合法性，交付前还需核对内容并检查渲染画面。
 
 ## React 与 Remotion：一页内容，所有输出
 
@@ -195,7 +204,7 @@ Web 工具栏显示的版本号直接读取 `packages/plaindeck/package.json`。
 
 ## MCP Server：让 Agent 直接制作幻灯片
 
-[`plaindeck/mcp`](./packages/plaindeck/README.md#mcp-server) 把 PlainDeck Agent API 封装为 [Model Context Protocol](https://modelcontextprotocol.io/) 工具（`init` / `validate` / `inspect` / `apply_operations` / `add_cards` / `add_table` / `render` / `styles`），随 `plaindeck` 包一起分发（`plaindeck-mcp` 命令行）。任何 MCP 客户端（DeepSeek Harness、Claude Code、Codex 等）都可以让 Agent 从研究笔记直接生成、修改并渲染一份可被 Git 审查的幻灯片项目。
+[`plaindeck/mcp`](./packages/plaindeck/README.md#mcp-server) 把 PlainDeck Agent API 封装为 [Model Context Protocol](https://modelcontextprotocol.io/) 工具（`presentation_guide` / `review_presentation` / `init` / `validate` / `inspect` / `apply_operations` / `add_cards` / `add_table` / `render` / `styles`），并提供 `build_presentation` 提示词入口，随 `plaindeck` 包一起分发（`plaindeck-mcp` 命令行）。任何 MCP 客户端（DeepSeek Harness、Claude Code、Codex 等）都可以让 Agent 从研究笔记规划、生成、修改并渲染一份可被 Git 审查的幻灯片项目。
 
 ```sh
 npm install --global plaindeck
@@ -206,6 +215,7 @@ dsh web --patch "$PWD/packages/plaindeck/plaindeck.cordis.yml"
 
 ## 已实现的 MVP 能力
 
+- Web、CLI、MCP 共用的本地制作指导与启发式检查，支持中英双语简报及可复制提示词；
 - Zod schema、`0.1` schema version、迁移入口和 canonical JSON serializer；
 - 页面新建、重命名、复制、删除、排序，文本、图片、矩形、线条和原生表格元素；
 - 本地图片文件选择、画布定位拖放和剪贴板粘贴，目录项目自动写入 `assets/`；

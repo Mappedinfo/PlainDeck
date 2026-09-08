@@ -64,13 +64,13 @@ function copyFor(template: 'showcase' | 'pitch', title: string, locale: DeckLoca
     coverKicker: 'FOCUSED PITCH / FIVE SLIDES', coverTitle: title, coverSubtitle: '把问题、方案与下一步压缩成一条清晰的决策路径。',
     thesisKicker: '01 / THE PROBLEM', thesis: '先描述一个真实、具体、值得解决的问题。', thesisNote: '谁在何时遇到它？现有方案为什么仍然不够？',
     pillarsTitle: '方案必须同时回答三件事', cards: [['01', '价值\n解决什么'], ['02', '机制\n如何做到'], ['03', '差异\n为何是你']],
-    evidenceTitle: '用一个证据降低不确定性', evidenceBody: '替换左侧图片或图表，并在这里解释：它验证了什么、还没有验证什么。', metric: '3×', metricLabel: '可验证的改进',
+    evidenceTitle: '用一个证据降低不确定性', evidenceBody: '替换左侧图片或图表，说明它支持的结论、适用条件与证据来源。', metric: '待补', metricLabel: '填入已核验的指标与单位',
     closeTitle: '明确说出你希望观众做什么。', closeBody: '下一步 · 负责人 · 时间点',
   } : {
     coverKicker: 'FOCUSED PITCH / FIVE SLIDES', coverTitle: title, coverSubtitle: 'Compress the problem, the solution and the next step into one clear path to a decision.',
     thesisKicker: '01 / THE PROBLEM', thesis: 'Start from a real, specific problem worth solving.', thesisNote: 'Who hits it and when? Why do existing solutions still fall short?',
     pillarsTitle: 'A solution must answer three things at once', cards: [['01', 'Value\nWhat it solves'], ['02', 'Mechanism\nHow it works'], ['03', 'Edge\nWhy you']],
-    evidenceTitle: 'Use one piece of evidence to cut uncertainty', evidenceBody: 'Replace the image or chart here and explain: what it verifies, and what it does not verify yet.', metric: '3×', metricLabel: 'Verifiable improvement',
+    evidenceTitle: 'Use one piece of evidence to cut uncertainty', evidenceBody: 'Replace the image or chart here and explain the supported conclusion, conditions and source.', metric: 'TBD', metricLabel: 'Add a verified metric and unit',
     closeTitle: 'Say plainly what you want the audience to do.', closeBody: 'Next step · Owner · Date',
   }
   return locale === 'zh' ? {
@@ -78,13 +78,13 @@ function copyFor(template: 'showcase' | 'pitch', title: string, locale: DeckLoca
     thesisKicker: '01 / POINT OF VIEW', thesis: '每一页只负责一个值得记住的观点。', thesisNote: '标题给结论，正文给证据；把装饰留给真正需要强调的地方。',
     pillarsTitle: '让叙事拥有清楚的骨架', cards: [['01', '观点\n先说结论'], ['02', '证据\n建立可信度'], ['03', '行动\n给出下一步']],
     evidenceTitle: '让视觉承担一半表达', evidenceBody: '使用本地图片、图表或研究结果。导出 HTML 时可嵌入资源，分享一个真正独立的文件。', metric: '1:1', metricLabel: '内容与视觉同等重要',
-    closeTitle: '结束在决定，而不是总结。', closeBody: '打开编辑器 · 替换内容 · 讲出你的版本',
+    closeTitle: '以明确的结论和下一步收尾。', closeBody: '打开编辑器 · 替换内容 · 讲出你的版本',
   } : {
     coverKicker: 'EDITORIAL SHOWCASE / PLAINDECK', coverTitle: title, coverSubtitle: 'An open slide format designed to be read by people, edited by agents and played on the web.',
     thesisKicker: '01 / POINT OF VIEW', thesis: 'Every slide argues one point worth remembering.', thesisNote: 'Give the headline a conclusion and the body evidence; save decoration for what truly needs emphasis.',
     pillarsTitle: 'Give your story a clear skeleton', cards: [['01', 'Point\nLead with it'], ['02', 'Evidence\nEarn trust'], ['03', 'Action\nName the next step']],
     evidenceTitle: 'Let visuals carry half the message', evidenceBody: 'Use local images, charts or research results. HTML export embeds resources so you can share one truly self-contained file.', metric: '1:1', metricLabel: 'Content and visuals matter equally',
-    closeTitle: 'End on a decision, not a summary.', closeBody: 'Open the editor · Replace the copy · Tell your version',
+    closeTitle: 'End with a clear conclusion and next step.', closeBody: 'Open the editor · Replace the copy · Tell your version',
   }
 }
 
@@ -191,7 +191,7 @@ function natureMethodsSlides(theme: Theme, title: string, locale: DeckLocale): R
   const copy = locale === 'zh' ? {
     subtitle: '用问题、方法、证据与边界组织一场可信的学术汇报。',
     problemTitle: '现有方法在哪个关键条件下仍然不够？',
-    problemClaim: '把研究缺口写成一个可验证的瓶颈，而不是宽泛的背景。',
+    problemClaim: '把研究缺口写成一个具体、可验证的瓶颈。',
     problemBoundary: '限定对象、条件与失败方式；下一页的方法必须逐项回应这些条件。',
     methodTitle: '方法流程直接对应问题中的四个约束',
     methodStages: ['输入与假设', '核心机制', '验证设计', '可复用输出'],
@@ -206,12 +206,12 @@ function natureMethodsSlides(theme: Theme, title: string, locale: DeckLocale): R
       ['03', '仍待验证', '哪些外推、机制解释或应用判断仍是开放问题？'],
     ] as Array<[string, string, string]>,
     boundariesTakeaway: '结论强度不能超过证据覆盖范围。',
-    closingQuote: '方法的价值不在于看起来复杂，\n而在于证据能否改变判断。',
+    closingQuote: '方法的价值，\n体现在证据对判断的推进。',
     closingNext: '下一步：替换占位证据，核对来源，并把未验证的部分明确标出。',
   } : {
     subtitle: 'Organize a credible academic talk around question, method, evidence and boundaries.',
     problemTitle: 'Under which key condition do existing methods fall short?',
-    problemClaim: 'Frame the research gap as a verifiable bottleneck, not a broad background.',
+    problemClaim: 'Frame the research gap as a specific, verifiable bottleneck.',
     problemBoundary: 'Pin down subjects, conditions and failure modes; the next slide must answer each one.',
     methodTitle: 'The method maps directly onto the four constraints above',
     methodStages: ['Inputs & assumptions', 'Core mechanism', 'Validation design', 'Reusable outputs'],
@@ -226,7 +226,7 @@ function natureMethodsSlides(theme: Theme, title: string, locale: DeckLocale): R
       ['03', 'Still open', 'Which extrapolations, mechanistic claims or applications remain open questions?'],
     ] as Array<[string, string, string]>,
     boundariesTakeaway: 'A conclusion is never stronger than its evidence.',
-    closingQuote: 'The value of a method is not looking complex —\nit is whether the evidence changes minds.',
+    closingQuote: 'A method earns its value through\nevidence that advances understanding.',
     closingNext: 'Next: replace placeholder evidence, check sources, and clearly mark what remains unverified.',
   }
   return {

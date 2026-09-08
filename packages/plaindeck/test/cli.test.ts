@@ -1,15 +1,15 @@
-import { cp, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises'
+import { cp, mkdir, mkdtemp, readdir, readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { join, relative, resolve } from 'node:path'
 import { spawn } from 'node:child_process'
 import { describe, expect, it } from 'vitest'
 
 const cli = resolve('packages/plaindeck/dist/cli.js')
 const starter = resolve('examples/starter')
 
-function run(args: string[], input?: string) {
+function run(args: string[], input?: string, cwd?: string) {
   return new Promise<{ code: number | null; stdout: string; stderr: string }>((resolveRun, reject) => {
-    const child = spawn(process.execPath, [cli, ...args], { stdio: ['pipe', 'pipe', 'pipe'] })
+    const child = spawn(process.execPath, [cli, ...args], { stdio: ['pipe', 'pipe', 'pipe'], cwd })
     let stdout = ''; let stderr = ''
     child.stdout.on('data', chunk => { stdout += chunk })
     child.stderr.on('data', chunk => { stderr += chunk })
@@ -19,7 +19,72 @@ function run(args: string[], input?: string) {
   })
 }
 
+async function snapshot(root: string) {
+  const entries = await readdir(root, { recursive: true, withFileTypes: true })
+  return Object.fromEntries(await Promise.all(entries.filter(entry => entry.isFile()).map(async entry => {
+    const path = join(entry.parentPath, entry.name)
+    return [relative(root, path), await readFile(path)]
+  })))
+}
+
 describe('PlainDeck CLI', () => {
+  it('generates brief-specific guidance without a project or file writes', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'plaindeck-cli-guide-'))
+    const before = await snapshot(root)
+    const result = await run(['guide', '--audience', 'faculty', '--purpose', 'Evaluate the mechanism', '--minutes', '15', '--key-message', 'Shared themes keep slides consistent', '--evidence-depth', 'detailed', '--locale', 'en', '--json'], undefined, root)
+    expect(result.code).toBe(0)
+    const guidance = JSON.parse(result.stdout)
+    expect(guidance.brief).toEqual({ audience: 'faculty', purpose: 'Evaluate the mechanism', minutes: 15, keyMessage: 'Shared themes keep slides consistent', evidenceDepth: 'detailed' })
+    expect(guidance.prompt).toContain('Shared themes keep slides consistent')
+    expect(guidance.prompt).toContain('Faculty or research peers')
+    expect(guidance.principles).toEqual(expect.arrayContaining([expect.objectContaining({ id: 'affirmative-claim' })]))
+    expect(await snapshot(root)).toEqual(before)
+
+    const defaultResult = await run(['guide', '--json'])
+    expect(JSON.parse(defaultResult.stdout).brief).toEqual({ audience: 'general', purpose: '', minutes: 10, keyMessage: '', evidenceDepth: 'supported' })
+    const prompt = await run(['guide', '--locale', 'en'])
+    expect(prompt.code).toBe(0)
+    expect(prompt.stdout).toContain('Production principles')
+    expect(prompt.stdout).not.toMatch(/^\s*\{/)
+  })
+
+  it.each([
+    ['--audience', 'unknown'], ['--minutes', '0'], ['--minutes', '241'],
+    ['--minutes', 'NaN'], ['--minutes', 'Infinity'], ['--evidence-depth', 'guess'],
+    ['--locale', 'fr'], ['--purpose'], ['--minutes', '--json'], ['--unknown', 'value'],
+  ])('rejects invalid guidance arguments: %s %s', async (...options) => {
+    const result = await run(['guide', ...options, '--json'])
+    expect(result.code).toBe(2)
+    expect(JSON.parse(result.stdout)).toMatchObject({ ok: false, error: { type: 'usage' } })
+  })
+
+  it('reviews content without modifying files or changing structural validation', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'plaindeck-cli-review-'))
+    await cp(starter, root, { recursive: true })
+    const slidePath = join(root, 'slides/001-intro.json')
+    const slide = JSON.parse(await readFile(slidePath, 'utf8'))
+    slide.elements.find((element: { type: string }) => element.type === 'text').text = 'This is not about B, but about A.'
+    await writeFile(slidePath, JSON.stringify(slide), 'utf8')
+    const before = await snapshot(root)
+    const result = await run(['review', root, '--locale', 'en', '--json'])
+    expect(result.code).toBe(0)
+    const review = JSON.parse(result.stdout)
+    expect(review).toMatchObject({ kind: 'advisory', slideCount: 5, issues: expect.arrayContaining([expect.objectContaining({ code: 'contrast-detour', slidePath: './slides/001-intro.json', slideIndex: 1 })]) })
+    expect(review.manualChecks.length).toBeGreaterThan(0)
+    expect(review).not.toHaveProperty('valid')
+    expect(review).not.toHaveProperty('score')
+    const validation = await run(['validate', root, '--json'])
+    expect(JSON.parse(validation.stdout)).toMatchObject({ ok: true, issues: [] })
+    const human = await run(['review', root, '--locale', 'en'])
+    expect(human.stdout).toContain('Advisory review')
+    expect(human.stdout).toContain('Manual checks:')
+    expect(await snapshot(root)).toEqual(before)
+
+    const invalid = await run(['review', root, '--locale', 'fr', '--json'])
+    expect(invalid.code).toBe(2)
+    expect(JSON.parse(invalid.stdout)).toMatchObject({ ok: false, error: { type: 'usage' } })
+  })
+
   it('initializes a complete project without the TypeScript API', async () => {
     const parent = await mkdtemp(join(tmpdir(), 'plaindeck-cli-init-'))
     const root = join(parent, 'agent-deck')

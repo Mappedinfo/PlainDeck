@@ -20,13 +20,14 @@ export interface EditorState {
   saveState: SaveState
   error: string | null
   directory: DirectoryHandle | null
+  briefScope: string
   dirtyPaths: Set<string>
   dirtyRevisions: Map<string, number>
   revision: number
   persistedRevision: number
   past: Snapshot[]
   future: Snapshot[]
-  setDocument(document: DeckDocument, directory?: DirectoryHandle | null): void
+  setDocument(document: DeckDocument, directory?: DirectoryHandle | null, briefScope?: string): void
   restoreDocument(document: DeckDocument, revision?: number): void
   setActiveSlide(path: string): void
   renameSlide(name: string): void

@@ -8,6 +8,7 @@ import { StatusBar } from './components/StatusBar'
 import { SlideNameEditor } from './components/SlideNameEditor'
 import { SummaryCardsDialog } from './components/SummaryCardsDialog'
 import { TableDialog } from './components/TableDialog'
+import { PresentationGuide } from './components/PresentationGuide'
 import { createSampleDocument } from './core/sample'
 import { moveFrame } from './core/geometry'
 import { blobToDataUrl, fitImageFrame, hasTransferredImages, imageDimensions, imageFiles, transferredImageFiles, validateImageFile } from './core/imageImport'
@@ -19,6 +20,7 @@ import { exportHtml } from './export/html'
 import { waitForPrintResources } from './export/print'
 import { exportZip, importZip } from './storage/zipStorage'
 import { clearRecoveryFromOpfs, initializeProject, pickDirectory, projectFingerprint, readProject, restoreFromOpfs, snapshotToOpfs, verifyPermission, writeImageAsset, writeProject } from './storage/browserStorage'
+import { resolveDirectoryBriefScope } from './storage/presentationBriefScope'
 
 type ApplyUpdate = (reloadPage?: boolean) => Promise<void>
 
@@ -40,6 +42,7 @@ function ExportDialog({ onClose }: { onClose: () => void }) {
 }
 
 export default function App() {
+  const [guiding, setGuiding] = useState(false)
   const state = useEditor(); const { t } = useT(); const [present, setPresent] = useState(false); const [exporting, setExporting] = useState(false); const [addingCards, setAddingCards] = useState(false); const [addingTable, setAddingTable] = useState(false); const [updateReady, setUpdateReady] = useState(false); const [draggingImage, setDraggingImage] = useState(false); const [imageNotice, setImageNotice] = useState(''); const [recovery, setRecovery] = useState<Awaited<ReturnType<typeof restoreFromOpfs>>>(null); const zipRef = useRef<HTMLInputElement>(null); const imageRef = useRef<HTMLInputElement>(null); const canvasRef = useRef<HTMLElement>(null); const applyUpdateRef = useRef<ApplyUpdate>(null)
   const fitCanvas = useCallback(() => {
     const workspace = canvasRef.current
@@ -94,16 +97,18 @@ export default function App() {
   useEffect(() => { if (!imageNotice) return; const timer = setTimeout(() => setImageNotice(''), 2600); return () => clearTimeout(timer) }, [imageNotice])
   useEffect(() => {
     const paste = (event: ClipboardEvent) => {
+      if (guiding) return
       const target = event.target as HTMLElement
       if (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return
       const files = event.clipboardData ? transferredImageFiles(event.clipboardData) : []
       if (!files.length) return; event.preventDefault(); void insertImages(files)
     }
     addEventListener('paste', paste); return () => removeEventListener('paste', paste)
-  }, [insertImages])
+  }, [insertImages, guiding])
   useEffect(() => { const observer = new ResizeObserver(fitCanvas); if (canvasRef.current) observer.observe(canvasRef.current); fitCanvas(); return () => observer.disconnect() }, [fitCanvas, state.document.deck.canvas.width, state.document.deck.canvas.height])
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
+      if (guiding) return
       if ((event.target as HTMLElement).isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes((event.target as HTMLElement).tagName)) return
       const editor = useEditor.getState(); const mod = event.metaKey || event.ctrlKey
       if (mod && event.key.toLowerCase() === 'z') { event.preventDefault(); if (event.shiftKey) editor.redo(); else editor.undo() }
@@ -114,24 +119,25 @@ export default function App() {
       if (event.key.startsWith('Arrow') && editor.selectedIds.length === 1) { event.preventDefault(); const slide = editor.document.slides[editor.activeSlidePath]; const element = slide.elements.find(item => item.id === editor.selectedIds[0]); if (!element) return; const amount = event.shiftKey ? 8 : 1; const dx = event.key === 'ArrowRight' ? amount : event.key === 'ArrowLeft' ? -amount : 0; const dy = event.key === 'ArrowDown' ? amount : event.key === 'ArrowUp' ? -amount : 0; editor.updateElement(element.id, { frame: moveFrame(element.frame, dx, dy, editor.document.deck.canvas, 1) } as never, getMessages().store.nudgeWithKeyboard) }
     }
     addEventListener('keydown', key); return () => removeEventListener('keydown', key)
-  }, [save])
+  }, [save, guiding])
 
   const openDirectory = async () => {
-    try { const handle = await pickDirectory(); if (!await verifyPermission(handle, true)) throwLocalized('directoryWritePermission'); state.setSaveState('saving'); const document = await readProject(handle); state.setDocument(document, handle); setRecovery(await restoreFromOpfs(projectFingerprint(document, handle))) }
+    try { const handle = await pickDirectory(); if (!await verifyPermission(handle, true)) throwLocalized('directoryWritePermission'); state.setSaveState('saving'); const document = await readProject(handle); state.setDocument(document, handle, await resolveDirectoryBriefScope(handle)); setRecovery(await restoreFromOpfs(projectFingerprint(document, handle))) }
     catch (error) { if ((error as DOMException).name !== 'AbortError') state.setSaveState('error', errorText(error)) }
   }
   const newProject = async () => {
-    try { const handle = await pickDirectory(); if (!await verifyPermission(handle, true)) throwLocalized('directoryWritePermission'); const document = createSampleDocument(); await initializeProject(handle, document); await clearRecoveryFromOpfs(); setRecovery(null); state.setDocument(document, handle) }
+    try { const handle = await pickDirectory(); if (!await verifyPermission(handle, true)) throwLocalized('directoryWritePermission'); const document = createSampleDocument(); await initializeProject(handle, document); await clearRecoveryFromOpfs(); setRecovery(null); state.setDocument(document, handle, await resolveDirectoryBriefScope(handle)) }
     catch (error) { if ((error as DOMException).name !== 'AbortError') state.setSaveState('error', errorText(error)) }
   }
   const loadZip = async (file?: File) => { if (!file) return; try { state.setDocument(await importZip(file), null) } catch (error) { state.setSaveState('error', errorText(error)) } }
   const activeSlide = state.document.slides[state.activeSlidePath]
   return <div className="app-shell">
-    <Toolbar onOpen={openDirectory} onNew={newProject} onImportZip={() => zipRef.current?.click()} onAddImage={() => imageRef.current?.click()} onAddCards={() => setAddingCards(true)} onAddTable={() => setAddingTable(true)} onExport={() => setExporting(true)} onPresent={() => setPresent(true)} onSave={save} />
+    <Toolbar onOpen={openDirectory} onNew={newProject} onImportZip={() => zipRef.current?.click()} onAddImage={() => imageRef.current?.click()} onAddCards={() => setAddingCards(true)} onAddTable={() => setAddingTable(true)} onGuide={() => setGuiding(true)} onExport={() => setExporting(true)} onPresent={() => setPresent(true)} onSave={save} />
     <input ref={zipRef} hidden type="file" accept=".zip,application/zip" onChange={e => loadZip(e.target.files?.[0])} />
     <input ref={imageRef} hidden type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" multiple onChange={e => { void insertImages(imageFiles(e.target.files ?? [])); e.currentTarget.value = '' }} />
     <main className="workspace"><SlideList /><section ref={canvasRef} className={`canvas-workspace ${draggingImage ? 'image-drop-active' : ''}`} onDragEnter={event => { if (hasTransferredImages(event.dataTransfer)) setDraggingImage(true) }} onDragOver={event => { if (hasTransferredImages(event.dataTransfer)) { event.preventDefault(); event.dataTransfer.dropEffect = 'copy' } }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDraggingImage(false) }} onDrop={event => { const files = transferredImageFiles(event.dataTransfer); setDraggingImage(false); if (!files.length) return; event.preventDefault(); void insertImages(files, canvasPoint(event.clientX, event.clientY)) }} onDoubleClick={e => { if (e.currentTarget === e.target) fitCanvas() }}><div className="canvas-label"><span>ARTBOARD</span><SlideNameEditor key={state.activeSlidePath} name={activeSlide.name ?? activeSlide.id} onCommit={state.renameSlide} /></div><div className="canvas-scroller"><div className="canvas-sized" style={{ width: state.document.deck.canvas.width * state.zoom, height: state.document.deck.canvas.height * state.zoom }}><SlideSurface slide={activeSlide} zoom={state.zoom} /></div></div><div className="image-drop-overlay"><strong>DROP IMAGE</strong><span>{t.canvas.dropOverlay}</span></div><div className="canvas-coordinate">X 0000&nbsp;&nbsp; Y 0000</div></section><Inspector /></main>
     <StatusBar />
+    <PresentationGuide key={state.briefScope} open={guiding} onClose={() => setGuiding(false)} />
     <div className="print-deck">{state.document.deck.slides.map(path => <div className="print-page" key={path}><SlideSurface slide={state.document.slides[path]} interactive={false} zoom={1} /></div>)}</div>
     {present && <Presentation onClose={() => setPresent(false)} />}{exporting && <ExportDialog onClose={() => setExporting(false)} />}{addingCards && <SummaryCardsDialog onClose={() => setAddingCards(false)} />}{addingTable && <TableDialog onClose={() => setAddingTable(false)} />}
     {recovery && <div className="recovery-toast"><strong>{t.app.recoveryTitle}</strong><span>{new Date(recovery.savedAt).toLocaleString()}</span><div><button onClick={() => { setRecovery(null); void clearRecoveryFromOpfs() }}>{t.app.recoveryDiscard}</button><button onClick={() => { state.restoreDocument(recovery.document, recovery.revision); setRecovery(null) }}>{t.app.recoveryRestore}</button></div></div>}

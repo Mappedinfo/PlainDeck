@@ -1,6 +1,6 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -16,6 +16,11 @@ const call = async (name: string, args: Record<string, unknown>) => {
   if (result.isError) throw new Error(`tool ${name} failed: ${JSON.stringify(result.content)}`)
   return result.structuredContent as Record<string, unknown>
 }
+
+const snapshot = (path: string) => Object.fromEntries(readdirSync(path, { recursive: true, withFileTypes: true }).filter(entry => entry.isFile()).map(entry => {
+  const file = join(entry.parentPath, entry.name)
+  return [relative(path, file), readFileSync(file)]
+}))
 
 beforeAll(async () => {
   server = createPlainDeckServer()
@@ -33,7 +38,40 @@ describe('plaindeck-mcp', () => {
   it('exposes the expected tool set', async () => {
     const tools = await client.listTools()
     const names = tools.tools.map(tool => tool.name).sort()
-    expect(names).toEqual(['add_cards', 'add_table', 'apply_operations', 'init', 'inspect', 'render', 'styles', 'validate'])
+    expect(names).toEqual(['add_cards', 'add_table', 'apply_operations', 'init', 'inspect', 'presentation_guide', 'render', 'review_presentation', 'styles', 'validate'])
+    expect(tools.tools.find(tool => tool.name === 'presentation_guide')?.annotations).toMatchObject({ readOnlyHint: true, openWorldHint: false })
+    expect(tools.tools.find(tool => tool.name === 'review_presentation')?.annotations).toMatchObject({ readOnlyHint: true, openWorldHint: false })
+    expect(client.getInstructions()).toContain('presentation_guide')
+    expect(client.getInstructions()).toContain('visually inspect every slide')
+  })
+
+  it('publishes briefing guidance as a read-only tool and discoverable prompt', async () => {
+    const before = snapshot(root)
+    const result = await call('presentation_guide', { audience: 'faculty', purpose: 'Review the proposed mechanism', minutes: 20, keyMessage: 'Shared themes keep slides consistent', evidenceDepth: 'detailed', locale: 'en' })
+    expect(result.brief).toEqual({ audience: 'faculty', purpose: 'Review the proposed mechanism', minutes: 20, keyMessage: 'Shared themes keep slides consistent', evidenceDepth: 'detailed' })
+    expect(result.prompt).toContain('Faculty or research peers')
+    expect(result.prompt).toContain('Shared themes keep slides consistent')
+    expect(result.principles).toEqual(expect.arrayContaining([expect.objectContaining({ id: 'affirmative-claim' })]))
+    const defaults = await call('presentation_guide', {})
+    expect(defaults.brief).toEqual({ audience: 'general', purpose: '', minutes: 10, keyMessage: '', evidenceDepth: 'supported' })
+
+    const listed = await client.listPrompts()
+    expect(listed.prompts).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'build_presentation' })]))
+    const prompt = await client.getPrompt({ name: 'build_presentation', arguments: { audience: 'faculty', purpose: 'Review the proposed mechanism', minutes: '20', keyMessage: 'Shared themes keep slides consistent', evidenceDepth: 'detailed', locale: 'en' } })
+    expect(prompt.messages).toEqual([{ role: 'user', content: { type: 'text', text: result.prompt } }])
+    const defaultPrompt = await client.getPrompt({ name: 'build_presentation', arguments: {} })
+    expect(defaultPrompt.messages).toEqual([{ role: 'user', content: { type: 'text', text: defaults.prompt } }])
+    expect(snapshot(root)).toEqual(before)
+  })
+
+  it.each([{ audience: 'unknown' }, { minutes: 0 }, { minutes: 241 }, { minutes: '20' }, { evidenceDepth: 'guess' }, { locale: 'fr' }])('rejects invalid guide fields: %j', async args => {
+    const result = await client.callTool({ name: 'presentation_guide', arguments: args })
+    expect(result.isError).toBe(true)
+  })
+
+  it('rejects invalid briefing prompt arguments', async () => {
+    await expect(client.getPrompt({ name: 'build_presentation', arguments: { minutes: 'invalid' } })).rejects.toThrow()
+    await expect(client.getPrompt({ name: 'build_presentation', arguments: { audience: 'unknown' } })).rejects.toThrow()
   })
 
   it('initializes a showcase project on disk', async () => {
@@ -55,6 +93,20 @@ describe('plaindeck-mcp', () => {
     expect(result).toMatchObject({ valid: true, title: 'MCP demo deck', slideCount: 5, issues: [] })
   })
 
+  it('reviews a project as advisory without writing or claiming content validity', async () => {
+    const before = snapshot(project)
+    const result = await call('review_presentation', { projectPath: project, locale: 'en' })
+    expect(result).toMatchObject({ kind: 'advisory', slideCount: 5 })
+    expect(result).not.toHaveProperty('valid')
+    expect(result).not.toHaveProperty('score')
+    expect(result.manualChecks).toEqual(expect.arrayContaining([expect.stringContaining('Verify each claim')]))
+    expect(snapshot(project)).toEqual(before)
+    const invalid = await client.callTool({ name: 'review_presentation', arguments: { projectPath: project, locale: 'fr' } })
+    expect(invalid.isError).toBe(true)
+    const missing = await client.callTool({ name: 'review_presentation', arguments: { projectPath: join(root, 'missing') } })
+    expect(missing.isError).toBe(true)
+  })
+
   it('returns a structured load error for a missing project', async () => {
     const result = await call('validate', { projectPath: join(root, 'missing') })
     expect(result).toMatchObject({ valid: false, title: null, slideCount: null })
@@ -64,9 +116,10 @@ describe('plaindeck-mcp', () => {
   it('inspects the project structure', async () => {
     const result = await call('inspect', { projectPath: project })
     expect(result).toMatchObject({ title: 'MCP demo deck', slideCount: 5 })
-    const slides = result.slides as Array<{ index: number; path: string; elementCount: number }>
+    const slides = result.slides as Array<{ index: number; path: string; elementCount: number; elements: Array<{ id: string; type: string; text?: string }> }>
     expect(slides[0]).toMatchObject({ index: 1, path: './slides/001-cover.json' })
     expect(slides.every(slide => slide.elementCount > 0)).toBe(true)
+    expect(slides[0]?.elements).toEqual(expect.arrayContaining([expect.objectContaining({ id: expect.any(String), type: 'text', text: expect.stringContaining('MCP demo deck') })]))
   })
 
   it('applies operations with a dry run that never writes', async () => {

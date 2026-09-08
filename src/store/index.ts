@@ -22,11 +22,11 @@ function commitOperations(state: EditorState, operations: DeckOperation[], label
 
 export const useEditor = create<EditorState>((set, get) => ({
   document: initialDocument, activeSlidePath: initialDocument.deck.slides[0], selectedIds: [], zoom: ZOOM_INITIAL,
-  saveState: 'demo', error: null, directory: null, dirtyPaths: new Set(), dirtyRevisions: new Map(), revision: 0, persistedRevision: 0, past: [], future: [],
-  setDocument: (document, directory = null) => set({ document, directory, activeSlidePath: document.deck.slides[0], selectedIds: [], past: [], future: [], dirtyPaths: new Set(), dirtyRevisions: new Map(), revision: 0, persistedRevision: 0, saveState: directory ? 'saved' : 'demo', error: null }),
+  saveState: 'demo', error: null, directory: null, briefScope: 'sample', dirtyPaths: new Set(), dirtyRevisions: new Map(), revision: 0, persistedRevision: 0, past: [], future: [],
+  setDocument: (document, directory = null, briefScope = crypto.randomUUID()) => set({ document, directory, briefScope, activeSlidePath: document.deck.slides[0], selectedIds: [], past: [], future: [], dirtyPaths: new Set(), dirtyRevisions: new Map(), revision: 0, persistedRevision: 0, saveState: directory ? 'saved' : 'demo', error: null }),
   restoreDocument: (document, revision = 1) => {
     const paths = ['deck.json', document.deck.theme, ...document.deck.slides]
-    set({ document, directory: null, activeSlidePath: document.deck.slides[0], selectedIds: [], past: [], future: [], dirtyPaths: new Set(paths), dirtyRevisions: new Map(paths.map(path => [path, revision])), revision, persistedRevision: 0, saveState: 'dirty', error: null })
+    set({ document, directory: null, briefScope: crypto.randomUUID(), activeSlidePath: document.deck.slides[0], selectedIds: [], past: [], future: [], dirtyPaths: new Set(paths), dirtyRevisions: new Map(paths.map(path => [path, revision])), revision, persistedRevision: 0, saveState: 'dirty', error: null })
   },
   setActiveSlide: activeSlidePath => set({ activeSlidePath, selectedIds: [] }),
   select: selectedIds => set({ selectedIds }),

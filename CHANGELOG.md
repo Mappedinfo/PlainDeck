@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### 新增
+
+- 内置演示制作指导：`plaindeck/core` 导出 `PresentationBriefSchema`、`createPresentationGuidance` 和 `auditPresentation`，按听众、目的、时长、核心主张与证据深度组织中英双语提示词。
+- CLI 增加 `guide` 与只读 `review`；MCP 增加 `presentation_guide`、`review_presentation` 工具和 `build_presentation` 提示词入口。启发式检查提供页面及元素定位，独立于 schema 校验和渲染复核。
+- Web 工具栏增加“制作指导”：简报按项目保存在本机浏览器，实时预览及复制提示词，并从检查建议定位页面或元素；生成指导和检查均在本地执行。
+
+### 优化
+
+- 制作规则和默认文案强调直接陈述核心主张及支持证据，保留必要比较、真实负结果和证据边界；示例数据明确标注用途。
+- 补充 EasySlides 制作原则的来源及 PlainDeck 适配说明，更新 Agent API、开发指导和 README 中的 MCP 与本地 AI 指导能力说明。
+
 ## [v0.10.0] - 2026-08-27
 
 ### 新增

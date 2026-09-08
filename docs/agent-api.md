@@ -1,18 +1,23 @@
 # PlainDeck Agent API 与 CLI
 
-PlainDeck v0.6.0 面向 Agent 的推荐工作流是：
+PlainDeck 面向 Agent 的推荐工作流是：
 
 ```text
-init → inspect → operations → validate → dry-run → apply → render
+guide → 证据与逐页计划 → init / inspect → apply --dry-run → apply
+      → validate → review → render → 内容与视觉复核
 ```
 
 项目格式版本仍为 `schemaVersion: "0.1"`。运行环境要求 Node.js 22 或更高版本。
 
+先明确听众、目的、时长、核心主张和证据深度。每页直接呈现主张与支持证据，再按内容关系选用布局。完整制作逻辑、表达规则和来源见 [`presentation-guidance.md`](./presentation-guidance.md)。
+
 ## CLI
 
 ```bash
-plaindeck init <project> [--title <title>] [--template showcase|pitch|blank|paper-reading|nature-methods|flowchart] [--theme <id>] [--json]
+plaindeck guide [--audience <id>] [--purpose <text>] [--minutes <number>] [--key-message <text>] [--evidence-depth <id>] [--locale zh|en] [--json]
+plaindeck init <project> [--title <title>] [--template showcase|pitch|blank|paper-reading|nature-methods|flowchart|data-story|course-lecture] [--theme <id>] [--json]
 plaindeck validate <project> [--json]
+plaindeck review <project> [--locale zh|en] [--json]
 plaindeck inspect <project> [--json]
 plaindeck apply <project> --ops <file|-> [--dry-run] [--json]
 plaindeck add-slide <project> --layout <id> [--name <name>]
@@ -25,6 +30,16 @@ plaindeck render <project> --format html|png|pdf --output <path> [--slide <index
 `init` 让 Agent 无需先编写 TypeScript 即可创建完整项目。默认仍生成五页 `showcase` 与 `studio-cobalt`，以保留已有 CLI 契约；`nature-methods` 和 `paper-reading` 默认使用 `nature-editorial`。创建前会检查所有计划文件，发生冲突时以退出码 `2` 停止且不写入。
 
 `--json` 时 stdout 只包含 JSON，错误诊断写入 stderr。成功退出码为 `0`，校验或执行失败为 `1`，参数错误为 `2`。`apply --dry-run` 会返回 `changedPaths` 与 validation 结果，但不会写入文件。
+
+`guide` 在本地生成制作提示词，`--json` 返回简报、原则、执行顺序、逐页计划字段和 `prompt`。`audience` 支持 `general`（默认）、`faculty`、`classroom`、`business`、`public`、`archive`；`minutes` 大于 0 且不超过 240，默认 10；`evidence-depth` 支持 `overview`、`supported`（默认）、`detailed`；`locale` 默认为 `zh`。
+
+```bash
+plaindeck guide --audience faculty --purpose "解释方法与关键证据" --minutes 12 \
+  --key-message "共享主题让整套页面保持一致" --evidence-depth supported --locale zh --json
+plaindeck review ./my-deck --locale zh --json
+```
+
+`review` 是只读建议检查，提供标题、文字量、待补内容、部分对照句式、画布边界、字号、表格规模和布局重复的线索，返回 `kind: "advisory"`、`slideCount`、`issues` 与 `manualChecks`。它与 `validate` 的 schema 合法性结果独立；建议本身不表示命令执行失败。来源真实性、主张与证据对应、实际裁切和视觉质量仍需复核。
 
 operations 也可以从 stdin 读取：
 
@@ -44,6 +59,14 @@ cat brief.md | plaindeck add-cards ./my-deck --content - --style inkLandscape
 Markdown 使用 `# 主标题`、`## 卡片标题`、描述和可选的 `icon_name`；兼容 `{ "mainTitle", "cards": [{ "title", "desc", "icon" }] }` 形式的 Juya News Card JSON。`styles` 提供 174 个由 Juya 模板批量迁移的原生设计配方；它们归入 27 个分类和 10 类构图语法，颜色、字体、边框、圆角与装饰最终都转换为 PlainDeck 元素。生成后每张卡的背景、编号、标题和正文都可以继续在 Web 画布拖动和编辑。
 
 `add-table` 接受 Markdown pipe table、CSV、TSV、二维 JSON 数组、对象数组，或 `{ "title", "columns", "rows" }`。第一行是表头；建议不超过 8 列、12 个数据行。`rules` 是默认的学术表格样式，`grid` 适合参数矩阵，`stripes` 适合逐行比较。
+
+## MCP 制作入口
+
+同一 npm 包的 `plaindeck-mcp` 提供 `presentation_guide`、`review_presentation`，以及 `build_presentation` 提示词入口。`presentation_guide` 接受可选简报字段（`audience`、`purpose`、`minutes`、`keyMessage`、`evidenceDepth`）与 `locale`；`review_presentation` 接收绝对项目路径和 `locale`，返回只读建议。`build_presentation` 接受可选简报参数，给客户端 Agent 一份指导它规划、构建和复核的提示词。
+
+`build_presentation` 的 MCP 提示词参数均为字符串（例如 `minutes: "12"`），传入空参数对象使用默认值；`presentation_guide` 工具的 `minutes` 为数字。
+
+这些入口与 Web、CLI 调用同一核心实现。客户端 Agent 使用既有 `init`、`inspect`、`apply_operations`、`add_cards`、`add_table`、`validate`、`render` 和 `styles` 工具执行页面操作。指导入口本身不调用 LLM，也不自动生成或改写项目。
 
 ## Operations
 
@@ -128,6 +151,20 @@ Markdown 使用 `# 主标题`、`## 卡片标题`、描述和可选的 `icon_nam
 可用布局：`blank`、`title-body`、`section`、`statement`、`metric`、`two-column`、`image-right`、`three-cards`、`summary-cards`、`hook-statement`、`prose-panel`、`takeaway`，以及论文解读族 `paper-figure`、`paper-table`、`versus`、`contributions`、`limits`、`closing`。
 
 ## TypeScript API
+
+指导与内容检查从浏览器可用的 `plaindeck/core` 导出：
+
+```ts
+import { PresentationBriefSchema, createPresentationGuidance, auditPresentation } from 'plaindeck/core'
+import { loadDeck } from 'plaindeck'
+
+const brief = PresentationBriefSchema.parse({ audience: 'faculty', minutes: 12 })
+const guidance = createPresentationGuidance({ ...brief, locale: 'zh' })
+const review = auditPresentation(await loadDeck('./my-deck'), { ...brief, locale: 'zh' })
+console.log(guidance.prompt, review.issues)
+```
+
+两项函数均不修改文档。简报独立于页面 schema，Web 将其按项目保存在本机浏览器；CLI/MCP 通过调用参数提供简报。完整字段与返回值见 [`presentation-guidance.md`](./presentation-guidance.md#typescript-api)。
 
 ```ts
 import {
