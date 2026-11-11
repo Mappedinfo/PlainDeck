@@ -97,6 +97,39 @@ describe('editor command history', () => {
     state.select([element.id]); useEditor.getState().reorderLayer(1)
     expect(useEditor.getState().document.slides[state.activeSlidePath].elements.slice(0, 2).map(item => item.id)).toEqual([next.id, element.id])
   })
+  it('moves a selection once without replacing unrelated pages or changing relative positions', () => {
+    const before = useEditor.getState()
+    const path = before.activeSlidePath, other = before.document.deck.slides[1]
+    const [first, second, third] = before.document.slides[path].elements
+    before.select([first.id, second.id])
+    useEditor.getState().nudgeSelection(8, -1)
+    const after = useEditor.getState()
+    expect(after.past).toHaveLength(1)
+    expect(after.document.slides[other]).toBe(before.document.slides[other])
+    expect(after.document.slides[path].elements[2]).toBe(third)
+    for (const element of [first, second]) {
+      expect(after.document.slides[path].elements.find(item => item.id === element.id)?.frame)
+        .toEqual({ ...element.frame, x: element.frame.x + 8, y: element.frame.y - 1 })
+    }
+    after.undo()
+    expect(useEditor.getState().document).toBe(before.document)
+    useEditor.getState().redo()
+    expect(useEditor.getState().document).toBe(after.document)
+  })
+
+  it('keeps selection through a layer move and treats the same drop as a no-op', () => {
+    const before = useEditor.getState()
+    const path = before.activeSlidePath
+    const ids = before.document.slides[path].elements.map(item => item.id)
+    before.select([ids[0]])
+    useEditor.getState().moveLayer(ids[0], ids[2], 'after')
+    const after = useEditor.getState()
+    expect(after.document.slides[path].elements.map(item => item.id)).toEqual([ids[1], ids[2], ids[0], ...ids.slice(3)])
+    expect(after.selectedIds).toEqual([ids[0]])
+    after.moveLayer(ids[0], ids[2], 'after')
+    expect(useEditor.getState().past).toHaveLength(1)
+  })
+
   it('aligns multiple elements through a set-element operation batch', () => {
     const state = useEditor.getState(); const slide = state.document.slides[state.activeSlidePath]; const selected = slide.elements.slice(0, 2)
     state.select(selected.map(element => element.id)); useEditor.getState().alignSelected('left')

@@ -4,7 +4,12 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [v0.11.0] - 2026-11-11
+
 ### 新增
+
+- 图层面板按实际堆叠顺序展示；支持检索、拖动排序、按钮排序、与画布联动的 Shift 多选，以及找回画布外元素。
+- 按住空格或鼠标中键拖动视图；按 Shift+1 适应整页，按 Shift+2 缩放到选区。拖动或按方向键可一起移动多个元素，一次撤销恢复整组。
 
 - 内置演示制作指导：`plaindeck/core` 导出 `PresentationBriefSchema`、`createPresentationGuidance` 和 `auditPresentation`，按听众、目的、时长、核心主张与证据深度组织中英双语提示词。
 - CLI 增加 `guide` 与只读 `review`；MCP 增加 `presentation_guide`、`review_presentation` 工具和 `build_presentation` 提示词入口。启发式检查提供页面及元素定位，独立于 schema 校验和渲染复核。
@@ -12,6 +17,7 @@ All notable changes to this project are documented in this file. The format is b
 
 ### 优化
 
+- 仅渲染可见区域附近的缩略图；打印页面在需要时才生成。拖动只更新预览，松手后一次写入页面。
 - 制作规则和默认文案强调直接陈述核心主张及支持证据，保留必要比较、真实负结果和证据边界；示例数据明确标注用途。
 - 补充 EasySlides 制作原则的来源及 PlainDeck 适配说明，更新 Agent API、开发指导和 README 中的 MCP 与本地 AI 指导能力说明。
 
@@ -161,7 +167,11 @@ All notable changes to this project are documented in this file. The format is b
 
 - CLI 生成的演示画廊（demo/）。
 
-[Unreleased]: https://github.com/Mappedinfo/PlainDeck/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/Mappedinfo/PlainDeck/compare/v0.11.0...HEAD
+[v0.11.0]: https://github.com/Mappedinfo/PlainDeck/compare/v0.10.0...v0.11.0
+[v0.10.0]: https://github.com/Mappedinfo/PlainDeck/compare/v0.9.0...v0.10.0
+[v0.9.0]: https://github.com/Mappedinfo/PlainDeck/compare/v0.8.0...v0.9.0
+[v0.8.0]: https://github.com/Mappedinfo/PlainDeck/compare/v0.7.0...v0.8.0
 [v0.7.0]: https://github.com/Mappedinfo/PlainDeck/compare/v0.6.1...v0.7.0
 [v0.6.1]: https://github.com/Mappedinfo/PlainDeck/compare/v0.6.0...v0.6.1
 [v0.6.0]: https://github.com/Mappedinfo/PlainDeck/compare/v0.3.0...v0.6.0
